@@ -5,12 +5,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="description" content="{{ business_name }} — Carnes frescas a pasto, sin concentrados. Los mejores cortes de res, cerdo, pollo y pescado a domicilio.">
   <title>{% block title %}{{ business_name }}{% endblock %}</title>
+  <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/appasto imagen.png') }}">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
   <nav class="navbar">
-    <a href="{{ url_for('main.index') }}" class="nav-logo">🥩 {{ business_name }}</a>
+    <a href="{{ url_for('main.index') }}" class="nav-logo">
+      <img src="{{ url_for('static', filename='images/appasto imagen.png') }}" alt="{{ business_name }}" class="nav-logo-img">
+      {{ business_name }}
+    </a>
     <button class="nav-toggle" id="navToggle" aria-label="Menú">&#9776;</button>
     <ul class="nav-links" id="navLinks">
       <li><a href="{{ url_for('main.index') }}">Inicio</a></li>
@@ -34,7 +38,10 @@
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-col">
-        <span class="footer-logo">🥩 {{ business_name }}</span>
+        <span class="footer-logo">
+          <img src="{{ url_for('static', filename='images/appasto imagen.png') }}" alt="{{ business_name }}" class="footer-logo-img">
+          {{ business_name }}
+        </span>
         <p>Carnes a pasto, naturales y sin concentrados.<br>Directo del campo a tu mesa.</p>
       </div>
       <div class="footer-col">
