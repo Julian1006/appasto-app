@@ -34,7 +34,7 @@
         <h3 class="product-name">{{ producto.nombre }}</h3>
         <p class="product-desc">{{ producto.descripcion }}</p>
         <div class="product-footer">
-          <span class="product-price">${{ "{:,}".format(producto.precio) }}/kg</span>
+          <span class="product-price">${{ "{:,}".format(producto.precio) }}/lb</span>
           <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST" class="add-form">
             <input type="hidden" name="next" value="{{ url_for('main.catalogo', filtro=filtro_activo) }}">
             <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-input">

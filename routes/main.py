@@ -7,10 +7,14 @@ TABS = ["Todos", "Res", "Cerdo", "Pollo", "Pescado", "Charcutería", "Lácteos",
 TIPOS = ["Res", "Cerdo", "Pollo", "Pescado", "Charcutería", "Lácteos", "Despensa"]
 CATEGORIAS = ["Premium", "Especiales", "Económicos", "Huesos"]
 
+DESTACADOS_IDS = [4, 5, 6, 1, 3, 29, 31, 49, 60, 73, 87, 8]
+
 
 @main_bp.route("/")
 def index():
-    destacados = get_all_products()[:6]
+    todos = get_all_products()
+    id_map = {p["id"]: p for p in todos}
+    destacados = [id_map[i] for i in DESTACADOS_IDS if i in id_map]
     return render_template("index.html", productos=destacados)
 
 
