@@ -249,6 +249,52 @@ ul { list-style: none; }
 .nosotros-cta h2 { font-size: 1.6rem; font-weight: 700; margin-bottom: .8rem; }
 .nosotros-cta p { color: var(--text-light); margin-bottom: 1.5rem; font-size: 1.05rem; }
 
+/* ===== Modal producto ===== */
+.product-card { cursor: pointer; }
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.6); align-items: center; justify-content: center;
+  padding: 1rem;
+}
+.modal-overlay.open { display: flex; }
+.modal-box {
+  background: var(--white); border-radius: var(--radius);
+  max-width: 680px; width: 100%; max-height: 90vh;
+  overflow-y: auto; position: relative;
+  display: flex; flex-direction: row;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  animation: modalIn .2s ease;
+}
+@keyframes modalIn { from { transform: scale(.92); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+.modal-close {
+  position: absolute; top: .8rem; right: .8rem;
+  background: var(--gray-light); border: none; border-radius: 50%;
+  width: 32px; height: 32px; cursor: pointer; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center; z-index: 10;
+  transition: background .2s;
+}
+.modal-close:hover { background: var(--gray); }
+.modal-img-wrap { width: 280px; flex-shrink: 0; }
+.modal-img { width: 100%; height: 100%; object-fit: cover; border-radius: var(--radius) 0 0 var(--radius); min-height: 280px; }
+.modal-emoji {
+  width: 100%; min-height: 280px; background: var(--gray-light);
+  font-size: 6rem; display: flex; align-items: center; justify-content: center;
+  border-radius: var(--radius) 0 0 var(--radius);
+}
+.modal-body { padding: 2rem; flex: 1; display: flex; flex-direction: column; gap: .8rem; }
+.modal-name { font-size: 1.5rem; font-weight: 800; }
+.modal-desc { color: var(--text-light); line-height: 1.7; font-size: .95rem; flex: 1; }
+.modal-footer { display: flex; flex-direction: column; gap: .8rem; margin-top: auto; }
+.modal-price { font-size: 1.6rem !important; }
+.qty-input-lg { width: 64px; padding: .5rem; font-size: 1rem; }
+
+@media (max-width: 600px) {
+  .modal-box { flex-direction: column; }
+  .modal-img-wrap { width: 100%; }
+  .modal-img { min-height: 220px; border-radius: var(--radius) var(--radius) 0 0; }
+  .modal-emoji { min-height: 180px; border-radius: var(--radius) var(--radius) 0 0; }
+}
+
 /* ===== WhatsApp Float ===== */
 .whatsapp-float {
   position: fixed; bottom: 1.5rem; right: 1.5rem; z-index: 200;

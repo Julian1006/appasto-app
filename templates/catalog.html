@@ -6,7 +6,6 @@
 <div class="container catalog-container">
   <h1 class="page-title">Catálogo de Carnes</h1>
 
-  <!-- Barra de búsqueda -->
   <div class="search-bar">
     <span class="search-icon">🔍</span>
     <input type="text" id="searchInput" placeholder="Buscar producto..." oninput="filtrarBusqueda()">
@@ -23,7 +22,8 @@
 
   <div class="products-grid" id="productGrid">
     {% for producto in productos %}
-    <div class="product-card" data-nombre="{{ producto.nombre | lower }}">
+    <div class="product-card" data-nombre="{{ producto.nombre | lower }}"
+         onclick="abrirModal('{{ producto.nombre }}', '{{ producto.tipo }} · {{ producto.categoria }}', '{{ producto.descripcion }}', '{{ producto.precio }}', '{{ producto.emoji }}', '{% if producto.imagen %}{{ url_for('static', filename=producto.imagen) }}{% endif %}', '{{ producto.id }}', '{{ url_for('main.catalogo', filtro=filtro_activo) }}')">
       {% if producto.imagen %}
       <img src="{{ url_for('static', filename=producto.imagen) }}" alt="{{ producto.nombre }}" class="product-img">
       {% else %}
@@ -35,7 +35,7 @@
         <p class="product-desc">{{ producto.descripcion }}</p>
         <div class="product-footer">
           <span class="product-price">${{ "{:,}".format(producto.precio) }}/lb</span>
-          <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST" class="add-form">
+          <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST" class="add-form" onclick="event.stopPropagation()">
             <input type="hidden" name="next" value="{{ url_for('main.catalogo', filtro=filtro_activo) }}">
             <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-input">
             <button type="submit" class="btn btn-add">+ Agregar</button>
@@ -45,24 +45,76 @@
     </div>
     {% endfor %}
   </div>
+
   <p id="noResults" style="display:none; text-align:center; color:var(--text-light); padding:2rem;">
     No se encontraron productos para "<span id="searchTerm"></span>".
   </p>
 </div>
 
+<!-- Modal producto -->
+<div id="modal" class="modal-overlay" onclick="cerrarModal()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-img-wrap">
+      <img id="modal-img" src="" alt="" class="modal-img">
+      <div id="modal-emoji" class="modal-emoji"></div>
+    </div>
+    <div class="modal-body">
+      <span id="modal-cat" class="product-category"></span>
+      <h2 id="modal-name" class="modal-name"></h2>
+      <p id="modal-desc" class="modal-desc"></p>
+      <div class="modal-footer">
+        <span id="modal-price" class="product-price modal-price"></span>
+        <form id="modal-form" method="POST" class="add-form">
+          <input type="hidden" name="next" id="modal-next">
+          <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-input qty-input-lg">
+          <button type="submit" class="btn btn-whatsapp">+ Agregar al carrito</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
+function abrirModal(nombre, categoria, descripcion, precio, emoji, imagen, pid, next) {
+  document.getElementById('modal-name').textContent = nombre;
+  document.getElementById('modal-cat').textContent = categoria;
+  document.getElementById('modal-desc').textContent = descripcion;
+  document.getElementById('modal-price').textContent = '$' + parseInt(precio).toLocaleString('es-CO') + '/lb';
+  document.getElementById('modal-form').action = '/agregar/' + pid;
+  document.getElementById('modal-next').value = next;
+
+  const img = document.getElementById('modal-img');
+  const emojiDiv = document.getElementById('modal-emoji');
+  if (imagen) {
+    img.src = imagen;
+    img.style.display = 'block';
+    emojiDiv.style.display = 'none';
+  } else {
+    img.style.display = 'none';
+    emojiDiv.textContent = emoji;
+    emojiDiv.style.display = 'flex';
+  }
+
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function cerrarModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal(); });
+
 function filtrarBusqueda() {
   const q = document.getElementById('searchInput').value.toLowerCase().trim();
   const cards = document.querySelectorAll('#productGrid .product-card');
   let visible = 0;
   cards.forEach(card => {
     const nombre = card.dataset.nombre || '';
-    if (!q || nombre.includes(q)) {
-      card.style.display = '';
-      visible++;
-    } else {
-      card.style.display = 'none';
-    }
+    if (!q || nombre.includes(q)) { card.style.display = ''; visible++; }
+    else { card.style.display = 'none'; }
   });
   const noResults = document.getElementById('noResults');
   document.getElementById('searchTerm').textContent = q;
