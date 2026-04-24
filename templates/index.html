@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}{{ business_name }} — Carnes Premium a Pasto{% endblock %}
+
+{% block content %}
+<section class="hero">
+  <div class="hero-content">
+    <h1>Carnes frescas<br>de calidad premium</h1>
+    <p>Del campo a tu mesa. Ganado a pasto, sin concentrados, criado en libertad.</p>
+    <a href="{{ url_for('main.catalogo') }}" class="btn btn-hero">Ver Catálogo completo →</a>
+  </div>
+</section>
+
+<!-- Propuesta de valor -->
+<section class="valor-section">
+  <div class="container">
+    <div class="valor-banners">
+      <div class="valor-banner">
+        <span class="vb-icon">🌿</span>
+        <div>
+          <strong>100% a pasto</strong>
+          <p>Ganado criado libre, sin granos ni concentrados.</p>
+        </div>
+      </div>
+      <div class="valor-banner">
+        <span class="vb-icon">🐄</span>
+        <div>
+          <strong>Raza Brahman</strong>
+          <p>Ganado selecto de Boyacá, Casanare, Meta y Guaviare.</p>
+        </div>
+      </div>
+      <div class="valor-banner">
+        <span class="vb-icon">🤝</span>
+        <div>
+          <strong>Comercio justo</strong>
+          <p>Apoyamos ganaderos locales con precios estables.</p>
+        </div>
+      </div>
+      <div class="valor-banner">
+        <span class="vb-icon">📲</span>
+        <div>
+          <strong>Entrega a domicilio</strong>
+          <p>Pedido por WhatsApp, rápido y sencillo.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="featured">
+  <div class="container">
+    <h2 class="section-title">Nuestros Cortes</h2>
+    <div class="products-grid">
+      {% for producto in productos %}
+      <div class="product-card">
+        {% if producto.imagen %}
+        <img src="{{ url_for('static', filename=producto.imagen) }}" alt="{{ producto.nombre }}" class="product-img">
+        {% else %}
+        <div class="product-emoji">{{ producto.emoji }}</div>
+        {% endif %}
+        <div class="product-info">
+          <span class="product-category">{{ producto.categoria }}</span>
+          <h3 class="product-name">{{ producto.nombre }}</h3>
+          <p class="product-desc">{{ producto.descripcion }}</p>
+          <div class="product-footer">
+            <span class="product-price">${{ "{:,}".format(producto.precio) }}/kg</span>
+            <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST" class="add-form">
+              <input type="hidden" name="next" value="{{ url_for('main.index') }}">
+              <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-input">
+              <button type="submit" class="btn btn-add">+ Agregar</button>
+            </form>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="see-all">
+      <a href="{{ url_for('main.catalogo') }}" class="btn btn-outline">Ver todos los productos →</a>
+    </div>
+  </div>
+</section>
+{% endblock %}
