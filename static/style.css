@@ -15,7 +15,8 @@
 
 /* ===== Reset ===== */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: 'Segoe UI', system-ui, sans-serif; color: var(--text); background: var(--white); }
+body { font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; color: var(--text); background: var(--white); }
+h1, h2, h3, .nav-logo, .modal-name { font-family: 'Playfair Display', Georgia, serif; }
 a { text-decoration: none; color: inherit; }
 ul { list-style: none; }
 
@@ -78,12 +79,32 @@ ul { list-style: none; }
 
 /* ===== Hero ===== */
 .hero {
-  background: linear-gradient(135deg, var(--red-dark) 0%, var(--red) 60%, #e74c3c 100%);
-  color: var(--white); padding: 5rem 2rem;
+  background: linear-gradient(135deg, #6b0f0a 0%, var(--red-dark) 40%, var(--red) 100%);
+  color: var(--white); padding: 6rem 2rem;
   display: flex; align-items: center; justify-content: center; text-align: center;
+  position: relative; overflow: hidden;
 }
-.hero-content h1 { font-size: clamp(2rem, 5vw, 3.2rem); font-weight: 800; line-height: 1.2; margin-bottom: 1rem; }
-.hero-content p { font-size: 1.15rem; opacity: .9; margin-bottom: 2rem; max-width: 480px; margin-left: auto; margin-right: auto; }
+.hero::before {
+  content: ''; position: absolute; inset: 0;
+  background: radial-gradient(ellipse at 70% 50%, rgba(255,255,255,.05) 0%, transparent 70%);
+}
+.hero-tag {
+  display: inline-block; background: rgba(255,255,255,.15);
+  border: 1px solid rgba(255,255,255,.3); border-radius: 20px;
+  padding: .35rem 1rem; font-size: .85rem; font-weight: 600;
+  margin-bottom: 1.5rem; letter-spacing: .5px;
+}
+.hero-content h1 { font-size: clamp(2.4rem, 6vw, 4rem); font-weight: 800; line-height: 1.15; margin-bottom: 1.2rem; }
+.hero-content h1 em { font-style: italic; color: #ffd6cc; }
+.hero-content p { font-size: 1.1rem; opacity: .88; margin-bottom: 2.5rem; max-width: 520px; margin-left: auto; margin-right: auto; line-height: 1.7; }
+
+/* Stats bar */
+.stats-bar { background: var(--red-dark); color: var(--white); padding: 2rem 0; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; text-align: center; }
+.stat-item { padding: 1rem; }
+.stat-n { font-family: 'Playfair Display', serif; font-size: 2.8rem; font-weight: 800; }
+.stat-unit { font-size: 1.6rem; font-weight: 700; }
+.stat-lbl { display: block; font-size: .8rem; opacity: .8; margin-top: .3rem; text-transform: uppercase; letter-spacing: .5px; }
 
 /* ===== Propuesta de valor ===== */
 .valor-section { background: var(--white); border-bottom: 1px solid var(--gray); padding: 1.5rem 0; }
@@ -359,6 +380,65 @@ ul { list-style: none; }
 .footer-bottom { max-width: 1100px; margin: 1.5rem auto 0; text-align: center; font-size: .85rem; }
 .footer-bottom strong { color: var(--white); }
 
+/* ===== Cómo funciona ===== */
+.how-section { padding: 4.5rem 0; background: var(--white); }
+.how-steps {
+  display: flex; align-items: flex-start; justify-content: center;
+  gap: 0; flex-wrap: wrap; margin-top: 1rem;
+}
+.how-step {
+  background: var(--gray-light); border-radius: var(--radius);
+  padding: 2rem 1.5rem; text-align: center; flex: 1; min-width: 180px; max-width: 220px;
+  border-top: 4px solid var(--red);
+  transition: transform .2s, box-shadow .2s;
+}
+.how-step:hover { transform: translateY(-4px); box-shadow: var(--shadow); }
+.how-num {
+  font-family: 'Playfair Display', serif; font-size: 2.5rem; font-weight: 800;
+  color: var(--red); opacity: .2; line-height: 1; margin-bottom: .5rem;
+}
+.how-icon { font-size: 2.2rem; margin-bottom: .8rem; }
+.how-step h3 { font-size: 1rem; font-weight: 700; margin-bottom: .5rem; color: var(--text); }
+.how-step p { font-size: .85rem; color: var(--text-light); line-height: 1.5; }
+.how-arrow {
+  font-size: 1.8rem; color: var(--gray); align-self: center;
+  padding: 0 .5rem; flex-shrink: 0;
+}
+
+/* ===== Testimonios ===== */
+.testimonios { padding: 4.5rem 0; background: var(--gray-light); }
+.testi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
+.testi-card {
+  background: var(--white); border-radius: var(--radius);
+  padding: 2rem; box-shadow: var(--shadow);
+  display: flex; flex-direction: column; gap: 1rem;
+  border-bottom: 4px solid var(--red);
+  transition: transform .2s;
+}
+.testi-card:hover { transform: translateY(-4px); }
+.testi-stars { color: #f5a623; font-size: 1.1rem; letter-spacing: 2px; }
+.testi-card > p { font-size: .95rem; color: var(--text-light); line-height: 1.7; flex: 1; font-style: italic; }
+.testi-autor { display: flex; align-items: center; gap: .8rem; margin-top: auto; }
+.testi-avatar {
+  width: 40px; height: 40px; border-radius: 50%;
+  background: var(--red); color: var(--white);
+  font-weight: 700; font-size: 1.1rem;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.testi-autor strong { display: block; font-size: .95rem; color: var(--text); }
+.testi-autor small { font-size: .8rem; color: var(--text-light); }
+
+/* ===== CTA Final ===== */
+.cta-section { padding: 5rem 0; background: var(--white); }
+.cta-box {
+  background: linear-gradient(135deg, #6b0f0a 0%, var(--red-dark) 40%, var(--red) 100%);
+  color: var(--white); border-radius: 16px;
+  padding: 4rem 2rem; text-align: center;
+  box-shadow: 0 8px 40px rgba(192,57,43,.3);
+}
+.cta-box h2 { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800; margin-bottom: 1rem; }
+.cta-box p { font-size: 1.05rem; opacity: .88; margin-bottom: 2.5rem; }
+
 /* ===== Responsive ===== */
 @media (max-width: 768px) {
   .footer-inner { grid-template-columns: 1fr; gap: 1.5rem; }
@@ -387,4 +467,10 @@ ul { list-style: none; }
   .btn-whatsapp, .btn-outline { text-align: center; }
   .nosotros-stats { grid-template-columns: 1fr 1fr; }
   .add-form { flex-wrap: wrap; }
+  .how-steps { flex-direction: column; align-items: center; }
+  .how-step { max-width: 100%; width: 100%; }
+  .how-arrow { transform: rotate(90deg); padding: .2rem 0; align-self: center; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+  .testi-grid { grid-template-columns: 1fr; }
+  .cta-box { padding: 3rem 1.5rem; }
 }

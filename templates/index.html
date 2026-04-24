@@ -3,10 +3,13 @@
 {% block title %}{{ business_name }} — Carnes Premium a Pasto{% endblock %}
 
 {% block content %}
+
+<!-- HERO -->
 <section class="hero">
   <div class="hero-content">
-    <h1>Carnes frescas<br>de calidad premium</h1>
-    <p>Del campo a tu mesa. Ganado a pasto, sin concentrados, criado en libertad.</p>
+    <span class="hero-tag">🌿 100% Natural · Sin concentrados</span>
+    <h1>Carnes frescas<br>de <em>calidad premium</em></h1>
+    <p>Del campo a tu mesa. Ganado Brahman criado a pasto libre,<br>seleccionado por familias ganaderas de Colombia.</p>
     <div class="hero-btns">
       <a href="{{ url_for('main.catalogo') }}" class="btn btn-hero">Ver Catálogo →</a>
       <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" class="btn btn-hero-wa">📲 Pedir por WhatsApp</a>
@@ -14,45 +17,82 @@
   </div>
 </section>
 
-<!-- Propuesta de valor -->
-<section class="valor-section">
+<!-- STATS -->
+<section class="stats-bar">
   <div class="container">
-    <div class="valor-banners">
-      <div class="valor-banner">
-        <span class="vb-icon">🌿</span>
-        <div>
-          <strong>100% a pasto</strong>
-          <p>Ganado criado libre, sin granos ni concentrados.</p>
-        </div>
+    <div class="stats-grid">
+      <div class="stat-item">
+        <span class="stat-n" data-target="3">0</span><span class="stat-unit">+</span>
+        <span class="stat-lbl">Años de experiencia</span>
       </div>
-      <div class="valor-banner">
-        <span class="vb-icon">🐄</span>
-        <div>
-          <strong>Raza Brahman</strong>
-          <p>Ganado selecto de Boyacá, Casanare, Meta y Guaviare.</p>
-        </div>
+      <div class="stat-item">
+        <span class="stat-n" data-target="89">0</span><span class="stat-unit"></span>
+        <span class="stat-lbl">Productos disponibles</span>
       </div>
-      <div class="valor-banner">
-        <span class="vb-icon">🤝</span>
-        <div>
-          <strong>Comercio justo</strong>
-          <p>Apoyamos ganaderos locales con precios estables.</p>
-        </div>
+      <div class="stat-item">
+        <span class="stat-n" data-target="100">0</span><span class="stat-unit">%</span>
+        <span class="stat-lbl">A pasto natural</span>
       </div>
-      <div class="valor-banner">
-        <span class="vb-icon">📲</span>
-        <div>
-          <strong>Entrega a domicilio</strong>
-          <p>Pedido por WhatsApp, rápido y sencillo.</p>
-        </div>
+      <div class="stat-item">
+        <span class="stat-n" data-target="4">0</span><span class="stat-unit"></span>
+        <span class="stat-lbl">Departamentos ganaderos</span>
       </div>
     </div>
   </div>
 </section>
 
-<!-- Categorías rápidas -->
+<!-- PROPUESTA DE VALOR -->
+<section class="valor-section">
+  <div class="container">
+    <div class="valor-banners">
+      <div class="valor-banner"><span class="vb-icon">🌿</span><div><strong>100% a pasto</strong><p>Ganado criado libre, sin granos ni concentrados.</p></div></div>
+      <div class="valor-banner"><span class="vb-icon">🐄</span><div><strong>Raza Brahman</strong><p>Ganado selecto de Boyacá, Casanare, Meta y Guaviare.</p></div></div>
+      <div class="valor-banner"><span class="vb-icon">🤝</span><div><strong>Comercio justo</strong><p>Apoyamos ganaderos locales con precios estables.</p></div></div>
+      <div class="valor-banner"><span class="vb-icon">📲</span><div><strong>Entrega a domicilio</strong><p>Pedido por WhatsApp, rápido y sencillo.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- CÓMO FUNCIONA -->
+<section class="how-section">
+  <div class="container">
+    <h2 class="section-title">¿Cómo funciona?</h2>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-num">01</div>
+        <div class="how-icon">🔍</div>
+        <h3>Explorá el catálogo</h3>
+        <p>Navegá entre más de 89 productos frescos organizados por tipo y categoría.</p>
+      </div>
+      <div class="how-arrow">→</div>
+      <div class="how-step">
+        <div class="how-num">02</div>
+        <div class="how-icon">🛒</div>
+        <h3>Armá tu pedido</h3>
+        <p>Seleccioná los cortes que quieras y la cantidad en libras.</p>
+      </div>
+      <div class="how-arrow">→</div>
+      <div class="how-step">
+        <div class="how-num">03</div>
+        <div class="how-icon">📲</div>
+        <h3>Pedí por WhatsApp</h3>
+        <p>Con un click enviás tu pedido directo a nuestro WhatsApp. ¡Así de fácil!</p>
+      </div>
+      <div class="how-arrow">→</div>
+      <div class="how-step">
+        <div class="how-num">04</div>
+        <div class="how-icon">🏠</div>
+        <h3>Recibís en casa</h3>
+        <p>Entrega fresca a domicilio en Bogotá, empacada con cuidado.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CATEGORÍAS RÁPIDAS -->
 <section class="quick-cats">
   <div class="container">
+    <h2 class="section-title">Explorar por categoría</h2>
     <div class="quick-grid">
       <a href="{{ url_for('main.catalogo', filtro='Res') }}" class="quick-card">🥩<span>Res</span></a>
       <a href="{{ url_for('main.catalogo', filtro='Cerdo') }}" class="quick-card">🐷<span>Cerdo</span></a>
@@ -65,12 +105,13 @@
   </div>
 </section>
 
+<!-- PRODUCTOS DESTACADOS -->
 <section class="featured">
   <div class="container">
     <h2 class="section-title">Productos Destacados</h2>
     <div class="products-grid">
       {% for producto in productos %}
-      <div class="product-card" onclick="abrirModal('{{ producto.nombre }}', '{{ producto.tipo }} · {{ producto.categoria }}', '{{ producto.descripcion }}', '{{ producto.precio }}', '{{ producto.emoji }}', '{% if producto.imagen %}{{ url_for('static', filename=producto.imagen) }}{% endif %}', '{{ producto.id }}', '{{ url_for('main.index') }}')">
+      <div class="product-card" onclick="abrirModal('{{ producto.nombre }}','{{ producto.tipo }} · {{ producto.categoria }}','{{ producto.descripcion }}','{{ producto.precio }}','{{ producto.emoji }}','{% if producto.imagen %}{{ url_for('static', filename=producto.imagen) }}{% endif %}','{{ producto.id }}','{{ url_for('main.index') }}')">
         <div class="card-img-wrap">
           {% if producto.imagen %}
           <img src="{{ url_for('static', filename=producto.imagen) }}" alt="{{ producto.nombre }}" class="product-img">
@@ -101,7 +142,45 @@
   </div>
 </section>
 
-<!-- Modal producto -->
+<!-- TESTIMONIOS -->
+<section class="testimonios">
+  <div class="container">
+    <h2 class="section-title">Lo que dicen nuestros clientes</h2>
+    <div class="testi-grid">
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p>"La carne es increíble, se nota la diferencia con el supermercado. El Tomahawk quedó espectacular a la parrilla. 100% recomendado."</p>
+        <div class="testi-autor"><span class="testi-avatar">C</span><div><strong>Carlos M.</strong><small>Bogotá</small></div></div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p>"Llevo 6 meses pidiendo cada semana. La calidad es consistente y el servicio por WhatsApp es muy rápido. Excelente emprendimiento familiar."</p>
+        <div class="testi-autor"><span class="testi-avatar">L</span><div><strong>Laura P.</strong><small>Usaquén</small></div></div>
+      </div>
+      <div class="testi-card">
+        <div class="testi-stars">★★★★★</div>
+        <p>"Por fin carne de pasto de verdad en Bogotá. Se nota en el sabor y en cómo me siento después de comerla. El lomo fino porcionado es una joya."</p>
+        <div class="testi-autor"><span class="testi-avatar">A</span><div><strong>Andrés R.</strong><small>Chapinero</small></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA FINAL -->
+<section class="cta-section">
+  <div class="container">
+    <div class="cta-box">
+      <h2>¿Listo para probar la diferencia?</h2>
+      <p>Unite a cientos de familias bogotanas que ya eligen carne a pasto.</p>
+      <div class="hero-btns">
+        <a href="{{ url_for('main.catalogo') }}" class="btn btn-hero">Ver Catálogo →</a>
+        <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" class="btn btn-hero-wa">📲 Escribinos</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Modal -->
 <div id="modal" class="modal-overlay" onclick="cerrarModal()">
   <div class="modal-box" onclick="event.stopPropagation()">
     <button class="modal-close" onclick="cerrarModal()">✕</button>
@@ -135,11 +214,8 @@ function abrirModal(nombre, categoria, descripcion, precio, emoji, imagen, pid, 
   document.getElementById('modal-next').value = next;
   const img = document.getElementById('modal-img');
   const emojiDiv = document.getElementById('modal-emoji');
-  if (imagen) {
-    img.src = imagen; img.style.display = 'block'; emojiDiv.style.display = 'none';
-  } else {
-    img.style.display = 'none'; emojiDiv.textContent = emoji; emojiDiv.style.display = 'flex';
-  }
+  if (imagen) { img.src = imagen; img.style.display = 'block'; emojiDiv.style.display = 'none'; }
+  else { img.style.display = 'none'; emojiDiv.textContent = emoji; emojiDiv.style.display = 'flex'; }
   document.getElementById('modal').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -148,5 +224,24 @@ function cerrarModal() {
   document.body.style.overflow = '';
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal(); });
+
+// Contador animado
+function animarContadores() {
+  document.querySelectorAll('.stat-n').forEach(el => {
+    const target = +el.dataset.target;
+    let cur = 0;
+    const step = Math.ceil(target / 40);
+    const timer = setInterval(() => {
+      cur = Math.min(cur + step, target);
+      el.textContent = cur;
+      if (cur >= target) clearInterval(timer);
+    }, 40);
+  });
+}
+const observer = new IntersectionObserver(entries => {
+  if (entries[0].isIntersecting) { animarContadores(); observer.disconnect(); }
+}, { threshold: 0.5 });
+const statsEl = document.querySelector('.stats-bar');
+if (statsEl) observer.observe(statsEl);
 </script>
 {% endblock %}
