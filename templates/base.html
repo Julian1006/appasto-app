@@ -74,9 +74,15 @@
     </svg>
   </a>
 
+  <!-- Botón scroll to top -->
+  <button id="scrollTop" class="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Volver arriba">↑</button>
+
   <script>
   document.getElementById('navToggle').addEventListener('click', function() {
     document.getElementById('navLinks').classList.toggle('open');
+  });
+  window.addEventListener('scroll', function() {
+    document.getElementById('scrollTop').classList.toggle('visible', window.scrollY > 400);
   });
   </script>
 

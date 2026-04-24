@@ -54,12 +54,15 @@ ul { list-style: none; }
 .btn:active { transform: scale(.97); }
 .btn-primary { background: var(--red); color: var(--white); }
 .btn-primary:hover { background: var(--red-dark); }
+.hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
 .btn-hero {
   background: var(--white); color: var(--red);
   font-size: 1.05rem; padding: .85rem 2rem;
   box-shadow: 0 4px 16px rgba(0,0,0,0.15);
 }
 .btn-hero:hover { background: var(--red-light); }
+.btn-hero-wa { background: var(--green-wa); color: var(--white); font-size: 1.05rem; padding: .85rem 2rem; }
+.btn-hero-wa:hover { background: #1da851; }
 .btn-outline { background: transparent; color: var(--red); border: 2px solid var(--red); }
 .btn-outline:hover { background: var(--red-light); }
 .btn-add { background: var(--red); color: var(--white); padding: .4rem 1rem; font-size: .85rem; white-space: nowrap; }
@@ -133,6 +136,40 @@ ul { list-style: none; }
   border-radius: 6px; font-size: .9rem; text-align: center; color: var(--text);
 }
 .qty-input:focus { outline: none; border-color: var(--red); }
+
+/* Card hover overlay */
+.card-img-wrap { position: relative; overflow: hidden; }
+.card-overlay {
+  position: absolute; inset: 0; background: rgba(192,57,43,.7);
+  color: var(--white); font-weight: 700; font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; transition: opacity .2s;
+}
+.product-card:hover .card-overlay { opacity: 1; }
+
+/* Categorías rápidas */
+.quick-cats { padding: 2rem 0; background: var(--white); }
+.quick-grid { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+.quick-card {
+  display: flex; flex-direction: column; align-items: center; gap: .4rem;
+  background: var(--gray-light); border-radius: var(--radius);
+  padding: 1.2rem 1.5rem; font-weight: 600; font-size: .9rem;
+  color: var(--text); transition: all .2s; min-width: 90px;
+  border: 2px solid transparent;
+}
+.quick-card:hover { border-color: var(--red); color: var(--red); background: var(--red-light); transform: translateY(-3px); }
+.quick-card span:first-child { font-size: 1.8rem; }
+
+/* Scroll to top */
+.scroll-top {
+  position: fixed; bottom: 5.5rem; right: 1.5rem; z-index: 199;
+  background: var(--red); color: var(--white);
+  width: 40px; height: 40px; border-radius: 50%; border: none;
+  font-size: 1.1rem; cursor: pointer; opacity: 0; pointer-events: none;
+  transition: opacity .3s, transform .2s; box-shadow: var(--shadow);
+}
+.scroll-top.visible { opacity: 1; pointer-events: auto; }
+.scroll-top:hover { transform: translateY(-3px); }
 
 .see-all { text-align: center; margin-top: 2.5rem; }
 

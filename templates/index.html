@@ -7,7 +7,10 @@
   <div class="hero-content">
     <h1>Carnes frescas<br>de calidad premium</h1>
     <p>Del campo a tu mesa. Ganado a pasto, sin concentrados, criado en libertad.</p>
-    <a href="{{ url_for('main.catalogo') }}" class="btn btn-hero">Ver Catálogo completo →</a>
+    <div class="hero-btns">
+      <a href="{{ url_for('main.catalogo') }}" class="btn btn-hero">Ver Catálogo →</a>
+      <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" class="btn btn-hero-wa">📲 Pedir por WhatsApp</a>
+    </div>
   </div>
 </section>
 
@@ -47,24 +50,42 @@
   </div>
 </section>
 
+<!-- Categorías rápidas -->
+<section class="quick-cats">
+  <div class="container">
+    <div class="quick-grid">
+      <a href="{{ url_for('main.catalogo', filtro='Res') }}" class="quick-card">🥩<span>Res</span></a>
+      <a href="{{ url_for('main.catalogo', filtro='Cerdo') }}" class="quick-card">🐷<span>Cerdo</span></a>
+      <a href="{{ url_for('main.catalogo', filtro='Pollo') }}" class="quick-card">🍗<span>Pollo</span></a>
+      <a href="{{ url_for('main.catalogo', filtro='Pescado') }}" class="quick-card">🐟<span>Pescado</span></a>
+      <a href="{{ url_for('main.catalogo', filtro='Charcutería') }}" class="quick-card">🌭<span>Charcutería</span></a>
+      <a href="{{ url_for('main.catalogo', filtro='Lácteos') }}" class="quick-card">🥛<span>Lácteos</span></a>
+      <a href="{{ url_for('main.catalogo', filtro='Despensa') }}" class="quick-card">🫙<span>Despensa</span></a>
+    </div>
+  </div>
+</section>
+
 <section class="featured">
   <div class="container">
-    <h2 class="section-title">Nuestros Cortes</h2>
+    <h2 class="section-title">Productos Destacados</h2>
     <div class="products-grid">
       {% for producto in productos %}
-      <div class="product-card">
-        {% if producto.imagen %}
-        <img src="{{ url_for('static', filename=producto.imagen) }}" alt="{{ producto.nombre }}" class="product-img">
-        {% else %}
-        <div class="product-emoji">{{ producto.emoji }}</div>
-        {% endif %}
+      <div class="product-card" onclick="abrirModal('{{ producto.nombre }}', '{{ producto.tipo }} · {{ producto.categoria }}', '{{ producto.descripcion }}', '{{ producto.precio }}', '{{ producto.emoji }}', '{% if producto.imagen %}{{ url_for('static', filename=producto.imagen) }}{% endif %}', '{{ producto.id }}', '{{ url_for('main.index') }}')">
+        <div class="card-img-wrap">
+          {% if producto.imagen %}
+          <img src="{{ url_for('static', filename=producto.imagen) }}" alt="{{ producto.nombre }}" class="product-img">
+          {% else %}
+          <div class="product-emoji">{{ producto.emoji }}</div>
+          {% endif %}
+          <div class="card-overlay">Ver detalle</div>
+        </div>
         <div class="product-info">
           <span class="product-category">{{ producto.categoria }}</span>
           <h3 class="product-name">{{ producto.nombre }}</h3>
           <p class="product-desc">{{ producto.descripcion }}</p>
           <div class="product-footer">
             <span class="product-price">${{ "{:,}".format(producto.precio) }}/lb</span>
-            <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST" class="add-form">
+            <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST" class="add-form" onclick="event.stopPropagation()">
               <input type="hidden" name="next" value="{{ url_for('main.index') }}">
               <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-input">
               <button type="submit" class="btn btn-add">+ Agregar</button>
@@ -79,4 +100,53 @@
     </div>
   </div>
 </section>
+
+<!-- Modal producto -->
+<div id="modal" class="modal-overlay" onclick="cerrarModal()">
+  <div class="modal-box" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="cerrarModal()">✕</button>
+    <div class="modal-img-wrap">
+      <img id="modal-img" src="" alt="" class="modal-img">
+      <div id="modal-emoji" class="modal-emoji"></div>
+    </div>
+    <div class="modal-body">
+      <span id="modal-cat" class="product-category"></span>
+      <h2 id="modal-name" class="modal-name"></h2>
+      <p id="modal-desc" class="modal-desc"></p>
+      <div class="modal-footer">
+        <span id="modal-price" class="product-price modal-price"></span>
+        <form id="modal-form" method="POST" class="add-form">
+          <input type="hidden" name="next" id="modal-next">
+          <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-input qty-input-lg">
+          <button type="submit" class="btn btn-whatsapp">+ Agregar al carrito</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function abrirModal(nombre, categoria, descripcion, precio, emoji, imagen, pid, next) {
+  document.getElementById('modal-name').textContent = nombre;
+  document.getElementById('modal-cat').textContent = categoria;
+  document.getElementById('modal-desc').textContent = descripcion;
+  document.getElementById('modal-price').textContent = '$' + parseInt(precio).toLocaleString('es-CO') + '/lb';
+  document.getElementById('modal-form').action = '/agregar/' + pid;
+  document.getElementById('modal-next').value = next;
+  const img = document.getElementById('modal-img');
+  const emojiDiv = document.getElementById('modal-emoji');
+  if (imagen) {
+    img.src = imagen; img.style.display = 'block'; emojiDiv.style.display = 'none';
+  } else {
+    img.style.display = 'none'; emojiDiv.textContent = emoji; emojiDiv.style.display = 'flex';
+  }
+  document.getElementById('modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function cerrarModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal(); });
+</script>
 {% endblock %}
