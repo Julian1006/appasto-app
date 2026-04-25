@@ -117,6 +117,15 @@ def reset_precio(pid):
     return redirect(url_for("admin.dashboard"))
 
 
+@admin_bp.route("/producto/<int:pid>/destacado", methods=["POST"])
+@admin_required
+def toggle_destacado(pid):
+    p = Product.query.get_or_404(pid)
+    p.destacado = not p.destacado
+    db.session.commit()
+    return redirect(url_for("admin.dashboard"))
+
+
 @admin_bp.route("/producto/<int:pid>/stock", methods=["POST"])
 @admin_required
 def update_stock(pid):

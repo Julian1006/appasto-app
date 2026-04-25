@@ -45,6 +45,8 @@ def inject_globals():
     }
 
 
+_DESTACADOS_DEFAULT = {4, 5, 6, 1, 3, 29, 31, 49, 60, 73, 87, 8}
+
 def _seed_db():
     from model import Product, SEED_PRODUCTS
     if Product.query.count() == 0:
@@ -54,6 +56,7 @@ def _seed_db():
                 categoria=d["categoria"], precio=d["precio"],
                 precio_orig=d["precio"], descripcion=d["descripcion"],
                 emoji=d["emoji"], imagen=d.get("imagen", ""),
+                destacado=d["id"] in _DESTACADOS_DEFAULT,
             ))
         db.session.commit()
 
@@ -65,6 +68,12 @@ with app.app_context():
         _cols = [c["name"] for c in _inspect(db.engine).get_columns("products")]
         if "stock" not in _cols:
             db.session.execute(text("ALTER TABLE products ADD COLUMN stock INTEGER"))
+            db.session.commit()
+        if "destacado" not in _cols:
+            db.session.execute(text("ALTER TABLE products ADD COLUMN destacado INTEGER NOT NULL DEFAULT 0"))
+            # Marcar los destacados por defecto
+            _ids = ",".join(str(i) for i in [4, 5, 6, 1, 3, 29, 31, 49, 60, 73, 87, 8])
+            db.session.execute(text(f"UPDATE products SET destacado=1 WHERE id IN ({_ids})"))
             db.session.commit()
     except Exception:
         pass

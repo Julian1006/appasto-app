@@ -48,6 +48,7 @@ class Product(db.Model):
     descripcion = db.Column(db.Text)
     emoji       = db.Column(db.String(20))
     stock       = db.Column(db.Integer, nullable=True)   # None = ilimitado
+    destacado   = db.Column(db.Boolean, default=False, nullable=False, server_default="0")
     imagen      = db.Column(db.String(300), default="")
     activo      = db.Column(db.Boolean, default=True, nullable=False)
 

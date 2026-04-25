@@ -8,7 +8,7 @@ TABS = ["Todos", "Res", "Cerdo", "Pollo", "Pescado", "Charcutería", "Lácteos",
 TIPOS = ["Res", "Cerdo", "Pollo", "Pescado", "Charcutería", "Lácteos", "Despensa"]
 CATEGORIAS = ["Premium", "Especiales", "Económicos", "Huesos"]
 
-DESTACADOS_IDS = [4, 5, 6, 1, 3, 29, 31, 49, 60, 73, 87, 8]
+DESTACADOS_IDS = [4, 5, 6, 1, 3, 29, 31, 49, 60, 73, 87, 8]  # fallback solo si DB vacía
 
 BADGES = {
     1: ('premium', 'Premium'),
@@ -28,9 +28,14 @@ LOW_STOCK = {2, 5, 14, 29, 49, 60}
 
 @main_bp.route("/")
 def index():
+    from model import Product
     todos = [p for p in get_all_products() if p.get("activo", True)]
     id_map = {p["id"]: p for p in todos}
-    destacados = [id_map[i] for i in DESTACADOS_IDS if i in id_map]
+    dest_ids = [p.id for p in Product.query.filter_by(destacado=True).order_by(Product.id).all()]
+    if dest_ids:
+        destacados = [id_map[i] for i in dest_ids if i in id_map]
+    else:
+        destacados = [id_map[i] for i in DESTACADOS_IDS if i in id_map]
     return render_template("index.html", productos=destacados, badges=BADGES, low_stock=LOW_STOCK)
 
 
