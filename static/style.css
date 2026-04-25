@@ -716,6 +716,103 @@ ul { list-style: none; }
   to   { transform: scale(1) translateY(0);      opacity: 1; }
 }
 
+/* ===== Filters bar ===== */
+.filters-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 1rem; margin-bottom: 1rem; flex-wrap: wrap;
+}
+.filter-left { display: flex; gap: .6rem; flex-wrap: wrap; }
+.filter-select {
+  padding: .45rem .9rem; border: 1.5px solid var(--gray);
+  border-radius: 8px; font-size: .88rem; font-family: 'Inter', sans-serif;
+  color: var(--text); background: var(--white); cursor: pointer;
+  transition: border-color .2s;
+  appearance: none; -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23666'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right .7rem center; padding-right: 2rem;
+}
+.filter-select:focus { outline: none; border-color: var(--red); }
+
+.view-toggle { display: flex; gap: .3rem; }
+.view-btn {
+  width: 36px; height: 36px; border-radius: 8px;
+  border: 1.5px solid var(--gray); background: var(--white);
+  color: var(--text-light); cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: all .2s;
+}
+.view-btn:hover { border-color: var(--red); color: var(--red); }
+.view-btn.active { background: var(--red); border-color: var(--red); color: var(--white); }
+
+/* ===== List view ===== */
+.products-list {
+  display: flex !important; flex-direction: column; gap: .8rem;
+}
+.products-list .product-card {
+  flex-direction: row !important; height: 130px;
+}
+.products-list .card-img-wrap {
+  width: 130px; flex-shrink: 0; border-radius: var(--radius) 0 0 var(--radius);
+}
+.products-list .product-img { height: 130px; }
+.products-list .product-emoji { height: 130px; font-size: 3rem; }
+.products-list .card-overlay { display: none; }
+.products-list .product-info { padding: .8rem 1rem; }
+.products-list .product-desc { display: none; }
+.products-list .product-name { font-size: 1rem; }
+
+/* ===== Product characteristic tags ===== */
+.product-tags { display: flex; gap: .35rem; flex-wrap: wrap; margin-bottom: .5rem; }
+.ptag {
+  font-size: .68rem; font-weight: 600; color: var(--text-light);
+  background: var(--gray-light); border-radius: 4px; padding: .18rem .5rem;
+  white-space: nowrap;
+}
+
+/* ===== Featured products carousel ===== */
+.carousel-wrapper { position: relative; padding: 0 2rem; }
+.products-carousel {
+  display: flex; gap: 1.5rem;
+  overflow-x: auto; scroll-snap-type: x mandatory;
+  scrollbar-width: none; padding-bottom: .5rem;
+  scroll-behavior: smooth;
+}
+.products-carousel::-webkit-scrollbar { display: none; }
+.products-carousel .product-card {
+  flex: 0 0 calc(33.33% - 1rem);
+  min-width: 240px; scroll-snap-align: start;
+}
+.carousel-nav {
+  position: absolute; top: 50%; transform: translateY(-60%);
+  width: 42px; height: 42px; border-radius: 50%;
+  background: var(--white); border: 2px solid var(--gray);
+  font-size: 1.6rem; line-height: 1; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: var(--shadow); z-index: 10;
+  transition: all .2s; color: var(--text);
+}
+.carousel-nav:hover { border-color: var(--red); color: var(--red); transform: translateY(-60%) scale(1.08); }
+.carousel-prev { left: -6px; }
+.carousel-next { right: -6px; }
+
+@media (max-width: 900px) {
+  .products-carousel .product-card { flex: 0 0 calc(50% - .75rem); }
+}
+@media (max-width: 560px) {
+  .products-carousel .product-card { flex: 0 0 82%; }
+  .carousel-wrapper { padding: 0 1.2rem; }
+}
+
+/* ===== Cart button added animation ===== */
+@keyframes btnAdded {
+  0%   { transform: scale(1); }
+  35%  { transform: scale(.88); }
+  65%  { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+.btn-add { transition: background .3s, color .3s; }
+.btn-added { animation: btnAdded .38s cubic-bezier(.34,1.56,.64,1) !important; }
+
 /* ===== Mobile testimonials swipe carousel ===== */
 @media (max-width: 640px) {
   .testi-grid {

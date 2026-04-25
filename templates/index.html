@@ -136,35 +136,50 @@
 <section class="featured reveal">
   <div class="container">
     <h2 class="section-title">Productos Destacados</h2>
-    <div class="products-grid">
-      {% for producto in productos %}
-      <div class="product-card" onclick="abrirModal('{{ producto.nombre }}','{{ producto.tipo }} · {{ producto.categoria }}','{{ producto.descripcion }}','{{ producto.precio }}','{{ producto.emoji }}','{% if producto.imagen %}{{ url_for('static', filename=producto.imagen) }}{% endif %}','{{ producto.id }}','{{ url_for('main.index') }}')">
-        <div class="card-img-wrap">
-          {% if badges and producto.id in badges %}
-          <span class="badge badge-{{ badges[producto.id][0] }}">{{ badges[producto.id][1] }}</span>
-          {% endif %}
-          {% if producto.imagen %}
-          <img src="{{ url_for('static', filename=producto.imagen) }}" alt="{{ producto.nombre }}" class="product-img">
-          {% else %}
-          <div class="product-emoji">{{ producto.emoji }}</div>
-          {% endif %}
-          <div class="card-overlay">Ver detalle</div>
-        </div>
-        <div class="product-info">
-          <span class="product-category">{{ producto.categoria }}</span>
-          <h3 class="product-name">{{ producto.nombre }}</h3>
-          <p class="product-desc">{{ producto.descripcion }}</p>
-          <div class="product-footer">
-            <span class="product-price">${{ "{:,}".format(producto.precio) }}/lb</span>
-            <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST" class="add-form" onclick="event.stopPropagation()">
-              <input type="hidden" name="next" value="{{ url_for('main.index') }}">
-              <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-input">
-              <button type="submit" class="btn btn-add">+ Agregar</button>
-            </form>
+    <div class="carousel-wrapper">
+      <button class="carousel-nav carousel-prev" id="featPrev" aria-label="Anterior">&#8249;</button>
+      <div class="products-carousel" id="featCarousel">
+        {% for producto in productos %}
+        <div class="product-card" onclick="abrirModal('{{ producto.nombre }}','{{ producto.tipo }} · {{ producto.categoria }}','{{ producto.descripcion }}','{{ producto.precio }}','{{ producto.emoji }}','{% if producto.imagen %}{{ url_for('static', filename=producto.imagen) }}{% endif %}','{{ producto.id }}','{{ url_for('main.index') }}')">
+          <div class="card-img-wrap">
+            {% if badges and producto.id in badges %}
+            <span class="badge badge-{{ badges[producto.id][0] }}">{{ badges[producto.id][1] }}</span>
+            {% endif %}
+            {% if producto.imagen %}
+            <img src="{{ url_for('static', filename=producto.imagen) }}" alt="{{ producto.nombre }}" class="product-img">
+            {% else %}
+            <div class="product-emoji">{{ producto.emoji }}</div>
+            {% endif %}
+            <div class="card-overlay">Ver detalle</div>
+          </div>
+          <div class="product-info">
+            <span class="product-category">{{ producto.categoria }}</span>
+            <h3 class="product-name">{{ producto.nombre }}</h3>
+            <div class="product-tags">
+              {% if producto.tipo == 'Res' %}<span class="ptag">🌿 A pasto</span><span class="ptag">🐄 Brahman</span>
+              {% elif producto.tipo == 'Cerdo' %}<span class="ptag">🐷 Criollo</span>
+              {% elif producto.tipo == 'Pollo' %}<span class="ptag">🍗 Fresco</span>
+              {% elif producto.tipo == 'Pescado' %}<span class="ptag">🌊 Del mar</span>
+              {% elif producto.tipo == 'Charcutería' %}<span class="ptag">🏆 Artesanal</span>
+              {% elif producto.tipo == 'Lácteos' %}<span class="ptag">🥛 Natural</span>
+              {% elif producto.tipo == 'Despensa' %}<span class="ptag">🫙 Gourmet</span>
+              {% endif %}
+              <span class="ptag">🇨🇴 Colombia</span>
+            </div>
+            <p class="product-desc">{{ producto.descripcion }}</p>
+            <div class="product-footer">
+              <span class="product-price">${{ "{:,}".format(producto.precio) }}/lb</span>
+              <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST" class="add-form" onclick="event.stopPropagation()">
+                <input type="hidden" name="next" value="{{ url_for('main.index') }}">
+                <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-input">
+                <button type="submit" class="btn btn-add">+ Agregar</button>
+              </form>
+            </div>
           </div>
         </div>
+        {% endfor %}
       </div>
-      {% endfor %}
+      <button class="carousel-nav carousel-next" id="featNext" aria-label="Siguiente">&#8250;</button>
     </div>
     <div class="see-all">
       <a href="{{ url_for('main.catalogo') }}" class="btn btn-outline">Ver todos los productos →</a>
@@ -273,5 +288,42 @@ const observer = new IntersectionObserver(entries => {
 }, { threshold: 0.5 });
 const statsEl = document.querySelector('.stats-bar');
 if (statsEl) observer.observe(statsEl);
+
+// Featured carousel navigation
+(function() {
+  const carousel = document.getElementById('featCarousel');
+  if (!carousel) return;
+  function getScrollAmount() {
+    const card = carousel.querySelector('.product-card');
+    return card ? card.offsetWidth + 24 : 280;
+  }
+  document.getElementById('featPrev').addEventListener('click', () => {
+    carousel.scrollBy({ left: -getScrollAmount() * 2, behavior: 'smooth' });
+  });
+  document.getElementById('featNext').addEventListener('click', () => {
+    carousel.scrollBy({ left: getScrollAmount() * 2, behavior: 'smooth' });
+  });
+  // Auto-advance on mobile
+  let autoTimer = setInterval(() => {
+    const maxScroll = carousel.scrollWidth - carousel.clientWidth;
+    if (carousel.scrollLeft >= maxScroll - 10) {
+      carousel.scrollTo({ left: 0, behavior: 'smooth' });
+    } else {
+      carousel.scrollBy({ left: getScrollAmount(), behavior: 'smooth' });
+    }
+  }, 4000);
+  carousel.addEventListener('mouseenter', () => clearInterval(autoTimer));
+})();
+
+// Cart button feedback
+document.querySelectorAll('.add-form').forEach(form => {
+  form.addEventListener('submit', function() {
+    const btn = this.querySelector('.btn-add');
+    if (!btn) return;
+    btn.textContent = '✓ Listo';
+    btn.style.background = '#27ae60';
+    btn.classList.add('btn-added');
+  });
+});
 </script>
 {% endblock %}
