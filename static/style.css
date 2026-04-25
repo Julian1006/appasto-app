@@ -1113,12 +1113,10 @@ ul { list-style: none; }
 }
 
 /* ===== Admin link footer ===== */
-.footer-bottom { position: relative; }
+.footer-bottom { display: flex; flex-direction: column; align-items: center; gap: .4rem; }
 .admin-link {
-  position: absolute; right: 1rem; bottom: 0;
-  font-size: .85rem; color: transparent;
-  text-decoration: none; padding: .2rem .4rem;
-  transition: color .3s;
-  user-select: none;
+  font-size: .72rem; color: rgba(255,255,255,.18);
+  text-decoration: none; letter-spacing: .04em;
+  transition: color .25s;
 }
-.admin-link:hover { color: rgba(255,255,255,.4); }
+.admin-link:hover { color: rgba(255,255,255,.55); }
