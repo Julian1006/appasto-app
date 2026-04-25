@@ -149,7 +149,7 @@
             <span class="low-stock-badge">⚡ Últimas unidades</span>
             {% endif %}
             {% if producto.imagen %}
-            <img src="{{ url_for('static', filename=producto.imagen) }}" alt="{{ producto.nombre }}" class="product-img">
+            <img src="{{ url_for('static', filename=producto.imagen) }}" alt="{{ producto.nombre }}" class="product-img" loading="lazy">
             {% else %}
             <div class="product-emoji">{{ producto.emoji }}</div>
             {% endif %}

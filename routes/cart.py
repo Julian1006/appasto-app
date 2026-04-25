@@ -50,7 +50,12 @@ def agregar(product_id):
     cart[key] = cart.get(key, 0) + qty
     session["cart"] = cart
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return jsonify({"ok": True, "count": sum(cart.values())})
+        product = get_product_by_id(product_id)
+        new_qty = cart.get(key, 0)
+        subtotal = product["precio"] * new_qty if product else 0
+        _, total = get_cart_items()
+        return jsonify({"ok": True, "count": sum(cart.values()),
+                        "qty": new_qty, "subtotal": subtotal, "total": total})
     next_url = request.form.get("next") or request.referrer or url_for("main.index")
     return redirect(next_url)
 
@@ -65,6 +70,14 @@ def quitar(product_id):
         else:
             del cart[key]
     session["cart"] = cart
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        product = get_product_by_id(product_id)
+        new_qty = cart.get(key, 0)
+        subtotal = product["precio"] * new_qty if product and new_qty > 0 else 0
+        _, total = get_cart_items()
+        return jsonify({"ok": True, "count": sum(cart.values()),
+                        "qty": new_qty, "subtotal": subtotal, "total": total,
+                        "removed": new_qty == 0})
     return redirect(url_for("cart.carrito"))
 
 
@@ -73,6 +86,10 @@ def eliminar(product_id):
     cart = session.get("cart", {})
     cart.pop(str(product_id), None)
     session["cart"] = cart
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        _, total = get_cart_items()
+        return jsonify({"ok": True, "count": sum(cart.values()),
+                        "total": total, "removed": True})
     return redirect(url_for("cart.carrito"))
 
 

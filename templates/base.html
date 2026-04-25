@@ -117,10 +117,13 @@
         <p id="modal-desc" class="modal-desc"></p>
         <div id="modal-stock" class="modal-stock-badge" style="display:none">⚡ Últimas unidades disponibles</div>
         <div class="modal-footer">
-          <span id="modal-price" class="product-price modal-price"></span>
+          <div class="modal-price-block">
+            <span id="modal-price" class="product-price modal-price"></span>
+            <span id="modal-subtotal" class="modal-subtotal"></span>
+          </div>
           <form id="modal-form" method="POST" class="add-form">
             <input type="hidden" name="next" id="modal-next">
-            <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-input qty-input-lg">
+            <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-input qty-input-lg" id="modal-qty">
             <button type="submit" class="btn btn-whatsapp">+ Agregar al carrito</button>
           </form>
         </div>
@@ -267,7 +270,21 @@
   });
 
   // ── Modal de producto (compartido) ───────────────────────────
-  var _modalName = '', _modalUrl = '';
+  var _modalName = '', _modalUrl = '', _modalUnitPrice = 0;
+
+  function _actualizarSubtotal(qty) {
+    var sub = document.getElementById('modal-subtotal');
+    if (!sub) return;
+    if (qty > 1 && _modalUnitPrice) {
+      sub.textContent = '× ' + qty + ' lb = $' + (_modalUnitPrice * qty).toLocaleString('es-CO');
+      sub.style.display = 'inline';
+    } else {
+      sub.style.display = 'none';
+    }
+  }
+  document.addEventListener('input', function(e) {
+    if (e.target.id === 'modal-qty') _actualizarSubtotal(parseInt(e.target.value) || 1);
+  });
   var COOKING_TIPS = {
     'Res':        { icon:'🔥', title:'¿Cómo preparar este corte?',    tips:['🌡️ Parrilla o sartén bien caliente antes de poner la carne','🧂 Solo sal gruesa: 30 min antes o justo al momento','⏱️ Reposar 5 min antes de cortar para conservar los jugos','🌿 Marida con chimichurri, mantequilla de hierbas o sal rosada'] },
     'Cerdo':      { icon:'🍳', title:'¿Cómo preparar este corte?',    tips:['🌡️ Temperatura interna mínima: 70°C para cocción segura','🍋 Marinar con ajo, limón y hierbas al menos 2 horas','⏱️ No sobre-cocinar: la jugosidad es la clave','🫚 Perfecto en horno, parrilla, sartén o cocción lenta'] },
@@ -281,6 +298,9 @@
   function abrirModal(nombre, categoria, descripcion, precio, emoji, imagen, pid, next, tipo, isLowStock) {
     _modalName = nombre;
     _modalUrl  = window.location.href;
+    _modalUnitPrice = parseInt(precio) || 0;
+    var qtyInput = document.getElementById('modal-qty');
+    if (qtyInput) { qtyInput.value = 1; _actualizarSubtotal(1); }
     document.getElementById('modal-name').textContent  = nombre;
     document.getElementById('modal-cat').textContent   = categoria;
     document.getElementById('modal-desc').textContent  = descripcion;

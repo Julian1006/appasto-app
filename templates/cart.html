@@ -27,17 +27,18 @@
           </td>
           <td>${{ "{:,}".format(item.precio) }}</td>
           <td class="cart-qty">
-            <form action="{{ url_for('cart.quitar', product_id=item.id) }}" method="POST" style="display:inline">
+            <form action="{{ url_for('cart.quitar', product_id=item.id) }}" method="POST" class="cart-ctrl-form" style="display:inline">
               <button type="submit" class="qty-btn">−</button>
             </form>
             <span class="qty-num">{{ item.cantidad }}</span>
-            <form action="{{ url_for('cart.agregar', product_id=item.id) }}" method="POST" style="display:inline">
+            <form action="{{ url_for('cart.agregar', product_id=item.id) }}" method="POST" class="cart-ctrl-form" style="display:inline">
+              <input type="hidden" name="cantidad" value="1">
               <button type="submit" class="qty-btn">+</button>
             </form>
           </td>
           <td class="cart-subtotal">${{ "{:,}".format(item.subtotal) }}</td>
           <td>
-            <form action="{{ url_for('cart.eliminar', product_id=item.id) }}" method="POST">
+            <form action="{{ url_for('cart.eliminar', product_id=item.id) }}" method="POST" class="cart-ctrl-form">
               <button type="submit" class="remove-btn" title="Eliminar">✕</button>
             </form>
           </td>
@@ -78,6 +79,41 @@
   </div>
 
   <script>
+  // AJAX +/- y eliminar sin recargar página
+  document.addEventListener('submit', function(e) {
+    var form = e.target;
+    if (!form.classList.contains('cart-ctrl-form')) return;
+    e.preventDefault();
+    var row = form.closest('tr');
+    fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.removed || (data.qty !== undefined && data.qty <= 0)) {
+        row.style.transition = 'opacity .22s';
+        row.style.opacity = '0';
+        setTimeout(function() {
+          row.remove();
+          if (!document.querySelector('.cart-table tbody tr')) location.reload();
+        }, 230);
+      } else {
+        var qtyEl = row.querySelector('.qty-num');
+        var subEl = row.querySelector('.cart-subtotal');
+        if (qtyEl) qtyEl.textContent = data.qty;
+        if (subEl) subEl.textContent = '$' + data.subtotal.toLocaleString('es-CO');
+      }
+      var totalEl = document.querySelector('.cart-total strong');
+      if (totalEl && data.total !== undefined) totalEl.textContent = '$' + data.total.toLocaleString('es-CO');
+      var badge = document.querySelector('.cart-badge');
+      if (data.count > 0) { if (badge) badge.textContent = data.count; }
+      else if (badge) badge.remove();
+    })
+    .catch(function() { form.submit(); });
+  });
+
   function pedirWhatsapp() {
     const tel = document.getElementById('cliente-tel').value.trim();
     const dir = document.getElementById('cliente-direccion').value.trim();
