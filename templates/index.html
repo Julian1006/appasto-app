@@ -42,7 +42,7 @@
 </section>
 
 <!-- PROPUESTA DE VALOR -->
-<section class="valor-section">
+<section class="valor-section reveal">
   <div class="container">
     <div class="valor-banners">
       <div class="valor-banner"><span class="vb-icon">🌿</span><div><strong>100% a pasto</strong><p>Ganado criado libre, sin granos ni concentrados.</p></div></div>
@@ -53,8 +53,35 @@
   </div>
 </section>
 
+<!-- ORIGEN -->
+<section class="origen-section reveal">
+  <div class="container">
+    <div class="origen-inner">
+      <div class="origen-text-col">
+        <span class="origen-label">Nuestro origen</span>
+        <h2>Del llano<br>a tu mesa</h2>
+        <p>Trabajamos directamente con familias ganaderas de Boyacá, Casanare, Meta y Guaviare. Ganado Brahman criado a pasto libre, sin granos ni concentrados. Carne con sabor real y trazabilidad total.</p>
+        <div class="origen-stats-mini">
+          <div class="or-mini-stat"><strong>4</strong><span>Departamentos</span></div>
+          <div class="or-mini-stat"><strong>100%</strong><span>A pasto</span></div>
+          <div class="or-mini-stat"><strong>Directo</strong><span>Del ganadero</span></div>
+        </div>
+      </div>
+      <div class="origen-timeline">
+        <div class="or-node"><div class="or-circle">🐄</div><span>Ganaderos<br>aliados</span></div>
+        <div class="or-dash"></div>
+        <div class="or-node"><div class="or-circle">✂️</div><span>Selección<br>y corte</span></div>
+        <div class="or-dash"></div>
+        <div class="or-node"><div class="or-circle">❄️</div><span>Cadena<br>de frío</span></div>
+        <div class="or-dash"></div>
+        <div class="or-node"><div class="or-circle">🏠</div><span>Tu<br>mesa</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- CÓMO FUNCIONA -->
-<section class="how-section">
+<section class="how-section reveal">
   <div class="container">
     <h2 class="section-title">¿Cómo funciona?</h2>
     <div class="how-steps">
@@ -90,7 +117,7 @@
 </section>
 
 <!-- CATEGORÍAS RÁPIDAS -->
-<section class="quick-cats">
+<section class="quick-cats reveal">
   <div class="container">
     <h2 class="section-title">Explorar por categoría</h2>
     <div class="quick-grid">
@@ -106,13 +133,16 @@
 </section>
 
 <!-- PRODUCTOS DESTACADOS -->
-<section class="featured">
+<section class="featured reveal">
   <div class="container">
     <h2 class="section-title">Productos Destacados</h2>
     <div class="products-grid">
       {% for producto in productos %}
       <div class="product-card" onclick="abrirModal('{{ producto.nombre }}','{{ producto.tipo }} · {{ producto.categoria }}','{{ producto.descripcion }}','{{ producto.precio }}','{{ producto.emoji }}','{% if producto.imagen %}{{ url_for('static', filename=producto.imagen) }}{% endif %}','{{ producto.id }}','{{ url_for('main.index') }}')">
         <div class="card-img-wrap">
+          {% if badges and producto.id in badges %}
+          <span class="badge badge-{{ badges[producto.id][0] }}">{{ badges[producto.id][1] }}</span>
+          {% endif %}
           {% if producto.imagen %}
           <img src="{{ url_for('static', filename=producto.imagen) }}" alt="{{ producto.nombre }}" class="product-img">
           {% else %}
@@ -143,7 +173,7 @@
 </section>
 
 <!-- TESTIMONIOS -->
-<section class="testimonios">
+<section class="testimonios reveal">
   <div class="container">
     <h2 class="section-title">Lo que dicen nuestros clientes</h2>
     <div class="testi-grid">
@@ -167,7 +197,7 @@
 </section>
 
 <!-- CTA FINAL -->
-<section class="cta-section">
+<section class="cta-section reveal">
   <div class="container">
     <div class="cta-box">
       <h2>¿Listo para probar la diferencia?</h2>

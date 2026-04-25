@@ -85,8 +85,16 @@
     document.getElementById('navLinks').classList.toggle('open');
   });
   window.addEventListener('scroll', function() {
-    document.getElementById('scrollTop').classList.toggle('visible', window.scrollY > 400);
+    var y = window.scrollY;
+    document.getElementById('scrollTop').classList.toggle('visible', y > 400);
+    document.querySelector('.navbar').classList.toggle('scrolled', y > 60);
   });
+  var _revObs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) {
+      if (e.isIntersecting) { e.target.classList.add('visible'); _revObs.unobserve(e.target); }
+    });
+  }, { threshold: 0.1 });
+  document.querySelectorAll('.reveal').forEach(function(el) { _revObs.observe(el); });
   </script>
 
 </body>

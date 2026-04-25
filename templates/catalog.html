@@ -10,6 +10,7 @@
     <span class="search-icon">🔍</span>
     <input type="text" id="searchInput" placeholder="Buscar producto..." oninput="filtrarBusqueda()">
   </div>
+  <p class="products-count" id="productsCount">{{ productos|length }} producto{{ 's' if productos|length != 1 else '' }}</p>
 
   <div class="category-tabs">
     {% for tab in tabs %}
@@ -24,11 +25,17 @@
     {% for producto in productos %}
     <div class="product-card" data-nombre="{{ producto.nombre | lower }}"
          onclick="abrirModal('{{ producto.nombre }}', '{{ producto.tipo }} · {{ producto.categoria }}', '{{ producto.descripcion }}', '{{ producto.precio }}', '{{ producto.emoji }}', '{% if producto.imagen %}{{ url_for('static', filename=producto.imagen) }}{% endif %}', '{{ producto.id }}', '{{ url_for('main.catalogo', filtro=filtro_activo) }}')">
-      {% if producto.imagen %}
-      <img src="{{ url_for('static', filename=producto.imagen) }}" alt="{{ producto.nombre }}" class="product-img">
-      {% else %}
-      <div class="product-emoji">{{ producto.emoji }}</div>
-      {% endif %}
+      <div class="card-img-wrap">
+        {% if badges and producto.id in badges %}
+        <span class="badge badge-{{ badges[producto.id][0] }}">{{ badges[producto.id][1] }}</span>
+        {% endif %}
+        {% if producto.imagen %}
+        <img src="{{ url_for('static', filename=producto.imagen) }}" alt="{{ producto.nombre }}" class="product-img">
+        {% else %}
+        <div class="product-emoji">{{ producto.emoji }}</div>
+        {% endif %}
+        <div class="card-overlay">Ver detalle</div>
+      </div>
       <div class="product-info">
         <span class="product-category">{{ producto.tipo }} · {{ producto.categoria }}</span>
         <h3 class="product-name">{{ producto.nombre }}</h3>
@@ -119,6 +126,7 @@ function filtrarBusqueda() {
   const noResults = document.getElementById('noResults');
   document.getElementById('searchTerm').textContent = q;
   noResults.style.display = (q && visible === 0) ? 'block' : 'none';
+  document.getElementById('productsCount').textContent = visible + ' producto' + (visible !== 1 ? 's' : '');
 }
 </script>
 {% endblock %}

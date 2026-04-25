@@ -9,13 +9,26 @@ CATEGORIAS = ["Premium", "Especiales", "Económicos", "Huesos"]
 
 DESTACADOS_IDS = [4, 5, 6, 1, 3, 29, 31, 49, 60, 73, 87, 8]
 
+BADGES = {
+    1: ('premium', 'Premium'),
+    2: ('premium', 'Premium'),
+    3: ('premium', 'Premium'),
+    4: ('hot', 'Favorito'),
+    5: ('hot', 'Favorito'),
+    6: ('popular', 'Popular'),
+    8: ('popular', 'Popular'),
+    14: ('popular', 'Popular'),
+    29: ('hot', 'Favorito'),
+    31: ('popular', 'Popular'),
+}
+
 
 @main_bp.route("/")
 def index():
     todos = get_all_products()
     id_map = {p["id"]: p for p in todos}
     destacados = [id_map[i] for i in DESTACADOS_IDS if i in id_map]
-    return render_template("index.html", productos=destacados)
+    return render_template("index.html", productos=destacados, badges=BADGES)
 
 
 @main_bp.route("/nosotros")
@@ -36,4 +49,4 @@ def catalogo():
         productos = todos
 
     return render_template("catalog.html", productos=productos,
-                           tabs=TABS, filtro_activo=filtro)
+                           tabs=TABS, filtro_activo=filtro, badges=BADGES)
