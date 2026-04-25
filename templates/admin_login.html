@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Admin — Appasto</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', sans-serif;
+      background: #f4f4f5;
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .login-card {
+      background: #fff;
+      border-radius: 16px;
+      box-shadow: 0 8px 40px rgba(0,0,0,.12);
+      padding: 2.5rem 2rem;
+      width: 100%; max-width: 380px;
+      text-align: center;
+    }
+    .login-logo { font-size: 2.5rem; margin-bottom: .4rem; }
+    .login-title { font-size: 1.4rem; font-weight: 700; color: #1a1a1a; margin-bottom: .3rem; }
+    .login-sub { font-size: .85rem; color: #777; margin-bottom: 1.8rem; }
+    .login-card label { display: block; text-align: left; font-size: .8rem; font-weight: 600; color: #555; margin-bottom: .4rem; }
+    .login-card input[type="password"] {
+      width: 100%; padding: .75rem 1rem;
+      border: 1.5px solid #ddd; border-radius: 10px;
+      font-size: .95rem; outline: none; transition: border-color .2s;
+      margin-bottom: 1.2rem;
+    }
+    .login-card input[type="password"]:focus { border-color: #c0392b; }
+    .btn-login {
+      width: 100%; padding: .8rem;
+      background: #c0392b; color: #fff;
+      border: none; border-radius: 10px;
+      font-size: 1rem; font-weight: 700; cursor: pointer;
+      transition: background .2s;
+    }
+    .btn-login:hover { background: #a93226; }
+    .error-msg {
+      background: #fde8e8; color: #c0392b;
+      border-radius: 8px; padding: .6rem 1rem;
+      font-size: .85rem; margin-bottom: 1rem;
+    }
+    .back-link { display: block; margin-top: 1.2rem; font-size: .8rem; color: #999; text-decoration: none; }
+    .back-link:hover { color: #c0392b; }
+  </style>
+</head>
+<body>
+  <div class="login-card">
+    <div class="login-logo">🥩</div>
+    <h1 class="login-title">Panel Admin</h1>
+    <p class="login-sub">Appasto · Acceso restringido</p>
+    {% if error %}
+    <div class="error-msg">{{ error }}</div>
+    {% endif %}
+    <form method="POST">
+      <label for="pwd">Contraseña</label>
+      <input type="password" id="pwd" name="password" placeholder="••••••••" autofocus required>
+      <button type="submit" class="btn-login">Entrar</button>
+    </form>
+    <a href="/" class="back-link">← Volver a la tienda</a>
+  </div>
+</body>
+</html>

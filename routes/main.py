@@ -28,7 +28,7 @@ LOW_STOCK = {2, 5, 14, 29, 49, 60}
 
 @main_bp.route("/")
 def index():
-    todos = get_all_products()
+    todos = [p for p in get_all_products() if p.get("activo", True)]
     id_map = {p["id"]: p for p in todos}
     destacados = [id_map[i] for i in DESTACADOS_IDS if i in id_map]
     return render_template("index.html", productos=destacados, badges=BADGES, low_stock=LOW_STOCK)
@@ -42,7 +42,7 @@ def nosotros():
 @main_bp.route("/catalogo")
 def catalogo():
     filtro = request.args.get("filtro", "Todos")
-    todos = get_all_products()
+    todos = [p for p in get_all_products() if p.get("activo", True)]
 
     if filtro in TIPOS:
         productos = [p for p in todos if p["tipo"] == filtro]

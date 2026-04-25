@@ -105,12 +105,43 @@ PRODUCTS = [
 ]
 
 
+import json, os as _os
+
+_OVERRIDES_FILE = _os.path.join(_os.path.dirname(__file__), "data", "overrides.json")
+
+
+def _load_overrides():
+    try:
+        with open(_OVERRIDES_FILE, "r", encoding="utf-8") as f:
+            return json.load(f)
+    except Exception:
+        return {"prices": {}, "disabled": []}
+
+
+def _save_overrides(ov):
+    _os.makedirs(_os.path.dirname(_OVERRIDES_FILE), exist_ok=True)
+    with open(_OVERRIDES_FILE, "w", encoding="utf-8") as f:
+        json.dump(ov, f, ensure_ascii=False, indent=2)
+
+
+def _apply(product):
+    ov = _load_overrides()
+    p = dict(product)
+    pid = str(p["id"])
+    p["precio_modificado"] = pid in ov.get("prices", {})
+    if p["precio_modificado"]:
+        p["precio"] = ov["prices"][pid]
+    p["activo"] = p["id"] not in ov.get("disabled", [])
+    return p
+
+
 def get_all_products():
-    return PRODUCTS
+    return [_apply(p) for p in PRODUCTS]
 
 
 def get_product_by_id(product_id):
-    return next((p for p in PRODUCTS if p["id"] == product_id), None)
+    raw = next((p for p in PRODUCTS if p["id"] == product_id), None)
+    return _apply(raw) if raw else None
 
 
 def get_categories():
