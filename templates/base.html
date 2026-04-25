@@ -159,18 +159,6 @@
   }, { threshold: 0.1 });
   document.querySelectorAll('.reveal').forEach(function(el) { _revObs.observe(el); });
 
-  // Testimonials auto-scroll carousel (mobile)
-  (function() {
-    var grid = document.querySelector('.testi-grid');
-    if (!grid) return;
-    var cards = grid.querySelectorAll('.testi-card');
-    if (cards.length < 2) return;
-    var cur = 0;
-    setInterval(function() {
-      cur = (cur + 1) % cards.length;
-      cards[cur].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
-    }, 4500);
-  })();
 
   // ── Mini carrito ────────────────────────────────────────────
   function openMiniCart() {
