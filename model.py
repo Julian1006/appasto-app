@@ -1,4 +1,39 @@
+import json
+from datetime import datetime
 from database import db
+
+
+class Order(db.Model):
+    __tablename__ = "orders"
+
+    id        = db.Column(db.Integer, primary_key=True)
+    fecha     = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+    metodo    = db.Column(db.String(30), nullable=False)   # WhatsApp, Nequi, Daviplata, Efectivo, Tarjeta
+    total     = db.Column(db.Integer, nullable=False)
+    items_json= db.Column(db.Text, nullable=False)         # JSON con los items
+    tel       = db.Column(db.String(30), default="")
+    direccion = db.Column(db.String(300), default="")
+    ciudad    = db.Column(db.String(100), default="")
+    referencia= db.Column(db.String(50), default="")       # para pagos tarjeta
+    estado    = db.Column(db.String(20), default="pendiente")  # pendiente / completado / cancelado
+
+    @property
+    def items(self):
+        return json.loads(self.items_json)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "fecha": self.fecha.strftime("%d/%m/%Y %H:%M"),
+            "metodo": self.metodo,
+            "total": self.total,
+            "items": self.items,
+            "tel": self.tel,
+            "direccion": self.direccion,
+            "ciudad": self.ciudad,
+            "referencia": self.referencia,
+            "estado": self.estado,
+        }
 
 
 class Product(db.Model):

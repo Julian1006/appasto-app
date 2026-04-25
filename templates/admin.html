@@ -10,7 +10,6 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
     body { font-family: 'Inter', sans-serif; background: #f4f4f5; color: #1a1a1a; min-height: 100vh; }
 
-    /* Topbar */
     .topbar {
       background: #1a1a1a; color: #fff;
       display: flex; align-items: center; justify-content: space-between;
@@ -23,33 +22,29 @@
     .topbar-right { display: flex; align-items: center; gap: 1rem; }
     .topbar a { color: #ccc; font-size: .82rem; text-decoration: none; }
     .topbar a:hover { color: #fff; }
-    .btn-tienda {
-      background: #c0392b; color: #fff !important;
-      padding: .4rem .9rem; border-radius: 8px; font-weight: 600;
-      font-size: .8rem !important;
-    }
+    .btn-tienda { background: #c0392b; color: #fff !important; padding: .4rem .9rem; border-radius: 8px; font-weight: 600; font-size: .8rem !important; }
 
-    /* Stats bar */
-    .stats-bar {
-      display: flex; gap: 1rem; padding: 1.2rem 2rem;
-      background: #fff; border-bottom: 1px solid #e5e5e5;
+    /* Tabs */
+    .tabs-bar { display: flex; gap: 0; background: #fff; border-bottom: 2px solid #e5e5e5; padding: 0 2rem; }
+    .tab-btn {
+      padding: .9rem 1.5rem; font-size: .88rem; font-weight: 600;
+      border: none; background: none; cursor: pointer; color: #888;
+      border-bottom: 2px solid transparent; margin-bottom: -2px;
+      transition: color .18s, border-color .18s;
     }
-    .stat-pill {
-      background: #f4f4f5; border-radius: 8px;
-      padding: .5rem 1rem; font-size: .82rem; color: #555;
-    }
+    .tab-btn.active { color: #c0392b; border-bottom-color: #c0392b; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    .stats-bar { display: flex; gap: 1rem; padding: 1.2rem 2rem; background: #fff; border-bottom: 1px solid #e5e5e5; flex-wrap: wrap; }
+    .stat-pill { background: #f4f4f5; border-radius: 8px; padding: .5rem 1rem; font-size: .82rem; color: #555; }
     .stat-pill strong { color: #1a1a1a; }
 
-    /* Search */
     .toolbar { padding: 1rem 2rem; display: flex; align-items: center; gap: .8rem; }
-    #buscar {
-      padding: .55rem 1rem; border: 1.5px solid #ddd; border-radius: 8px;
-      font-size: .9rem; width: 280px; outline: none;
-    }
+    #buscar { padding: .55rem 1rem; border: 1.5px solid #ddd; border-radius: 8px; font-size: .9rem; width: 280px; outline: none; }
     #buscar:focus { border-color: #c0392b; }
     .filter-all { font-size: .82rem; color: #777; }
 
-    /* Table */
     .table-wrap { overflow-x: auto; padding: 0 2rem 2rem; }
     table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
     thead { background: #1a1a1a; color: #fff; }
@@ -59,11 +54,7 @@
     tr:hover td { background: #fafafa; }
     tr.disabled-row td { opacity: .45; }
 
-    /* Badge tipo */
-    .badge-tipo {
-      font-size: .68rem; font-weight: 700; padding: .2rem .55rem;
-      border-radius: 20px; color: #fff; white-space: nowrap;
-    }
+    .badge-tipo { font-size: .68rem; font-weight: 700; padding: .2rem .55rem; border-radius: 20px; color: #fff; white-space: nowrap; }
     .tipo-Res       { background: #c0392b; }
     .tipo-Cerdo     { background: #e67e22; }
     .tipo-Pollo     { background: #f39c12; color: #1a1a1a; }
@@ -72,46 +63,44 @@
     .tipo-Lácteos   { background: #16a085; }
     .tipo-Despensa  { background: #27ae60; }
 
-    /* Toggle switch */
+    .badge-estado { font-size: .7rem; font-weight: 700; padding: .25rem .65rem; border-radius: 20px; }
+    .estado-pendiente  { background: #fef3cd; color: #856404; }
+    .estado-completado { background: #d1e7dd; color: #0f5132; }
+    .estado-cancelado  { background: #f8d7da; color: #842029; }
+
+    .badge-metodo { font-size: .7rem; font-weight: 700; padding: .22rem .6rem; border-radius: 20px; color: #fff; }
+    .metodo-WhatsApp  { background: #25D366; }
+    .metodo-Nequi     { background: #7B1FA2; }
+    .metodo-Daviplata { background: #E91E63; }
+    .metodo-Efectivo  { background: #2E7D32; }
+    .metodo-Tarjeta   { background: #1A1F71; }
+
     .switch { position: relative; display: inline-block; width: 42px; height: 24px; }
     .switch input { opacity: 0; width: 0; height: 0; }
-    .slider {
-      position: absolute; cursor: pointer; inset: 0;
-      background: #ccc; border-radius: 24px; transition: .25s;
-    }
-    .slider:before {
-      content: ''; position: absolute;
-      width: 18px; height: 18px; left: 3px; bottom: 3px;
-      background: #fff; border-radius: 50%; transition: .25s;
-    }
+    .slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; border-radius: 24px; transition: .25s; }
+    .slider:before { content: ''; position: absolute; width: 18px; height: 18px; left: 3px; bottom: 3px; background: #fff; border-radius: 50%; transition: .25s; }
     input:checked + .slider { background: #27ae60; }
     input:checked + .slider:before { transform: translateX(18px); }
 
-    /* Price form */
     .price-form { display: flex; align-items: center; gap: .4rem; }
-    .price-input {
-      width: 100px; padding: .35rem .55rem;
-      border: 1.5px solid #ddd; border-radius: 7px;
-      font-size: .88rem; outline: none; transition: border-color .2s;
-    }
+    .price-input { width: 100px; padding: .35rem .55rem; border: 1.5px solid #ddd; border-radius: 7px; font-size: .88rem; outline: none; }
     .price-input:focus { border-color: #c0392b; }
-    .btn-save {
-      background: #1a1a1a; color: #fff; border: none;
-      padding: .35rem .75rem; border-radius: 7px;
-      font-size: .78rem; font-weight: 600; cursor: pointer;
-      transition: background .18s;
-    }
+    .btn-save { background: #1a1a1a; color: #fff; border: none; padding: .35rem .75rem; border-radius: 7px; font-size: .78rem; font-weight: 600; cursor: pointer; }
     .btn-save:hover { background: #c0392b; }
-    .btn-reset {
-      background: none; border: 1px solid #ddd; color: #999;
-      padding: .32rem .55rem; border-radius: 7px;
-      font-size: .72rem; cursor: pointer; transition: all .18s;
-    }
+    .btn-reset { background: none; border: 1px solid #ddd; color: #999; padding: .32rem .55rem; border-radius: 7px; font-size: .72rem; cursor: pointer; }
     .btn-reset:hover { border-color: #c0392b; color: #c0392b; }
     .price-override { color: #c0392b; font-weight: 700; }
 
+    .estado-form select { padding: .3rem .5rem; border: 1px solid #ddd; border-radius: 6px; font-size: .8rem; }
+    .estado-form button { padding: .3rem .6rem; background: #1a1a1a; color: #fff; border: none; border-radius: 6px; font-size: .78rem; cursor: pointer; }
+
+    .items-list { font-size: .78rem; color: #555; line-height: 1.6; }
+
+    .empty-msg { text-align: center; padding: 3rem; color: #aaa; font-size: .9rem; }
+
     @media (max-width: 768px) {
-      .stats-bar { flex-wrap: wrap; padding: 1rem; }
+      .tabs-bar { padding: 0 1rem; }
+      .stats-bar { padding: 1rem; }
       .toolbar { padding: .8rem 1rem; }
       .table-wrap { padding: 0 1rem 2rem; }
       th, td { padding: .65rem .7rem; font-size: .8rem; }
@@ -125,7 +114,7 @@
     <span class="topbar-logo">🥩</span>
     <div>
       <div class="topbar-title">Appasto Admin</div>
-      <div class="topbar-sub">Panel de gestión de productos</div>
+      <div class="topbar-sub">Panel de gestión</div>
     </div>
   </div>
   <div class="topbar-right">
@@ -134,64 +123,141 @@
   </div>
 </header>
 
-<div class="stats-bar">
-  <div class="stat-pill">Total: <strong>{{ productos|length }}</strong> productos</div>
-  <div class="stat-pill">Activos: <strong>{{ productos|selectattr('activo')|list|length }}</strong></div>
-  <div class="stat-pill">Deshabilitados: <strong>{{ productos|rejectattr('activo')|list|length }}</strong></div>
+<!-- Tabs -->
+<div class="tabs-bar">
+  <button class="tab-btn active" onclick="switchTab('productos')">📦 Productos ({{ productos|length }})</button>
+  <button class="tab-btn" onclick="switchTab('pedidos')" id="tab-pedidos-btn">🛒 Pedidos ({{ pedidos|length }})</button>
 </div>
 
-<div class="toolbar">
-  <input type="text" id="buscar" placeholder="🔍  Buscar producto..." oninput="filtrarTabla()">
-  <span class="filter-all" id="conteo"></span>
+<!-- ═══ TAB PRODUCTOS ═══ -->
+<div class="tab-content active" id="tab-productos">
+  <div class="stats-bar">
+    <div class="stat-pill">Total: <strong>{{ productos|length }}</strong> productos</div>
+    <div class="stat-pill">Activos: <strong>{{ productos|selectattr('activo')|list|length }}</strong></div>
+    <div class="stat-pill">Deshabilitados: <strong>{{ productos|rejectattr('activo')|list|length }}</strong></div>
+  </div>
+  <div class="toolbar">
+    <input type="text" id="buscar" placeholder="🔍  Buscar producto..." oninput="filtrarTabla()">
+    <span class="filter-all" id="conteo"></span>
+  </div>
+  <div class="table-wrap">
+    <table id="tabla">
+      <thead>
+        <tr>
+          <th>#</th><th>Producto</th><th>Tipo</th><th>Categoría</th>
+          <th>Precio actual</th><th>Cambiar precio</th><th>Habilitado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in productos %}
+        <tr class="{{ '' if p.activo else 'disabled-row' }}" data-nombre="{{ p.nombre|lower }}">
+          <td style="color:#aaa;font-size:.78rem">{{ p.id }}</td>
+          <td><strong>{{ p.nombre }}</strong></td>
+          <td><span class="badge-tipo tipo-{{ p.tipo }}">{{ p.tipo }}</span></td>
+          <td style="color:#777;font-size:.82rem">{{ p.categoria }}</td>
+          <td><span class="{{ 'price-override' if p.precio_modificado else '' }}">${{ "{:,}".format(p.precio) }}/lb</span></td>
+          <td>
+            <form class="price-form" method="POST" action="{{ url_for('admin.update_precio', pid=p.id) }}">
+              <input type="number" name="precio" class="price-input" value="{{ p.precio }}" min="1" max="999999" step="100">
+              <button type="submit" class="btn-save">Guardar</button>
+            </form>
+            <form method="POST" action="{{ url_for('admin.reset_precio', pid=p.id) }}" style="margin-top:.3rem">
+              <button type="submit" class="btn-reset">↺ Restablecer</button>
+            </form>
+          </td>
+          <td>
+            <form method="POST" action="{{ url_for('admin.toggle_producto', pid=p.id) }}">
+              <label class="switch">
+                <input type="checkbox" {{ 'checked' if p.activo else '' }} onchange="this.form.submit()">
+                <span class="slider"></span>
+              </label>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 </div>
 
-<div class="table-wrap">
-  <table id="tabla">
-    <thead>
-      <tr>
-        <th>#</th>
-        <th>Producto</th>
-        <th>Tipo</th>
-        <th>Categoría</th>
-        <th>Precio actual</th>
-        <th>Cambiar precio</th>
-        <th>Habilitado</th>
-      </tr>
-    </thead>
-    <tbody>
-      {% for p in productos %}
-      <tr class="{{ '' if p.activo else 'disabled-row' }}" data-nombre="{{ p.nombre|lower }}">
-        <td style="color:#aaa; font-size:.78rem">{{ p.id }}</td>
-        <td><strong>{{ p.nombre }}</strong></td>
-        <td><span class="badge-tipo tipo-{{ p.tipo }}">{{ p.tipo }}</span></td>
-        <td style="color:#777; font-size:.82rem">{{ p.categoria }}</td>
-        <td>
-          <span class="{{ 'price-override' if p.precio_modificado else '' }}">${{ "{:,}".format(p.precio) }}/lb</span>
-        </td>
-        <td>
-          <form class="price-form" method="POST" action="{{ url_for('admin.update_precio', pid=p.id) }}">
-            <input type="number" name="precio" class="price-input" value="{{ p.precio }}" min="1" max="999999" step="100">
-            <button type="submit" class="btn-save">Guardar</button>
-          </form>
-          <form method="POST" action="{{ url_for('admin.reset_precio', pid=p.id) }}" style="margin-top:.3rem">
-            <button type="submit" class="btn-reset" title="Restaurar precio original">↺ Restablecer</button>
-          </form>
-        </td>
-        <td>
-          <form method="POST" action="{{ url_for('admin.toggle_producto', pid=p.id) }}">
-            <label class="switch" title="{{ 'Deshabilitar' if p.activo else 'Habilitar' }}">
-              <input type="checkbox" {{ 'checked' if p.activo else '' }} onchange="this.form.submit()">
-              <span class="slider"></span>
-            </label>
-          </form>
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+<!-- ═══ TAB PEDIDOS ═══ -->
+<div class="tab-content" id="tab-pedidos">
+  <div class="stats-bar">
+    {% set pendientes = pedidos|selectattr('estado','equalto','pendiente')|list|length %}
+    {% set completados = pedidos|selectattr('estado','equalto','completado')|list|length %}
+    <div class="stat-pill">Total pedidos: <strong>{{ pedidos|length }}</strong></div>
+    <div class="stat-pill">Pendientes: <strong>{{ pendientes }}</strong></div>
+    <div class="stat-pill">Completados: <strong>{{ completados }}</strong></div>
+    <div class="stat-pill">Ingresos totales: <strong>${{ "{:,}".format(pedidos|sum(attribute='total')) }}</strong></div>
+  </div>
+  <div class="table-wrap" style="padding-top:1.5rem">
+    {% if pedidos %}
+    <table>
+      <thead>
+        <tr>
+          <th>#</th><th>Fecha</th><th>Método</th><th>Productos</th>
+          <th>Total</th><th>Contacto</th><th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for o in pedidos %}
+        <tr>
+          <td style="color:#aaa;font-size:.78rem">{{ o.id }}</td>
+          <td style="font-size:.82rem;white-space:nowrap">{{ o.fecha.strftime('%d/%m/%Y') }}<br><span style="color:#aaa">{{ o.fecha.strftime('%H:%M') }}</span></td>
+          <td><span class="badge-metodo metodo-{{ o.metodo }}">{{ o.metodo }}</span></td>
+          <td>
+            <div class="items-list">
+              {% for item in o.items %}
+              <div>{{ item.nombre }} × {{ item.cantidad }}lb — ${{ "{:,}".format(item.subtotal) }}</div>
+              {% endfor %}
+            </div>
+          </td>
+          <td style="font-weight:700;color:#c0392b">${{ "{:,}".format(o.total) }}</td>
+          <td style="font-size:.82rem">
+            {% if o.tel %}<div>📞 {{ o.tel }}</div>{% endif %}
+            {% if o.direccion %}<div>📍 {{ o.direccion }}</div>{% endif %}
+            {% if o.ciudad %}<div>🏙 {{ o.ciudad }}</div>{% endif %}
+            {% if o.referencia %}<div style="color:#aaa;font-size:.72rem">Ref: {{ o.referencia }}</div>{% endif %}
+          </td>
+          <td>
+            <span class="badge-estado estado-{{ o.estado }}">{{ o.estado }}</span>
+            <form class="estado-form" method="POST" action="{{ url_for('admin.update_estado', oid=o.id) }}" style="margin-top:.4rem;display:flex;gap:.3rem">
+              <select name="estado">
+                <option value="pendiente"  {{ 'selected' if o.estado=='pendiente' }}>Pendiente</option>
+                <option value="completado" {{ 'selected' if o.estado=='completado' }}>Completado</option>
+                <option value="cancelado"  {{ 'selected' if o.estado=='cancelado' }}>Cancelado</option>
+              </select>
+              <button type="submit">✓</button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-msg">🛒 Aún no hay pedidos registrados.<br>Aparecerán aquí cuando los clientes hagan checkout.</div>
+    {% endif %}
+  </div>
 </div>
 
 <script>
+function switchTab(name) {
+  document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
+  document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+  try { localStorage.setItem('adminTab', name); } catch(e) {}
+}
+
+// Restore tab from URL hash or localStorage
+(function() {
+  var hash = location.hash.replace('#tab-', '');
+  var saved = hash || (function() { try { return localStorage.getItem('adminTab'); } catch(e) {} }());
+  if (saved === 'pedidos') {
+    document.getElementById('tab-pedidos-btn').click();
+  }
+})();
+
 function filtrarTabla() {
   const q = document.getElementById('buscar').value.toLowerCase();
   const rows = document.querySelectorAll('#tabla tbody tr');

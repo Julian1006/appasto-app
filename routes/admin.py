@@ -2,7 +2,7 @@ from functools import wraps
 from flask import Blueprint, render_template, request, redirect, url_for, session
 from config import ADMIN_PASSWORD
 from database import db
-from model import Product
+from model import Product, Order
 
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -37,7 +37,17 @@ def logout():
 @admin_required
 def dashboard():
     productos = Product.query.order_by(Product.id).all()
-    return render_template("admin.html", productos=productos)
+    pedidos   = Order.query.order_by(Order.fecha.desc()).all()
+    return render_template("admin.html", productos=productos, pedidos=pedidos)
+
+
+@admin_bp.route("/pedido/<int:oid>/estado", methods=["POST"])
+@admin_required
+def update_estado(oid):
+    o = Order.query.get_or_404(oid)
+    o.estado = request.form.get("estado", o.estado)
+    db.session.commit()
+    return redirect(url_for("admin.dashboard") + "#tab-pedidos")
 
 
 @admin_bp.route("/producto/<int:pid>/precio", methods=["POST"])

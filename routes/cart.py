@@ -1,10 +1,25 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request, jsonify
 from urllib.parse import quote
-import uuid
-from model import get_product_by_id
+import uuid, json
+from model import get_product_by_id, Order
+from database import db
 from config import WHATSAPP_NUMBER, BUSINESS_NAME, WOMPI_PUBLIC_KEY
 
 cart_bp = Blueprint("cart", __name__)
+
+
+def _save_order(metodo, items, total, tel="", dir_="", ciudad="", referencia=""):
+    try:
+        items_data = [{"nombre": i["nombre"], "cantidad": i["cantidad"], "subtotal": i["subtotal"]} for i in items]
+        order = Order(
+            metodo=metodo, total=total,
+            items_json=json.dumps(items_data, ensure_ascii=False),
+            tel=tel, direccion=dir_, ciudad=ciudad, referencia=referencia,
+        )
+        db.session.add(order)
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
 
 
 def get_cart_items():
@@ -118,6 +133,7 @@ def checkout_billetera():
         if dir_:   lineas.append(f"Dirección: {dir_}")
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
     lineas.append(f"\nPor favor indicarme el número {metodo} para realizar el pago y confirmar disponibilidad. ¡Gracias!")
+    _save_order(metodo, items, total, tel=tel, dir_=dir_, ciudad=ciudad)
     url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
     return redirect(url)
 
@@ -140,6 +156,7 @@ def checkout_efectivo():
         if dir_:   lineas.append(f"Dirección: {dir_}")
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
     lineas.append("\nPor favor confirmar disponibilidad y coordinar la entrega. ¡Gracias!")
+    _save_order("Efectivo", items, total, tel=tel, dir_=dir_, ciudad=ciudad)
     url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
     return redirect(url)
 
@@ -166,7 +183,7 @@ def checkout_whatsapp():
         if dir_: lineas.append(f"Dirección: {dir_}")
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
     lineas.append("\nPor favor confirmar disponibilidad y precio final. ¡Gracias!")
-
+    _save_order("WhatsApp", items, total, tel=tel, dir_=dir_, ciudad=ciudad)
     mensaje = "\n".join(lineas)
     url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(mensaje)}"
     return redirect(url)
@@ -179,6 +196,7 @@ def checkout_tarjeta():
         return redirect(url_for("cart.carrito"))
     referencia = f"APASTTO-{uuid.uuid4().hex[:8].upper()}"
     monto_centavos = total * 100
+    _save_order("Tarjeta", items, total, referencia=referencia)
     return render_template("checkout_tarjeta.html",
                            items=items, total=total,
                            referencia=referencia,
