@@ -99,6 +99,51 @@ def vaciar():
     return redirect(url_for("cart.carrito"))
 
 
+@cart_bp.route("/checkout-billetera")
+def checkout_billetera():
+    items, total = get_cart_items()
+    if not items:
+        return redirect(url_for("cart.carrito"))
+    metodo = request.args.get("metodo", "Nequi").capitalize()
+    tel   = request.args.get("tel", "")
+    dir_  = request.args.get("dir", "")
+    ciudad = request.args.get("ciudad", "")
+    lineas = [f"¡Hola {BUSINESS_NAME}! Quiero pagar con *{metodo}*:\n"]
+    for item in items:
+        lineas.append(f"• {item['nombre']} x{item['cantidad']}lb — ${item['subtotal']:,}")
+    lineas.append(f"\n*Total: ${total:,}*")
+    if tel or dir_:
+        lineas.append(f"\n📦 *Datos de entrega:*")
+        if tel:    lineas.append(f"Teléfono: {tel}")
+        if dir_:   lineas.append(f"Dirección: {dir_}")
+        if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
+    lineas.append(f"\nPor favor indicarme el número {metodo} para realizar el pago y confirmar disponibilidad. ¡Gracias!")
+    url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
+    return redirect(url)
+
+
+@cart_bp.route("/checkout-efectivo")
+def checkout_efectivo():
+    items, total = get_cart_items()
+    if not items:
+        return redirect(url_for("cart.carrito"))
+    tel   = request.args.get("tel", "")
+    dir_  = request.args.get("dir", "")
+    ciudad = request.args.get("ciudad", "")
+    lineas = [f"¡Hola {BUSINESS_NAME}! Quiero pagar en *efectivo contra entrega*:\n"]
+    for item in items:
+        lineas.append(f"• {item['nombre']} x{item['cantidad']}lb — ${item['subtotal']:,}")
+    lineas.append(f"\n*Total a pagar: ${total:,}*")
+    if tel or dir_:
+        lineas.append(f"\n📦 *Datos de entrega:*")
+        if tel:    lineas.append(f"Teléfono: {tel}")
+        if dir_:   lineas.append(f"Dirección: {dir_}")
+        if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
+    lineas.append("\nPor favor confirmar disponibilidad y coordinar la entrega. ¡Gracias!")
+    url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
+    return redirect(url)
+
+
 @cart_bp.route("/checkout-whatsapp")
 def checkout_whatsapp():
     items, total = get_cart_items()

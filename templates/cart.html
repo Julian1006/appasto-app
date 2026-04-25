@@ -63,19 +63,80 @@
       </div>
     </div>
 
-    <div class="cart-actions">
+    <!-- Métodos de pago -->
+    <div class="pay-section">
+      <h3 class="pay-title">Elige tu método de pago</h3>
+      <div class="pay-grid">
+
+        <button class="pay-card" onclick="checkoutPago('whatsapp')">
+          <span class="pay-icon">📲</span>
+          <div class="pay-info">
+            <strong>WhatsApp</strong>
+            <span>Pedido directo al negocio</span>
+          </div>
+          <div class="pay-logos-row">
+            <span class="plr-chip plr-wa">WhatsApp</span>
+          </div>
+        </button>
+
+        <button class="pay-card" onclick="checkoutPago('nequi')">
+          <span class="pay-icon">📱</span>
+          <div class="pay-info">
+            <strong>Nequi</strong>
+            <span>Transferencia digital rápida</span>
+          </div>
+          <div class="pay-logos-row">
+            <span class="plr-chip plr-nequi">Nequi</span>
+          </div>
+        </button>
+
+        <button class="pay-card" onclick="checkoutPago('daviplata')">
+          <span class="pay-icon">💜</span>
+          <div class="pay-info">
+            <strong>Daviplata</strong>
+            <span>Billetera Davivienda</span>
+          </div>
+          <div class="pay-logos-row">
+            <span class="plr-chip plr-davi">Daviplata</span>
+          </div>
+        </button>
+
+        <button class="pay-card" onclick="checkoutPago('efectivo')">
+          <span class="pay-icon">💵</span>
+          <div class="pay-info">
+            <strong>Efectivo</strong>
+            <span>Contra entrega a domicilio</span>
+          </div>
+          <div class="pay-logos-row">
+            <span class="plr-chip plr-cash">Efectivo</span>
+          </div>
+        </button>
+
+        <button class="pay-card pay-card-wide" onclick="checkoutTarjeta()">
+          <span class="pay-icon">💳</span>
+          <div class="pay-info">
+            <strong>Tarjeta / PSE</strong>
+            <span>Pago seguro en línea</span>
+          </div>
+          <div class="pay-logos-row">
+            <span class="plr-chip plr-visa">Visa</span>
+            <span class="plr-chip plr-mc">Mastercard</span>
+            <span class="plr-chip plr-pse">PSE</span>
+          </div>
+        </button>
+
+      </div>
+    </div>
+
+    <div class="cart-actions" style="margin-top:1rem">
       <a href="{{ url_for('main.catalogo') }}" class="btn btn-outline">← Seguir comprando</a>
-      <button onclick="pedirWhatsapp()" class="btn btn-whatsapp">📲 Pedir por WhatsApp</button>
     </div>
-    <div class="cart-actions" style="margin-top:.5rem">
-      <form action="{{ url_for('cart.checkout_tarjeta') }}" method="POST" style="width:100%">
-        <button type="submit" class="btn btn-card">💳 Pagar con tarjeta</button>
-      </form>
-    </div>
-    <p class="payment-methods">Mastercard · Nequi · Davivienda</p>
     <form action="{{ url_for('cart.vaciar') }}" method="POST" class="clear-cart">
       <button type="submit" class="clear-btn">Vaciar carrito</button>
     </form>
+
+    <!-- Hidden form for tarjeta checkout (needs POST) -->
+    <form id="form-tarjeta" action="{{ url_for('cart.checkout_tarjeta') }}" method="POST" style="display:none"></form>
   </div>
 
   <script>
@@ -114,16 +175,46 @@
     .catch(function() { form.submit(); });
   });
 
-  function pedirWhatsapp() {
-    const tel = document.getElementById('cliente-tel').value.trim();
-    const dir = document.getElementById('cliente-direccion').value.trim();
-    const ciudad = document.getElementById('cliente-ciudad').value.trim();
-    if (!tel || !dir) {
-      alert('Por favor completá teléfono y dirección.');
+  function _getDelivery() {
+    return {
+      tel:    document.getElementById('cliente-tel').value.trim(),
+      dir:    document.getElementById('cliente-direccion').value.trim(),
+      ciudad: document.getElementById('cliente-ciudad').value.trim(),
+    };
+  }
+
+  function checkoutPago(tipo) {
+    var d = _getDelivery();
+    if (!d.tel || !d.dir) {
+      alert('Por favor completá teléfono y dirección de entrega.');
+      document.getElementById('cliente-tel').focus();
       return;
     }
-    const base = "{{ url_for('cart.checkout_whatsapp') }}";
-    window.location.href = base + '&tel=' + encodeURIComponent(tel) + '&dir=' + encodeURIComponent(dir) + '&ciudad=' + encodeURIComponent(ciudad);
+    var base, url;
+    if (tipo === 'whatsapp') {
+      base = "{{ url_for('cart.checkout_whatsapp') }}";
+      url = base + '?tel=' + encodeURIComponent(d.tel) + '&dir=' + encodeURIComponent(d.dir) + '&ciudad=' + encodeURIComponent(d.ciudad);
+    } else if (tipo === 'nequi') {
+      base = "{{ url_for('cart.checkout_billetera') }}";
+      url = base + '?metodo=Nequi&tel=' + encodeURIComponent(d.tel) + '&dir=' + encodeURIComponent(d.dir) + '&ciudad=' + encodeURIComponent(d.ciudad);
+    } else if (tipo === 'daviplata') {
+      base = "{{ url_for('cart.checkout_billetera') }}";
+      url = base + '?metodo=Daviplata&tel=' + encodeURIComponent(d.tel) + '&dir=' + encodeURIComponent(d.dir) + '&ciudad=' + encodeURIComponent(d.ciudad);
+    } else if (tipo === 'efectivo') {
+      base = "{{ url_for('cart.checkout_efectivo') }}";
+      url = base + '?tel=' + encodeURIComponent(d.tel) + '&dir=' + encodeURIComponent(d.dir) + '&ciudad=' + encodeURIComponent(d.ciudad);
+    }
+    window.location.href = url;
+  }
+
+  function checkoutTarjeta() {
+    var d = _getDelivery();
+    if (!d.tel || !d.dir) {
+      alert('Por favor completá teléfono y dirección de entrega.');
+      document.getElementById('cliente-tel').focus();
+      return;
+    }
+    document.getElementById('form-tarjeta').submit();
   }
   </script>
 
