@@ -123,5 +123,8 @@ def update_stock(pid):
     p = Product.query.get_or_404(pid)
     val = request.form.get("stock", "").strip()
     p.stock = int(val) if val.isdigit() else None
+    if p.stock is not None and p.stock <= 0:
+        p.stock = 0
+        p.activo = False
     db.session.commit()
     return redirect(url_for("admin.dashboard"))

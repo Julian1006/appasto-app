@@ -10,6 +10,7 @@ cart_bp = Blueprint("cart", __name__)
 
 def _save_order(metodo, items, total, tel="", dir_="", ciudad="", referencia=""):
     try:
+        from model import Product as _Product
         items_data = [{"nombre": i["nombre"], "cantidad": i["cantidad"], "subtotal": i["subtotal"]} for i in items]
         order = Order(
             metodo=metodo, total=total,
@@ -17,6 +18,14 @@ def _save_order(metodo, items, total, tel="", dir_="", ciudad="", referencia="")
             tel=tel, direccion=dir_, ciudad=ciudad, referencia=referencia,
         )
         db.session.add(order)
+        # Descontar stock y desactivar si llega a 0
+        for item in items:
+            p = _Product.query.get(item["id"])
+            if p and p.stock is not None:
+                p.stock = max(0, p.stock - item["cantidad"])
+                if p.stock <= 0:
+                    p.stock = 0
+                    p.activo = False
         db.session.commit()
     except Exception:
         db.session.rollback()
