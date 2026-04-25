@@ -211,6 +211,65 @@
   </div>
 </section>
 
+<!-- COMBOS ESPECIALES -->
+<section class="promos-section reveal">
+  <div class="container">
+    <h2 class="section-title">Combos Especiales</h2>
+    <p class="section-sub">Paquetes curados para ahorrar más y disfrutar mejor.</p>
+    <div class="promos-grid">
+
+      <div class="promo-card">
+        <span class="promo-badge">AHORRA 10%</span>
+        <div class="promo-emoji">🔥🥩</div>
+        <h3>Combo Parrillero</h3>
+        <ul class="promo-items">
+          <li>Tomahawk — 1 lb</li>
+          <li>Asado de tira — 2 lb</li>
+          <li>Panceta de cerdo — 1 lb</li>
+        </ul>
+        <div class="promo-price-wrap">
+          <span class="promo-original">$76.600 precio normal</span>
+          <span class="promo-price">$69.000</span>
+        </div>
+        <button onclick="pedirCombo('Combo Parrillero: Tomahawk 1lb + Asado de tira 2lb + Panceta de cerdo 1lb (4lb en total)')" class="btn btn-hero-wa promo-btn">📲 Pedir este combo</button>
+      </div>
+
+      <div class="promo-card promo-destacado">
+        <span class="promo-badge promo-badge-gold">★ MÁS POPULAR</span>
+        <div class="promo-emoji">👨‍👩‍👧‍👦🍗</div>
+        <h3>Combo Familiar</h3>
+        <ul class="promo-items">
+          <li>Cadera de res — 2 lb</li>
+          <li>Pechuga entera — 2 lb</li>
+          <li>Costilla de cerdo — 1 lb</li>
+        </ul>
+        <div class="promo-price-wrap">
+          <span class="promo-original">$74.500 precio normal</span>
+          <span class="promo-price">$66.000</span>
+        </div>
+        <button onclick="pedirCombo('Combo Familiar: Cadera de res 2lb + Pechuga entera 2lb + Costilla de cerdo 1lb (5lb en total)')" class="btn btn-hero-wa promo-btn">📲 Pedir este combo</button>
+      </div>
+
+      <div class="promo-card">
+        <span class="promo-badge promo-badge-purple">PREMIUM</span>
+        <div class="promo-emoji">💎✨</div>
+        <h3>Combo Premium</h3>
+        <ul class="promo-items">
+          <li>Lomo fino porcionado — 1 lb</li>
+          <li>Ribeye — 1 lb</li>
+          <li>T-bone — 1 lb</li>
+        </ul>
+        <div class="promo-price-wrap">
+          <span class="promo-original">$87.200 precio normal</span>
+          <span class="promo-price">$78.500</span>
+        </div>
+        <button onclick="pedirCombo('Combo Premium: Lomo fino porcionado 1lb + Ribeye 1lb + T-bone 1lb (3lb en total)')" class="btn btn-hero-wa promo-btn">📲 Pedir este combo</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
 <!-- CTA FINAL -->
 <section class="cta-section reveal">
   <div class="container">
@@ -314,6 +373,12 @@ if (statsEl) observer.observe(statsEl);
   }, 4000);
   carousel.addEventListener('mouseenter', () => clearInterval(autoTimer));
 })();
+
+// Combos WhatsApp
+function pedirCombo(desc) {
+  var msg = '¡Hola Appasto! Quiero pedir el ' + desc + '. Por favor confirmar precio y disponibilidad. ¡Gracias!';
+  window.open('https://wa.me/{{ whatsapp_number }}?text=' + encodeURIComponent(msg), '_blank');
+}
 
 // Cart button feedback
 document.querySelectorAll('.add-form').forEach(form => {

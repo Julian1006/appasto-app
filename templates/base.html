@@ -80,6 +80,23 @@
   <!-- Botón scroll to top -->
   <button id="scrollTop" class="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Volver arriba">↑</button>
 
+  <!-- Mini carrito drawer -->
+  <div id="mcOverlay" class="mc-overlay" onclick="closeMiniCart()"></div>
+  <div id="miniCart" class="mc-drawer">
+    <div class="mc-header">
+      <span>🛒 Tu pedido</span>
+      <button class="mc-close" onclick="closeMiniCart()">✕</button>
+    </div>
+    <div class="mc-items" id="mcItems"></div>
+    <div class="mc-footer" id="mcFooter"></div>
+  </div>
+
+  <!-- Zoom de imagen -->
+  <div id="imgZoom" class="img-zoom-overlay" onclick="this.classList.remove('open')">
+    <img id="imgZoomSrc" src="" alt="Zoom">
+    <button class="img-zoom-close" onclick="event.stopPropagation();document.getElementById('imgZoom').classList.remove('open')">✕</button>
+  </div>
+
   <script>
   document.getElementById('navToggle').addEventListener('click', function() {
     document.getElementById('navLinks').classList.toggle('open');
@@ -108,6 +125,101 @@
       cards[cur].scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'start' });
     }, 4500);
   })();
+
+  // ── Mini carrito ────────────────────────────────────────────
+  function openMiniCart() {
+    fetch('/api/cart')
+      .then(function(r) { return r.json(); })
+      .then(renderAndOpenCart);
+  }
+  function closeMiniCart() {
+    document.getElementById('miniCart').classList.remove('open');
+    document.getElementById('mcOverlay').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function renderAndOpenCart(data) {
+    var el = document.getElementById('mcItems');
+    var fEl = document.getElementById('mcFooter');
+    if (!el) return;
+    if (!data.items.length) {
+      el.innerHTML = '<div class="mc-empty"><span>🛒</span><p>Tu carrito está vacío</p><a href="/catalogo" class="btn btn-primary" style="font-size:.85rem;padding:.55rem 1.2rem;margin-top:.8rem;display:inline-block" onclick="closeMiniCart()">Ver catálogo →</a></div>';
+      fEl.innerHTML = '';
+    } else {
+      el.innerHTML = data.items.map(function(it) {
+        return '<div class="mc-item"><span class="mc-emoji">'+it.emoji+'</span>'
+          +'<div class="mc-info"><strong>'+it.nombre+'</strong>'
+          +'<span>'+it.qty+' lb &times; $'+it.precio.toLocaleString('es-CO')+'/lb</span></div>'
+          +'<span class="mc-sub">$'+it.subtotal.toLocaleString('es-CO')+'</span></div>';
+      }).join('');
+      fEl.innerHTML = '<div class="mc-total">Total estimado <strong>$'+data.total.toLocaleString('es-CO')+'</strong></div>'
+        +'<a href="/carrito" class="btn btn-primary mc-cta" onclick="closeMiniCart()">Ver carrito completo →</a>';
+    }
+    document.getElementById('miniCart').classList.add('open');
+    document.getElementById('mcOverlay').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  // Abrir mini-carrito al hacer clic en icono del navbar
+  (function() {
+    var cl = document.querySelector('.cart-link');
+    if (cl) cl.addEventListener('click', function(e) { e.preventDefault(); openMiniCart(); });
+  })();
+
+  // ── AJAX add-to-cart ────────────────────────────────────────
+  document.addEventListener('submit', function(e) {
+    var form = e.target;
+    if (!form.classList.contains('add-form')) return;
+    var btn = form.querySelector('.btn-add');
+    if (!btn) return; // modal y carrito usan otras clases
+    e.preventDefault();
+    fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      // Actualizar badge
+      var badge = document.querySelector('.cart-badge');
+      if (data.count > 0) {
+        if (badge) {
+          badge.textContent = data.count;
+        } else {
+          var cl = document.querySelector('.cart-link');
+          if (cl) {
+            badge = document.createElement('span');
+            badge.className = 'cart-badge';
+            badge.textContent = data.count;
+            cl.appendChild(badge);
+          }
+        }
+        if (badge) { badge.style.animation='none'; void badge.offsetWidth; badge.style.animation=''; }
+      }
+      // Feedback botón
+      btn.textContent = '✓ Listo';
+      btn.style.background = '#27ae60';
+      btn.classList.add('btn-added');
+      setTimeout(function() {
+        btn.textContent = '+ Agregar';
+        btn.style.background = '';
+        btn.classList.remove('btn-added');
+      }, 1600);
+      // Abrir mini-carrito
+      openMiniCart();
+    })
+    .catch(function() { form.submit(); });
+  });
+
+  // ── Zoom de imagen en modal ──────────────────────────────────
+  document.addEventListener('click', function(e) {
+    if (e.target.id === 'modal-img' && e.target.src && e.target.style.display !== 'none') {
+      document.getElementById('imgZoomSrc').src = e.target.src;
+      document.getElementById('imgZoom').classList.add('open');
+    }
+  });
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') document.getElementById('imgZoom').classList.remove('open');
+  });
   </script>
 
 </body>

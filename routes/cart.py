@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, session, redirect, url_for, request
+from flask import Blueprint, render_template, session, redirect, url_for, request, jsonify
 from urllib.parse import quote
 import uuid
 from model import get_product_by_id
@@ -20,6 +20,18 @@ def get_cart_items():
     return items, total
 
 
+@cart_bp.route("/api/cart")
+def api_cart():
+    items, total = get_cart_items()
+    return jsonify({
+        "items": [{"id": it["id"], "nombre": it["nombre"], "emoji": it["emoji"],
+                   "precio": it["precio"], "qty": it["cantidad"], "subtotal": it["subtotal"]}
+                  for it in items],
+        "total": total,
+        "count": sum(session.get("cart", {}).values()),
+    })
+
+
 @cart_bp.route("/carrito")
 def carrito():
     items, total = get_cart_items()
@@ -37,6 +49,8 @@ def agregar(product_id):
         qty = 1
     cart[key] = cart.get(key, 0) + qty
     session["cart"] = cart
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"ok": True, "count": sum(cart.values())})
     next_url = request.form.get("next") or request.referrer or url_for("main.index")
     return redirect(next_url)
 
