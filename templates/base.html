@@ -97,6 +97,48 @@
     <button class="img-zoom-close" onclick="event.stopPropagation();document.getElementById('imgZoom').classList.remove('open')">✕</button>
   </div>
 
+  <!-- Modal producto (compartido) -->
+  <div id="modal" class="modal-overlay" onclick="cerrarModal()">
+    <div class="modal-box" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="cerrarModal()">✕</button>
+      <div class="modal-top-actions">
+        <button class="modal-share-btn" onclick="compartirProducto()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+          Compartir
+        </button>
+      </div>
+      <div class="modal-img-wrap">
+        <img id="modal-img" src="" alt="" class="modal-img">
+        <div id="modal-emoji" class="modal-emoji"></div>
+      </div>
+      <div class="modal-body">
+        <span id="modal-cat" class="product-category"></span>
+        <h2 id="modal-name" class="modal-name"></h2>
+        <p id="modal-desc" class="modal-desc"></p>
+        <div id="modal-stock" class="modal-stock-badge" style="display:none">⚡ Últimas unidades disponibles</div>
+        <div class="modal-footer">
+          <span id="modal-price" class="product-price modal-price"></span>
+          <form id="modal-form" method="POST" class="add-form">
+            <input type="hidden" name="next" id="modal-next">
+            <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-input qty-input-lg">
+            <button type="submit" class="btn btn-whatsapp">+ Agregar al carrito</button>
+          </form>
+        </div>
+        <div id="modal-cooking" class="cooking-box" style="display:none">
+          <div class="cooking-header">
+            <span id="cooking-icon"></span>
+            <strong id="cooking-title"></strong>
+          </div>
+          <ul id="cooking-list" class="cooking-list"></ul>
+        </div>
+        <div id="modal-related" class="related-section" style="display:none">
+          <h4 class="related-title">También te puede interesar</h4>
+          <div id="related-grid" class="related-grid"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <script>
   document.getElementById('navToggle').addEventListener('click', function() {
     document.getElementById('navLinks').classList.toggle('open');
@@ -218,8 +260,102 @@
     }
   });
   document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') document.getElementById('imgZoom').classList.remove('open');
+    if (e.key === 'Escape') {
+      document.getElementById('imgZoom').classList.remove('open');
+      cerrarModal();
+    }
   });
+
+  // ── Modal de producto (compartido) ───────────────────────────
+  var _modalName = '', _modalUrl = '';
+  var COOKING_TIPS = {
+    'Res':        { icon:'🔥', title:'¿Cómo preparar este corte?',    tips:['🌡️ Parrilla o sartén bien caliente antes de poner la carne','🧂 Solo sal gruesa: 30 min antes o justo al momento','⏱️ Reposar 5 min antes de cortar para conservar los jugos','🌿 Marida con chimichurri, mantequilla de hierbas o sal rosada'] },
+    'Cerdo':      { icon:'🍳', title:'¿Cómo preparar este corte?',    tips:['🌡️ Temperatura interna mínima: 70°C para cocción segura','🍋 Marinar con ajo, limón y hierbas al menos 2 horas','⏱️ No sobre-cocinar: la jugosidad es la clave','🫚 Perfecto en horno, parrilla, sartén o cocción lenta'] },
+    'Pollo':      { icon:'🍗', title:'¿Cómo preparar este corte?',    tips:['🌡️ Siempre cocinar hasta 74°C internos','🧄 Marinar con ajo, limón y paprika para más sabor','⏱️ Pechuga: 6-8 min por lado a fuego medio','🌿 Al horno, parrilla, plancha o guisado — siempre delicioso'] },
+    'Pescado':    { icon:'🐟', title:'¿Cómo preparar este corte?',    tips:['🌡️ Listo cuando la carne se opaca (≈63°C internos)','🍋 Limón y hierbas frescas potencian el sabor','⏱️ 3-4 min por lado en sartén caliente — no más','🫚 Al vapor, plancha, horno en papel o a la sal'] },
+    'Charcutería':{ icon:'🌭', title:'¿Cómo disfrutar este producto?', tips:['🍞 Ideal para tablas de charcutería y antipastos','🧀 Combina con quesos frescos, maduros y encurtidos','🌡️ Servir a temperatura ambiente para potenciar sabores','🍷 Marida con vinos tintos o cervezas artesanales'] },
+    'Lácteos':    { icon:'🥛', title:'¿Cómo disfrutar este producto?', tips:['❄️ Conservar refrigerado a 4°C máximo','🍽️ Ideal para salsas, aderezos y recetas gourmet','🧀 Perfecto para acompañar carnes a la parrilla','🌡️ Consumir dentro de los días indicados tras abrir'] },
+    'Despensa':   { icon:'🫙', title:'¿Cómo usar este producto?',      tips:['🌿 Aderezar carnes antes y después del fuego','🧄 Combina con sal gruesa, aceite de oliva y especias','⭐ Toque gourmet para elevar cualquier preparación','📦 Guardar en lugar fresco y seco una vez abierto'] }
+  };
+
+  function abrirModal(nombre, categoria, descripcion, precio, emoji, imagen, pid, next, tipo, isLowStock) {
+    _modalName = nombre;
+    _modalUrl  = window.location.href;
+    document.getElementById('modal-name').textContent  = nombre;
+    document.getElementById('modal-cat').textContent   = categoria;
+    document.getElementById('modal-desc').textContent  = descripcion;
+    document.getElementById('modal-price').textContent = '$' + parseInt(precio).toLocaleString('es-CO') + '/lb';
+    document.getElementById('modal-form').action       = '/agregar/' + pid;
+    document.getElementById('modal-next').value        = next;
+    var img = document.getElementById('modal-img');
+    var emo = document.getElementById('modal-emoji');
+    if (imagen) { img.src = imagen; img.style.display = 'block'; emo.style.display = 'none'; }
+    else        { img.style.display = 'none'; emo.textContent = emoji; emo.style.display = 'flex'; }
+    // Stock badge
+    var sb = document.getElementById('modal-stock');
+    if (sb) sb.style.display = isLowStock ? 'flex' : 'none';
+    // Cooking tips
+    var cb = document.getElementById('modal-cooking');
+    var tc = tipo && COOKING_TIPS[tipo];
+    if (tc && cb) {
+      document.getElementById('cooking-icon').textContent  = tc.icon;
+      document.getElementById('cooking-title').textContent = tc.title;
+      document.getElementById('cooking-list').innerHTML    = tc.tips.map(function(t){ return '<li>'+t+'</li>'; }).join('');
+      cb.style.display = 'block';
+    } else if (cb) { cb.style.display = 'none'; }
+    // Related products
+    var rs = document.getElementById('modal-related');
+    var rg = document.getElementById('related-grid');
+    if (rs && rg && tipo) {
+      rs.style.display = 'none';
+      rg.innerHTML = '';
+      fetch('/api/related/' + encodeURIComponent(tipo) + '/' + pid)
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          if (!data.items || !data.items.length) return;
+          rg.innerHTML = '';
+          data.items.forEach(function(it){
+            var card = document.createElement('div');
+            card.className = 'related-card';
+            card.innerHTML = '<div class="rc-img">'
+              + (it.imagen ? '<img src="/static/'+it.imagen+'" alt="'+it.nombre+'">' : '<span>'+it.emoji+'</span>')
+              + '</div><div class="rc-info"><strong>'+it.nombre+'</strong>'
+              + '<span>$'+it.precio.toLocaleString('es-CO')+'/lb</span></div>';
+            card.addEventListener('click', function(){
+              cerrarModal();
+              setTimeout(function(){
+                abrirModal(it.nombre, it.tipo+' · '+it.categoria, it.descripcion, it.precio, it.emoji,
+                  it.imagen ? '/static/'+it.imagen : '', it.id, window.location.pathname, it.tipo, it.low_stock);
+              }, 120);
+            });
+            rg.appendChild(card);
+          });
+          rs.style.display = 'block';
+        }).catch(function(){});
+    } else if (rs) { rs.style.display = 'none'; }
+    document.getElementById('modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function cerrarModal() {
+    document.getElementById('modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+
+  function compartirProducto() {
+    var title = _modalName, url = _modalUrl;
+    if (navigator.share) {
+      navigator.share({ title: title, text: 'Mirá este producto de Appasto: '+title, url: url }).catch(function(){});
+    } else {
+      navigator.clipboard.writeText(url).then(function(){
+        var btn = document.querySelector('.modal-share-btn');
+        if (!btn) return;
+        var orig = btn.innerHTML;
+        btn.textContent = '✓ Link copiado';
+        setTimeout(function(){ btn.innerHTML = orig; }, 2000);
+      }).catch(function(){ prompt('Copia este link:', url); });
+    }
+  }
   </script>
 
 </body>

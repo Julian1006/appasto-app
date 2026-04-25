@@ -54,10 +54,13 @@
     <div class="product-card"
          data-nombre="{{ producto.nombre | lower }}"
          data-precio="{{ producto.precio }}"
-         onclick="abrirModal('{{ producto.nombre }}', '{{ producto.tipo }} · {{ producto.categoria }}', '{{ producto.descripcion }}', '{{ producto.precio }}', '{{ producto.emoji }}', '{% if producto.imagen %}{{ url_for('static', filename=producto.imagen) }}{% endif %}', '{{ producto.id }}', '{{ url_for('main.catalogo', filtro=filtro_activo) }}')">
+         onclick="abrirModal('{{ producto.nombre }}', '{{ producto.tipo }} · {{ producto.categoria }}', '{{ producto.descripcion }}', '{{ producto.precio }}', '{{ producto.emoji }}', '{% if producto.imagen %}{{ url_for('static', filename=producto.imagen) }}{% endif %}', '{{ producto.id }}', '{{ url_for('main.catalogo', filtro=filtro_activo) }}', '{{ producto.tipo }}', {{ 'true' if low_stock and producto.id in low_stock else 'false' }})">
       <div class="card-img-wrap">
         {% if badges and producto.id in badges %}
         <span class="badge badge-{{ badges[producto.id][0] }}">{{ badges[producto.id][1] }}</span>
+        {% endif %}
+        {% if low_stock and producto.id in low_stock %}
+        <span class="low-stock-badge">⚡ Últimas unidades</span>
         {% endif %}
         {% if producto.imagen %}
         <img src="{{ url_for('static', filename=producto.imagen) }}" alt="{{ producto.nombre }}" class="product-img">
@@ -99,51 +102,7 @@
   </p>
 </div>
 
-<!-- Modal producto -->
-<div id="modal" class="modal-overlay" onclick="cerrarModal()">
-  <div class="modal-box" onclick="event.stopPropagation()">
-    <button class="modal-close" onclick="cerrarModal()">✕</button>
-    <div class="modal-img-wrap">
-      <img id="modal-img" src="" alt="" class="modal-img">
-      <div id="modal-emoji" class="modal-emoji"></div>
-    </div>
-    <div class="modal-body">
-      <span id="modal-cat" class="product-category"></span>
-      <h2 id="modal-name" class="modal-name"></h2>
-      <p id="modal-desc" class="modal-desc"></p>
-      <div class="modal-footer">
-        <span id="modal-price" class="product-price modal-price"></span>
-        <form id="modal-form" method="POST" class="add-form">
-          <input type="hidden" name="next" id="modal-next">
-          <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-input qty-input-lg">
-          <button type="submit" class="btn btn-whatsapp">+ Agregar al carrito</button>
-        </form>
-      </div>
-    </div>
-  </div>
-</div>
-
 <script>
-function abrirModal(nombre, categoria, descripcion, precio, emoji, imagen, pid, next) {
-  document.getElementById('modal-name').textContent = nombre;
-  document.getElementById('modal-cat').textContent = categoria;
-  document.getElementById('modal-desc').textContent = descripcion;
-  document.getElementById('modal-price').textContent = '$' + parseInt(precio).toLocaleString('es-CO') + '/lb';
-  document.getElementById('modal-form').action = '/agregar/' + pid;
-  document.getElementById('modal-next').value = next;
-  const img = document.getElementById('modal-img');
-  const emojiDiv = document.getElementById('modal-emoji');
-  if (imagen) { img.src = imagen; img.style.display = 'block'; emojiDiv.style.display = 'none'; }
-  else { img.style.display = 'none'; emojiDiv.textContent = emoji; emojiDiv.style.display = 'flex'; }
-  document.getElementById('modal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-function cerrarModal() {
-  document.getElementById('modal').classList.remove('open');
-  document.body.style.overflow = '';
-}
-document.addEventListener('keydown', e => { if (e.key === 'Escape') cerrarModal(); });
-
 // ── Filters + Sort + View ──────────────────────────────────────
 function aplicarFiltros() {
   const q       = document.getElementById('searchInput').value.toLowerCase().trim();

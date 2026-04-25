@@ -1,4 +1,5 @@
-from flask import Blueprint, render_template, request
+from flask import Blueprint, render_template, request, jsonify
+import random
 from model import get_all_products
 
 main_bp = Blueprint("main", __name__)
@@ -22,13 +23,15 @@ BADGES = {
     31: ('popular', 'Popular'),
 }
 
+LOW_STOCK = {2, 5, 14, 29, 49, 60}
+
 
 @main_bp.route("/")
 def index():
     todos = get_all_products()
     id_map = {p["id"]: p for p in todos}
     destacados = [id_map[i] for i in DESTACADOS_IDS if i in id_map]
-    return render_template("index.html", productos=destacados, badges=BADGES)
+    return render_template("index.html", productos=destacados, badges=BADGES, low_stock=LOW_STOCK)
 
 
 @main_bp.route("/nosotros")
@@ -49,4 +52,20 @@ def catalogo():
         productos = todos
 
     return render_template("catalog.html", productos=productos,
-                           tabs=TABS, filtro_activo=filtro, badges=BADGES)
+                           tabs=TABS, filtro_activo=filtro, badges=BADGES, low_stock=LOW_STOCK)
+
+
+@main_bp.route("/api/related/<tipo>/<int:product_id>")
+def api_related(tipo, product_id):
+    todos = get_all_products()
+    mismos = [p for p in todos if p["tipo"] == tipo and p["id"] != product_id]
+    sample = random.sample(mismos, min(4, len(mismos)))
+    return jsonify({
+        "items": [{
+            "id": p["id"], "nombre": p["nombre"], "tipo": p["tipo"],
+            "categoria": p["categoria"], "descripcion": p["descripcion"],
+            "precio": p["precio"], "emoji": p["emoji"],
+            "imagen": p.get("imagen", ""),
+            "low_stock": p["id"] in LOW_STOCK,
+        } for p in sample]
+    })
