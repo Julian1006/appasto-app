@@ -555,6 +555,178 @@ ul { list-style: none; }
 /* Products count */
 .products-count { color: var(--text-light); font-size: .88rem; margin-bottom: 1rem; }
 
+/* ===== Hero entry stagger ===== */
+@keyframes heroFadeUp {
+  from { opacity: 0; transform: translateY(22px); }
+  to   { opacity: 1; transform: none; }
+}
+.hero-tag       { animation: heroFadeUp .55s ease .15s both; }
+.hero-content h1{ animation: heroFadeUp .60s ease .35s both; }
+.hero-content p { animation: heroFadeUp .55s ease .55s both; }
+.hero-btns      { animation: heroFadeUp .55s ease .75s both; }
+
+/* ===== WhatsApp float: pulse ring + tooltip ===== */
+@keyframes waPulse {
+  0%,100% { box-shadow: 0 4px 16px rgba(37,211,102,.4); }
+  50%     { box-shadow: 0 4px 28px rgba(37,211,102,.65), 0 0 0 10px rgba(37,211,102,.1); }
+}
+.whatsapp-float { animation: waPulse 2.6s ease-in-out infinite; overflow: visible; }
+.whatsapp-float::after {
+  content: 'Escribinos 💬';
+  position: absolute; right: calc(100% + 14px); top: 50%;
+  transform: translateY(-50%);
+  background: #1a1a1a; color: #fff;
+  font-family: 'Inter', sans-serif; font-size: .78rem; font-weight: 600;
+  padding: .4rem .95rem; border-radius: 8px; white-space: nowrap;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.whatsapp-float::before {
+  content: ''; position: absolute;
+  right: calc(100% + 8px); top: 50%; transform: translateY(-50%);
+  border: 5px solid transparent; border-left-color: #1a1a1a;
+  opacity: 0; pointer-events: none; transition: opacity .2s;
+}
+.whatsapp-float:hover::after,
+.whatsapp-float:hover::before { opacity: 1; }
+
+/* WA hero button breathe */
+@keyframes btnBreathe {
+  0%,100% { box-shadow: 0 4px 12px rgba(37,211,102,.3); }
+  50%     { box-shadow: 0 6px 22px rgba(37,211,102,.55); transform: scale(1.03); }
+}
+.btn-hero-wa { animation: btnBreathe 2.8s ease-in-out infinite; }
+
+/* ===== Product image zoom ===== */
+.product-img { transition: transform .45s ease; }
+.product-card:hover .product-img { transform: scale(1.07); }
+
+/* ===== Emoji category bounce ===== */
+@keyframes emojiJump {
+  0%,100% { transform: translateY(0) rotate(0deg); }
+  30%     { transform: translateY(-10px) rotate(-8deg); }
+  60%     { transform: translateY(-4px) rotate(4deg); }
+}
+.quick-card:hover span:first-child { animation: emojiJump .45s ease; display: inline-block; }
+
+/* ===== Nav link underline grow ===== */
+.nav-links > li > a { position: relative; }
+.nav-links > li > a::after {
+  content: ''; position: absolute; bottom: -4px; left: 0;
+  width: 0; height: 2px; background: var(--red); border-radius: 1px;
+  transition: width .25s ease;
+}
+.nav-links > li > a:hover::after { width: 100%; }
+
+/* ===== Footer link underline grow ===== */
+.footer-col ul a { position: relative; }
+.footer-col ul a::after {
+  content: ''; position: absolute; bottom: -1px; left: 0;
+  width: 0; height: 1px; background: rgba(255,255,255,.7);
+  transition: width .28s ease;
+}
+.footer-col ul a:hover::after { width: 100%; }
+
+/* ===== Glassmorphism navbar on scroll ===== */
+.navbar.scrolled {
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  background: rgba(255,255,255,.88);
+}
+
+/* ===== Origen: sequential circle pop + dash draw ===== */
+.origen-section.reveal .or-circle { opacity: 0; transform: scale(.35); }
+.origen-section.reveal .or-dash   { transform: scaleX(0); transform-origin: left center; }
+@keyframes orCircleIn {
+  from { opacity: 0; transform: scale(.35); }
+  to   { opacity: 1; transform: scale(1); }
+}
+@keyframes dashDraw {
+  from { transform: scaleX(0); }
+  to   { transform: scaleX(1); }
+}
+.origen-section.reveal.visible .or-circle { animation: orCircleIn .42s cubic-bezier(.34,1.56,.64,1) both; }
+.origen-section.reveal.visible .or-dash   { animation: dashDraw .32s ease both; }
+.origen-section.reveal.visible .or-node:nth-child(1) .or-circle { animation-delay: .15s; }
+.origen-section.reveal.visible .or-node:nth-child(3) .or-circle { animation-delay: .42s; }
+.origen-section.reveal.visible .or-node:nth-child(5) .or-circle { animation-delay: .68s; }
+.origen-section.reveal.visible .or-node:nth-child(7) .or-circle { animation-delay: .94s; }
+.origen-section.reveal.visible .or-dash:nth-child(2) { animation-delay: .30s; }
+.origen-section.reveal.visible .or-dash:nth-child(4) { animation-delay: .56s; }
+.origen-section.reveal.visible .or-dash:nth-child(6) { animation-delay: .82s; }
+
+/* ===== Child stagger keyframe ===== */
+@keyframes childFadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* Valor banners stagger */
+.valor-section.visible .valor-banner { animation: childFadeUp .5s ease both; }
+.valor-section.visible .valor-banners > :nth-child(1) { animation-delay: 0ms; }
+.valor-section.visible .valor-banners > :nth-child(2) { animation-delay: 100ms; }
+.valor-section.visible .valor-banners > :nth-child(3) { animation-delay: 200ms; }
+.valor-section.visible .valor-banners > :nth-child(4) { animation-delay: 300ms; }
+
+/* How-section steps + arrows stagger */
+.how-section.visible .how-step  { animation: childFadeUp .5s ease both; }
+.how-section.visible .how-arrow { animation: childFadeUp .35s ease both; }
+.how-section.visible .how-steps > :nth-child(1) { animation-delay: 0ms;   }
+.how-section.visible .how-steps > :nth-child(2) { animation-delay: 100ms; }
+.how-section.visible .how-steps > :nth-child(3) { animation-delay: 150ms; }
+.how-section.visible .how-steps > :nth-child(4) { animation-delay: 250ms; }
+.how-section.visible .how-steps > :nth-child(5) { animation-delay: 300ms; }
+.how-section.visible .how-steps > :nth-child(6) { animation-delay: 400ms; }
+.how-section.visible .how-steps > :nth-child(7) { animation-delay: 450ms; }
+
+/* Quick categories stagger */
+.quick-cats.visible .quick-card { animation: childFadeUp .4s ease both; }
+.quick-cats.visible .quick-grid > :nth-child(1) { animation-delay: 0ms;   }
+.quick-cats.visible .quick-grid > :nth-child(2) { animation-delay: 55ms;  }
+.quick-cats.visible .quick-grid > :nth-child(3) { animation-delay: 110ms; }
+.quick-cats.visible .quick-grid > :nth-child(4) { animation-delay: 165ms; }
+.quick-cats.visible .quick-grid > :nth-child(5) { animation-delay: 220ms; }
+.quick-cats.visible .quick-grid > :nth-child(6) { animation-delay: 275ms; }
+.quick-cats.visible .quick-grid > :nth-child(7) { animation-delay: 330ms; }
+
+/* ===== Testimonials stagger + stars glow ===== */
+.testimonios.visible .testi-card { animation: childFadeUp .5s ease both; }
+.testimonios.visible .testi-card:nth-child(1) { animation-delay: 0ms;   }
+.testimonios.visible .testi-card:nth-child(2) { animation-delay: 160ms; }
+.testimonios.visible .testi-card:nth-child(3) { animation-delay: 320ms; }
+@keyframes starsGlow {
+  from { opacity: 0; letter-spacing: -4px; filter: blur(3px); }
+  to   { opacity: 1; letter-spacing: 2px;  filter: none; }
+}
+.testimonios.visible .testi-stars { animation: starsGlow .55s ease both; }
+.testimonios.visible .testi-card:nth-child(1) .testi-stars { animation-delay: .5s; }
+.testimonios.visible .testi-card:nth-child(2) .testi-stars { animation-delay: .66s; }
+.testimonios.visible .testi-card:nth-child(3) .testi-stars { animation-delay: .82s; }
+
+/* ===== Cart badge pop ===== */
+@keyframes badgePop {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.45); }
+  100% { transform: scale(1); }
+}
+.cart-badge { animation: badgePop .38s cubic-bezier(.34,1.56,.64,1); }
+
+/* ===== Modal improved open animation ===== */
+@keyframes modalIn {
+  from { transform: scale(.86) translateY(24px); opacity: 0; }
+  to   { transform: scale(1) translateY(0);      opacity: 1; }
+}
+
+/* ===== Mobile testimonials swipe carousel ===== */
+@media (max-width: 640px) {
+  .testi-grid {
+    display: flex; overflow-x: auto; scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; padding-bottom: .5rem; gap: 1rem;
+  }
+  .testi-grid::-webkit-scrollbar { display: none; }
+  .testi-card { flex: 0 0 88%; scroll-snap-align: start; }
+}
+
 @media (max-width: 768px) {
   .origen-inner { flex-direction: column; gap: 2.5rem; }
   .origen-timeline { width: 100%; }
