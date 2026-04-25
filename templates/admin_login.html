@@ -60,8 +60,10 @@
     {% endif %}
     <form method="POST">
       <label for="pwd">Contraseña</label>
-      <input type="password" id="pwd" name="password" placeholder="••••••••" autofocus required>
-      <button type="submit" class="btn-login">Entrar</button>
+      <input type="password" id="pwd" name="password" placeholder="••••••••" autofocus {% if locked %}disabled{% endif %} required>
+      <button type="submit" class="btn-login" {% if locked %}disabled style="opacity:.5;cursor:not-allowed"{% endif %}>
+        {% if locked %}🔒 Bloqueado{% else %}Entrar{% endif %}
+      </button>
     </form>
     <a href="/" class="back-link">← Volver a la tienda</a>
   </div>
