@@ -321,16 +321,6 @@ if (statsEl) observer.observe(statsEl);
   document.getElementById('featNext').addEventListener('click', () => {
     carousel.scrollBy({ left: getScrollAmount() * 2, behavior: 'smooth' });
   });
-  // Auto-advance on mobile
-  let autoTimer = setInterval(() => {
-    const maxScroll = carousel.scrollWidth - carousel.clientWidth;
-    if (carousel.scrollLeft >= maxScroll - 10) {
-      carousel.scrollTo({ left: 0, behavior: 'smooth' });
-    } else {
-      carousel.scrollBy({ left: getScrollAmount(), behavior: 'smooth' });
-    }
-  }, 4000);
-  carousel.addEventListener('mouseenter', () => clearInterval(autoTimer));
 })();
 
 // Combos WhatsApp
