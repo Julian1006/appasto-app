@@ -24,15 +24,10 @@
     .topbar a:hover { color: #fff; }
     .btn-tienda { background: #c0392b; color: #fff !important; padding: .4rem .9rem; border-radius: 8px; font-weight: 600; font-size: .8rem !important; }
 
-    /* Tabs */
-    .tabs-bar { display: flex; gap: 0; background: #fff; border-bottom: 2px solid #e5e5e5; padding: 0 2rem; }
-    .tab-btn {
-      padding: .9rem 1.5rem; font-size: .88rem; font-weight: 600;
-      border: none; background: none; cursor: pointer; color: #888;
-      border-bottom: 2px solid transparent; margin-bottom: -2px;
-      transition: color .18s, border-color .18s;
-    }
+    .tabs-bar { display: flex; background: #fff; border-bottom: 2px solid #e5e5e5; padding: 0 2rem; }
+    .tab-btn { padding: .9rem 1.5rem; font-size: .88rem; font-weight: 600; border: none; background: none; cursor: pointer; color: #888; border-bottom: 2px solid transparent; margin-bottom: -2px; transition: color .18s, border-color .18s; position: relative; }
     .tab-btn.active { color: #c0392b; border-bottom-color: #c0392b; }
+    .tab-badge { display: inline-flex; align-items: center; justify-content: center; background: #c0392b; color: #fff; border-radius: 10px; font-size: .65rem; font-weight: 700; padding: .1rem .45rem; margin-left: .4rem; }
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
@@ -40,41 +35,45 @@
     .stat-pill { background: #f4f4f5; border-radius: 8px; padding: .5rem 1rem; font-size: .82rem; color: #555; }
     .stat-pill strong { color: #1a1a1a; }
 
-    .toolbar { padding: 1rem 2rem; display: flex; align-items: center; gap: .8rem; }
-    #buscar { padding: .55rem 1rem; border: 1.5px solid #ddd; border-radius: 8px; font-size: .9rem; width: 280px; outline: none; }
-    #buscar:focus { border-color: #c0392b; }
-    .filter-all { font-size: .82rem; color: #777; }
+    .toolbar { padding: 1rem 2rem; display: flex; align-items: center; gap: .8rem; flex-wrap: wrap; }
+    .toolbar input, .toolbar select { padding: .5rem 1rem; border: 1.5px solid #ddd; border-radius: 8px; font-size: .88rem; outline: none; }
+    .toolbar input:focus, .toolbar select:focus { border-color: #c0392b; }
+    #buscar { width: 260px; }
 
     .table-wrap { overflow-x: auto; padding: 0 2rem 2rem; }
     table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
     thead { background: #1a1a1a; color: #fff; }
-    th { padding: .85rem 1rem; text-align: left; font-size: .78rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; }
-    td { padding: .8rem 1rem; font-size: .88rem; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
+    th { padding: .85rem 1rem; text-align: left; font-size: .75rem; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; white-space: nowrap; }
+    td { padding: .8rem 1rem; font-size: .87rem; border-bottom: 1px solid #f0f0f0; vertical-align: middle; }
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: #fafafa; }
     tr.disabled-row td { opacity: .45; }
 
+    /* Badges tipo */
     .badge-tipo { font-size: .68rem; font-weight: 700; padding: .2rem .55rem; border-radius: 20px; color: #fff; white-space: nowrap; }
-    .tipo-Res       { background: #c0392b; }
-    .tipo-Cerdo     { background: #e67e22; }
-    .tipo-Pollo     { background: #f39c12; color: #1a1a1a; }
-    .tipo-Pescado   { background: #2980b9; }
+    .tipo-Res         { background: #c0392b; }
+    .tipo-Cerdo       { background: #e67e22; }
+    .tipo-Pollo       { background: #f39c12; color: #1a1a1a; }
+    .tipo-Pescado     { background: #2980b9; }
     .tipo-Charcutería { background: #8e44ad; }
-    .tipo-Lácteos   { background: #16a085; }
-    .tipo-Despensa  { background: #27ae60; }
+    .tipo-Lácteos     { background: #16a085; }
+    .tipo-Despensa    { background: #27ae60; }
 
-    .badge-estado { font-size: .7rem; font-weight: 700; padding: .25rem .65rem; border-radius: 20px; }
+    /* Badges estado */
+    .badge-estado { font-size: .7rem; font-weight: 700; padding: .25rem .65rem; border-radius: 20px; white-space: nowrap; }
     .estado-pendiente  { background: #fef3cd; color: #856404; }
     .estado-completado { background: #d1e7dd; color: #0f5132; }
     .estado-cancelado  { background: #f8d7da; color: #842029; }
 
-    .badge-metodo { font-size: .7rem; font-weight: 700; padding: .22rem .6rem; border-radius: 20px; color: #fff; }
+    /* Badges método */
+    .badge-metodo { font-size: .72rem; font-weight: 700; padding: .25rem .65rem; border-radius: 20px; color: #fff; white-space: nowrap; }
     .metodo-WhatsApp  { background: #25D366; }
     .metodo-Nequi     { background: #7B1FA2; }
     .metodo-Daviplata { background: #E91E63; }
     .metodo-Efectivo  { background: #2E7D32; }
     .metodo-Tarjeta   { background: #1A1F71; }
 
+    /* Toggle */
     .switch { position: relative; display: inline-block; width: 42px; height: 24px; }
     .switch input { opacity: 0; width: 0; height: 0; }
     .slider { position: absolute; cursor: pointer; inset: 0; background: #ccc; border-radius: 24px; transition: .25s; }
@@ -82,28 +81,45 @@
     input:checked + .slider { background: #27ae60; }
     input:checked + .slider:before { transform: translateX(18px); }
 
-    .price-form { display: flex; align-items: center; gap: .4rem; }
-    .price-input { width: 100px; padding: .35rem .55rem; border: 1.5px solid #ddd; border-radius: 7px; font-size: .88rem; outline: none; }
-    .price-input:focus { border-color: #c0392b; }
-    .btn-save { background: #1a1a1a; color: #fff; border: none; padding: .35rem .75rem; border-radius: 7px; font-size: .78rem; font-weight: 600; cursor: pointer; }
+    /* Forms */
+    .inline-form { display: flex; align-items: center; gap: .35rem; flex-wrap: wrap; }
+    .num-input { width: 88px; padding: .32rem .5rem; border: 1.5px solid #ddd; border-radius: 7px; font-size: .85rem; outline: none; }
+    .num-input:focus { border-color: #c0392b; }
+    .btn-save { background: #1a1a1a; color: #fff; border: none; padding: .32rem .7rem; border-radius: 7px; font-size: .76rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
     .btn-save:hover { background: #c0392b; }
-    .btn-reset { background: none; border: 1px solid #ddd; color: #999; padding: .32rem .55rem; border-radius: 7px; font-size: .72rem; cursor: pointer; }
+    .btn-reset { background: none; border: 1px solid #ddd; color: #999; padding: .3rem .5rem; border-radius: 7px; font-size: .7rem; cursor: pointer; }
     .btn-reset:hover { border-color: #c0392b; color: #c0392b; }
+    .btn-confirm { background: #25D366; color: #fff; border: none; padding: .38rem .85rem; border-radius: 7px; font-size: .78rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
+    .btn-confirm:hover { background: #1da851; }
+
     .price-override { color: #c0392b; font-weight: 700; }
 
-    .estado-form select { padding: .3rem .5rem; border: 1px solid #ddd; border-radius: 6px; font-size: .8rem; }
-    .estado-form button { padding: .3rem .6rem; background: #1a1a1a; color: #fff; border: none; border-radius: 6px; font-size: .78rem; cursor: pointer; }
+    /* Stock badge */
+    .stock-ok   { color: #27ae60; font-weight: 700; }
+    .stock-low  { color: #e67e22; font-weight: 700; }
+    .stock-out  { color: #c0392b; font-weight: 700; }
+    .stock-inf  { color: #aaa; font-size: .8rem; }
 
-    .items-list { font-size: .78rem; color: #555; line-height: 1.6; }
+    /* Pedido row highlight */
+    tr.row-pendiente-wa { background: #f0fff4; }
+
+    .items-list { font-size: .78rem; color: #444; line-height: 1.7; }
+    .items-list span { display: block; }
+
+    .hora-badge { font-size: .72rem; color: #888; margin-top: .15rem; }
+
+    .estado-form { display: flex; align-items: center; gap: .35rem; margin-top: .45rem; }
+    .estado-form select { padding: .28rem .5rem; border: 1px solid #ddd; border-radius: 6px; font-size: .78rem; outline: none; }
+    .estado-form select:focus { border-color: #c0392b; }
+    .estado-form .btn-save { padding: .28rem .55rem; font-size: .74rem; }
 
     .empty-msg { text-align: center; padding: 3rem; color: #aaa; font-size: .9rem; }
 
     @media (max-width: 768px) {
-      .tabs-bar { padding: 0 1rem; }
-      .stats-bar { padding: 1rem; }
-      .toolbar { padding: .8rem 1rem; }
+      .tabs-bar, .stats-bar, .toolbar { padding-left: 1rem; padding-right: 1rem; }
       .table-wrap { padding: 0 1rem 2rem; }
-      th, td { padding: .65rem .7rem; font-size: .8rem; }
+      th, td { padding: .6rem .65rem; font-size: .78rem; }
+      #buscar { width: 100%; }
     }
   </style>
 </head>
@@ -123,46 +139,75 @@
   </div>
 </header>
 
-<!-- Tabs -->
+{% set pendientes_count = pedidos|selectattr('estado','equalto','pendiente')|list|length %}
+
 <div class="tabs-bar">
-  <button class="tab-btn active" onclick="switchTab('productos')">📦 Productos ({{ productos|length }})</button>
-  <button class="tab-btn" onclick="switchTab('pedidos')" id="tab-pedidos-btn">🛒 Pedidos ({{ pedidos|length }})</button>
+  <button class="tab-btn active" id="btn-tab-productos" onclick="switchTab('productos')">
+    📦 Productos <span style="color:#aaa;font-weight:400">({{ productos|length }})</span>
+  </button>
+  <button class="tab-btn" id="btn-tab-pedidos" onclick="switchTab('pedidos')">
+    🛒 Pedidos
+    {% if pendientes_count > 0 %}
+    <span class="tab-badge">{{ pendientes_count }}</span>
+    {% endif %}
+  </button>
 </div>
 
-<!-- ═══ TAB PRODUCTOS ═══ -->
+<!-- ══════════════════ TAB: PRODUCTOS ══════════════════ -->
 <div class="tab-content active" id="tab-productos">
   <div class="stats-bar">
-    <div class="stat-pill">Total: <strong>{{ productos|length }}</strong> productos</div>
+    <div class="stat-pill">Productos: <strong>{{ productos|length }}</strong></div>
     <div class="stat-pill">Activos: <strong>{{ productos|selectattr('activo')|list|length }}</strong></div>
-    <div class="stat-pill">Deshabilitados: <strong>{{ productos|rejectattr('activo')|list|length }}</strong></div>
+    <div class="stat-pill">Sin stock: <strong>{{ productos|selectattr('stock')|selectattr('stock','equalto',0)|list|length }}</strong></div>
   </div>
   <div class="toolbar">
-    <input type="text" id="buscar" placeholder="🔍  Buscar producto..." oninput="filtrarTabla()">
-    <span class="filter-all" id="conteo"></span>
+    <input type="text" id="buscar" placeholder="🔍 Buscar producto..." oninput="filtrarTabla()">
+    <span style="font-size:.82rem;color:#777" id="conteo"></span>
   </div>
   <div class="table-wrap">
     <table id="tabla">
       <thead>
         <tr>
-          <th>#</th><th>Producto</th><th>Tipo</th><th>Categoría</th>
-          <th>Precio actual</th><th>Cambiar precio</th><th>Habilitado</th>
+          <th>#</th>
+          <th>Producto</th>
+          <th>Tipo</th>
+          <th>Precio</th>
+          <th>Cambiar precio</th>
+          <th>Stock disponible</th>
+          <th>Habilitado</th>
         </tr>
       </thead>
       <tbody>
         {% for p in productos %}
         <tr class="{{ '' if p.activo else 'disabled-row' }}" data-nombre="{{ p.nombre|lower }}">
-          <td style="color:#aaa;font-size:.78rem">{{ p.id }}</td>
-          <td><strong>{{ p.nombre }}</strong></td>
+          <td style="color:#bbb;font-size:.75rem">{{ p.id }}</td>
+          <td><strong>{{ p.nombre }}</strong><br><span style="font-size:.73rem;color:#aaa">{{ p.categoria }}</span></td>
           <td><span class="badge-tipo tipo-{{ p.tipo }}">{{ p.tipo }}</span></td>
-          <td style="color:#777;font-size:.82rem">{{ p.categoria }}</td>
-          <td><span class="{{ 'price-override' if p.precio_modificado else '' }}">${{ "{:,}".format(p.precio) }}/lb</span></td>
           <td>
-            <form class="price-form" method="POST" action="{{ url_for('admin.update_precio', pid=p.id) }}">
-              <input type="number" name="precio" class="price-input" value="{{ p.precio }}" min="1" max="999999" step="100">
+            <span class="{{ 'price-override' if p.precio_modificado else '' }}">${{ "{:,}".format(p.precio) }}/lb</span>
+            <div class="inline-form" style="margin-top:.35rem">
+              <form class="inline-form" method="POST" action="{{ url_for('admin.update_precio', pid=p.id) }}">
+                <input type="number" name="precio" class="num-input" value="{{ p.precio }}" min="1" max="999999" step="100">
+                <button type="submit" class="btn-save">Guardar</button>
+              </form>
+              <form method="POST" action="{{ url_for('admin.reset_precio', pid=p.id) }}">
+                <button type="submit" class="btn-reset">↺</button>
+              </form>
+            </div>
+          </td>
+          <td>
+            {% if p.stock is none %}
+              <span class="stock-inf">∞ Ilimitado</span>
+            {% elif p.stock == 0 %}
+              <span class="stock-out">⚠ Agotado</span>
+            {% elif p.stock <= 5 %}
+              <span class="stock-low">⚡ {{ p.stock }} lb</span>
+            {% else %}
+              <span class="stock-ok">✓ {{ p.stock }} lb</span>
+            {% endif %}
+            <form class="inline-form" method="POST" action="{{ url_for('admin.update_stock', pid=p.id) }}" style="margin-top:.35rem">
+              <input type="number" name="stock" class="num-input" value="{{ p.stock if p.stock is not none else '' }}" min="0" max="9999" placeholder="∞ libre">
               <button type="submit" class="btn-save">Guardar</button>
-            </form>
-            <form method="POST" action="{{ url_for('admin.reset_precio', pid=p.id) }}" style="margin-top:.3rem">
-              <button type="submit" class="btn-reset">↺ Restablecer</button>
             </form>
           </td>
           <td>
@@ -180,62 +225,94 @@
   </div>
 </div>
 
-<!-- ═══ TAB PEDIDOS ═══ -->
+<!-- ══════════════════ TAB: PEDIDOS ══════════════════ -->
 <div class="tab-content" id="tab-pedidos">
+  {% set total_ingresos = pedidos|selectattr('estado','ne','cancelado')|sum(attribute='total') %}
   <div class="stats-bar">
-    {% set pendientes = pedidos|selectattr('estado','equalto','pendiente')|list|length %}
-    {% set completados = pedidos|selectattr('estado','equalto','completado')|list|length %}
-    <div class="stat-pill">Total pedidos: <strong>{{ pedidos|length }}</strong></div>
-    <div class="stat-pill">Pendientes: <strong>{{ pendientes }}</strong></div>
-    <div class="stat-pill">Completados: <strong>{{ completados }}</strong></div>
-    <div class="stat-pill">Ingresos totales: <strong>${{ "{:,}".format(pedidos|sum(attribute='total')) }}</strong></div>
+    <div class="stat-pill">Total: <strong>{{ pedidos|length }}</strong> pedidos</div>
+    <div class="stat-pill" style="background:#fef3cd">Pendientes: <strong>{{ pendientes_count }}</strong></div>
+    <div class="stat-pill" style="background:#d1e7dd">Completados: <strong>{{ pedidos|selectattr('estado','equalto','completado')|list|length }}</strong></div>
+    <div class="stat-pill">Ingresos: <strong>${{ "{:,}".format(total_ingresos) }}</strong></div>
   </div>
-  <div class="table-wrap" style="padding-top:1.5rem">
+  <div class="toolbar">
+    <select id="filtro-metodo" onchange="filtrarPedidos()">
+      <option value="">Todos los métodos</option>
+      <option value="WhatsApp">📲 WhatsApp</option>
+      <option value="Nequi">📱 Nequi</option>
+      <option value="Daviplata">💜 Daviplata</option>
+      <option value="Efectivo">💵 Efectivo</option>
+      <option value="Tarjeta">💳 Tarjeta</option>
+    </select>
+    <select id="filtro-estado" onchange="filtrarPedidos()">
+      <option value="">Todos los estados</option>
+      <option value="pendiente">⏳ Pendiente</option>
+      <option value="completado">✅ Completado</option>
+      <option value="cancelado">❌ Cancelado</option>
+    </select>
+    <span style="font-size:.82rem;color:#777" id="conteo-pedidos"></span>
+  </div>
+
+  <div class="table-wrap" style="padding-top:1rem">
     {% if pedidos %}
-    <table>
+    <table id="tabla-pedidos">
       <thead>
         <tr>
-          <th>#</th><th>Fecha</th><th>Método</th><th>Productos</th>
-          <th>Total</th><th>Contacto</th><th>Estado</th>
+          <th>#</th>
+          <th>Fecha / Hora</th>
+          <th>Método</th>
+          <th>Productos pedidos</th>
+          <th>Total</th>
+          <th>Datos de entrega</th>
+          <th>Estado</th>
         </tr>
       </thead>
       <tbody>
         {% for o in pedidos %}
-        <tr>
-          <td style="color:#aaa;font-size:.78rem">{{ o.id }}</td>
-          <td style="font-size:.82rem;white-space:nowrap">{{ o.fecha.strftime('%d/%m/%Y') }}<br><span style="color:#aaa">{{ o.fecha.strftime('%H:%M') }}</span></td>
+        <tr data-metodo="{{ o.metodo }}" data-estado="{{ o.estado }}"
+            class="{{ 'row-pendiente-wa' if o.estado == 'pendiente' and o.metodo == 'WhatsApp' else '' }}">
+          <td style="color:#bbb;font-size:.75rem">{{ o.id }}</td>
+          <td>
+            <strong style="font-size:.85rem">{{ o.fecha.strftime('%d/%m/%Y') }}</strong>
+            <div class="hora-badge">🕐 {{ o.fecha.strftime('%I:%M %p') }}</div>
+          </td>
           <td><span class="badge-metodo metodo-{{ o.metodo }}">{{ o.metodo }}</span></td>
           <td>
             <div class="items-list">
               {% for item in o.items %}
-              <div>{{ item.nombre }} × {{ item.cantidad }}lb — ${{ "{:,}".format(item.subtotal) }}</div>
+              <span>• {{ item.nombre }} × <strong>{{ item.cantidad }}lb</strong> — ${{ "{:,}".format(item.subtotal) }}</span>
               {% endfor %}
             </div>
           </td>
-          <td style="font-weight:700;color:#c0392b">${{ "{:,}".format(o.total) }}</td>
-          <td style="font-size:.82rem">
-            {% if o.tel %}<div>📞 {{ o.tel }}</div>{% endif %}
+          <td style="font-weight:800;color:#c0392b;font-size:.95rem">${{ "{:,}".format(o.total) }}</td>
+          <td style="font-size:.82rem;line-height:1.7">
+            {% if o.tel %}<div>📞 <strong>{{ o.tel }}</strong></div>{% endif %}
             {% if o.direccion %}<div>📍 {{ o.direccion }}</div>{% endif %}
             {% if o.ciudad %}<div>🏙 {{ o.ciudad }}</div>{% endif %}
-            {% if o.referencia %}<div style="color:#aaa;font-size:.72rem">Ref: {{ o.referencia }}</div>{% endif %}
+            {% if o.referencia %}<div style="color:#aaa;font-size:.7rem">Ref: {{ o.referencia }}</div>{% endif %}
           </td>
           <td>
-            <span class="badge-estado estado-{{ o.estado }}">{{ o.estado }}</span>
-            <form class="estado-form" method="POST" action="{{ url_for('admin.update_estado', oid=o.id) }}" style="margin-top:.4rem;display:flex;gap:.3rem">
+            <span class="badge-estado estado-{{ o.estado }}">{{ o.estado | capitalize }}</span>
+            <form class="estado-form" method="POST" action="{{ url_for('admin.update_estado', oid=o.id) }}">
               <select name="estado">
-                <option value="pendiente"  {{ 'selected' if o.estado=='pendiente' }}>Pendiente</option>
-                <option value="completado" {{ 'selected' if o.estado=='completado' }}>Completado</option>
-                <option value="cancelado"  {{ 'selected' if o.estado=='cancelado' }}>Cancelado</option>
+                <option value="pendiente"  {{ 'selected' if o.estado=='pendiente' }}>⏳ Pendiente</option>
+                <option value="completado" {{ 'selected' if o.estado=='completado' }}>✅ Completado</option>
+                <option value="cancelado"  {{ 'selected' if o.estado=='cancelado' }}>❌ Cancelado</option>
               </select>
-              <button type="submit">✓</button>
+              <button type="submit" class="btn-save">✓</button>
             </form>
+            {% if o.estado == 'pendiente' %}
+            <form method="POST" action="{{ url_for('admin.update_estado', oid=o.id) }}" style="margin-top:.35rem">
+              <input type="hidden" name="estado" value="completado">
+              <button type="submit" class="btn-confirm">✅ Confirmar</button>
+            </form>
+            {% endif %}
           </td>
         </tr>
         {% endfor %}
       </tbody>
     </table>
     {% else %}
-    <div class="empty-msg">🛒 Aún no hay pedidos registrados.<br>Aparecerán aquí cuando los clientes hagan checkout.</div>
+    <div class="empty-msg">🛒 Aún no hay pedidos.<br><span style="font-size:.8rem">Aparecerán aquí cuando los clientes hagan checkout.</span></div>
     {% endif %}
   </div>
 </div>
@@ -245,31 +322,46 @@ function switchTab(name) {
   document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
   document.querySelectorAll('.tab-content').forEach(function(c) { c.classList.remove('active'); });
   document.getElementById('tab-' + name).classList.add('active');
-  event.target.classList.add('active');
+  document.getElementById('btn-tab-' + name).classList.add('active');
   try { localStorage.setItem('adminTab', name); } catch(e) {}
 }
 
-// Restore tab from URL hash or localStorage
+// Restaurar tab guardado o desde hash
 (function() {
   var hash = location.hash.replace('#tab-', '');
   var saved = hash || (function() { try { return localStorage.getItem('adminTab'); } catch(e) {} }());
-  if (saved === 'pedidos') {
-    document.getElementById('tab-pedidos-btn').click();
-  }
+  if (saved === 'pedidos') switchTab('pedidos');
 })();
 
+// Filtrar tabla productos
 function filtrarTabla() {
-  const q = document.getElementById('buscar').value.toLowerCase();
-  const rows = document.querySelectorAll('#tabla tbody tr');
-  let visible = 0;
+  var q = document.getElementById('buscar').value.toLowerCase();
+  var rows = document.querySelectorAll('#tabla tbody tr');
+  var visible = 0;
   rows.forEach(function(row) {
-    const match = row.dataset.nombre.includes(q);
-    row.style.display = match ? '' : 'none';
-    if (match) visible++;
+    var ok = row.dataset.nombre.includes(q);
+    row.style.display = ok ? '' : 'none';
+    if (ok) visible++;
   });
   document.getElementById('conteo').textContent = visible + ' producto' + (visible !== 1 ? 's' : '');
 }
 filtrarTabla();
+
+// Filtrar tabla pedidos
+function filtrarPedidos() {
+  var metodo = document.getElementById('filtro-metodo').value;
+  var estado = document.getElementById('filtro-estado').value;
+  var rows = document.querySelectorAll('#tabla-pedidos tbody tr');
+  var visible = 0;
+  rows.forEach(function(row) {
+    var okM = !metodo || row.dataset.metodo === metodo;
+    var okE = !estado || row.dataset.estado === estado;
+    row.style.display = (okM && okE) ? '' : 'none';
+    if (okM && okE) visible++;
+  });
+  document.getElementById('conteo-pedidos').textContent = visible + ' pedido' + (visible !== 1 ? 's' : '');
+}
+filtrarPedidos();
 </script>
 </body>
 </html>

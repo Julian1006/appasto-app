@@ -81,3 +81,13 @@ def reset_precio(pid):
     p.precio = p.precio_orig
     db.session.commit()
     return redirect(url_for("admin.dashboard"))
+
+
+@admin_bp.route("/producto/<int:pid>/stock", methods=["POST"])
+@admin_required
+def update_stock(pid):
+    p = Product.query.get_or_404(pid)
+    val = request.form.get("stock", "").strip()
+    p.stock = int(val) if val.isdigit() else None
+    db.session.commit()
+    return redirect(url_for("admin.dashboard"))

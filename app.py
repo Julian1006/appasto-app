@@ -48,6 +48,15 @@ def _seed_db():
 
 with app.app_context():
     db.create_all()
+    # Migración: agregar columnas nuevas sin borrar datos
+    try:
+        from sqlalchemy import text, inspect as _inspect
+        _cols = [c["name"] for c in _inspect(db.engine).get_columns("products")]
+        if "stock" not in _cols:
+            db.session.execute(text("ALTER TABLE products ADD COLUMN stock INTEGER"))
+            db.session.commit()
+    except Exception:
+        pass
     _seed_db()
 
 

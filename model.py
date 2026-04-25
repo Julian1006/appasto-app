@@ -47,6 +47,7 @@ class Product(db.Model):
     precio_orig = db.Column(db.Integer, nullable=False)
     descripcion = db.Column(db.Text)
     emoji       = db.Column(db.String(20))
+    stock       = db.Column(db.Integer, nullable=True)   # None = ilimitado
     imagen      = db.Column(db.String(300), default="")
     activo      = db.Column(db.Boolean, default=True, nullable=False)
 
