@@ -383,7 +383,9 @@
 <div class="tab-content" id="tab-combos">
   <div class="stats-bar">
     <div class="stat-pill">Total: <strong>{{ combos|length }}</strong> combos</div>
-    <div class="stat-pill" style="background:#d1e7dd">Activos: <strong>{{ combos|selectattr('activo')|list|length }}</strong></div>
+    <div class="stat-pill" style="background:#d1e7dd">En tienda: <strong>{{ combos_vigentes }}</strong></div>
+    <div class="stat-pill" style="background:#eaf4ff">Programados: <strong>{{ combos_programados }}</strong></div>
+    <div class="stat-pill" style="background:#f8d7da">Vencidos: <strong>{{ combos_vencidos }}</strong></div>
   </div>
   <div class="toolbar">
     <button onclick="document.getElementById('modal-combo').style.display='flex'"
@@ -400,6 +402,7 @@
           <th>Combo</th>
           <th>Productos incluidos</th>
           <th style="width:9rem">Precio</th>
+          <th style="width:15rem">Vigencia</th>
           <th style="width:5rem;text-align:center">Activo</th>
           <th style="width:4rem;text-align:center">Eliminar</th>
         </tr>
@@ -435,6 +438,24 @@
             <form class="inline-form" method="POST" action="{{ url_for('admin.update_combo_precio', cid=c.id) }}">
               <input type="number" name="precio" class="num-input" value="{{ c.precio }}" min="1" step="100" style="width:80px">
               <button type="submit" class="btn-save">✓</button>
+            </form>
+          </td>
+          <td>
+            <div style="display:flex;align-items:center;gap:.35rem;flex-wrap:wrap;margin-bottom:.4rem">
+              {% if c.estado_vigencia() == "vigente" %}
+              <span style="background:#d1e7dd;color:#0f5132;font-size:.68rem;font-weight:700;padding:.15rem .45rem;border-radius:20px">Temporal activa</span>
+              {% elif c.estado_vigencia() == "programado" %}
+              <span style="background:#eaf4ff;color:#0b5394;font-size:.68rem;font-weight:700;padding:.15rem .45rem;border-radius:20px">Programado</span>
+              {% elif c.estado_vigencia() == "vencido" %}
+              <span style="background:#f8d7da;color:#842029;font-size:.68rem;font-weight:700;padding:.15rem .45rem;border-radius:20px">Vencido</span>
+              {% else %}
+              <span style="background:#f4f4f5;color:#666;font-size:.68rem;font-weight:700;padding:.15rem .45rem;border-radius:20px">Permanente</span>
+              {% endif %}
+            </div>
+            <form class="inline-form" method="POST" action="{{ url_for('admin.update_combo_vigencia', cid=c.id) }}">
+              <input type="date" name="fecha_inicio" value="{{ c.fecha_inicio.isoformat() if c.fecha_inicio else '' }}" class="num-input" style="width:135px">
+              <input type="date" name="fecha_fin" value="{{ c.fecha_fin.isoformat() if c.fecha_fin else '' }}" class="num-input" style="width:135px">
+              <button type="submit" class="btn-save">Guardar</button>
             </form>
           </td>
           <td style="text-align:center">
@@ -841,6 +862,18 @@
           <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Precio * ($)</label>
           <input type="number" name="precio" required min="1" step="100" placeholder="0"
             style="width:110px;padding:.55rem .7rem;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none">
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Inicia <span style="color:#aaa;font-weight:400">(opcional)</span></label>
+          <input type="date" name="fecha_inicio"
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.88rem;outline:none">
+        </div>
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Termina <span style="color:#aaa;font-weight:400">(opcional)</span></label>
+          <input type="date" name="fecha_fin"
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.88rem;outline:none">
         </div>
       </div>
       <!-- Selector de productos -->

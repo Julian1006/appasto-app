@@ -39,7 +39,7 @@ def index():
     prod_map = {p.id: p for p in Product.query.all()}
     combos = [
         c for c in Combo.query.filter_by(activo=True).order_by(Combo.id).all()
-        if all(
+        if c.esta_vigente() and all(
             (p := prod_map.get(item["id"])) and p.activo and
             (p.stock is None or p.stock >= item["cantidad"])
             for item in c.items

@@ -58,7 +58,7 @@ def _cart_total(cart):
     for key, qty in cart.items():
         if key.startswith("combo_"):
             c = get_combo_by_id(int(key[6:]))
-            if c and c["activo"]:
+            if c and c["activo"] and c.get("vigente", True):
                 total += c["precio"] * qty
         else:
             p = get_product_by_id(int(key))
@@ -75,7 +75,7 @@ def get_cart_items():
         if key.startswith("combo_"):
             cid = int(key[6:])
             combo = get_combo_by_id(cid)
-            if combo and combo["activo"]:
+            if combo and combo["activo"] and combo.get("vigente", True):
                 subtotal = combo["precio"] * qty
                 items.append({**combo, "cantidad": qty, "subtotal": subtotal,
                                "is_combo": True, "cart_key": key,
@@ -364,7 +364,7 @@ def checkout_whatsapp():
 def agregar_combo(combo_id):
     from model import Product as _Product
     combo = get_combo_by_id(combo_id)
-    if not combo or not combo.get("activo"):
+    if not combo or not combo.get("activo") or not combo.get("vigente", True):
         return redirect(url_for("main.index"))
     cart = session.get("cart", {})
     key = f"combo_{combo_id}"

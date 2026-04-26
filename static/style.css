@@ -444,6 +444,19 @@ ul { list-style: none; }
   background: linear-gradient(90deg, var(--red), #e74c3c);
 }
 .combo-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.1); }
+.combo-badge-wrap { display: flex; gap: .45rem; flex-wrap: wrap; margin-bottom: .9rem; }
+.combo-badge {
+  display: inline-flex; align-items: center;
+  background: linear-gradient(135deg, #f39c12, #d35400);
+  color: #fff; font-size: .68rem; font-weight: 800;
+  padding: .28rem .7rem; border-radius: 20px;
+  letter-spacing: .04em; text-transform: uppercase;
+}
+.combo-badge-soft {
+  background: rgba(255,255,255,.12);
+  color: rgba(255,255,255,.88);
+  border: 1px solid rgba(255,255,255,.14);
+}
 .combo-emoji { font-size: 2.5rem; line-height: 1; }
 .combo-name { font-size: 1.05rem; font-weight: 700; color: var(--text); }
 .combo-items { display: flex; flex-wrap: wrap; gap: .4rem; }

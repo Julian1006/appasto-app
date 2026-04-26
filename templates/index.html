@@ -73,11 +73,17 @@
 {% if combos %}
 <section class="combos-section combos-sell reveal">
   <div class="container">
-    <h2 class="section-title-sell"><span class="fire-icon">💥</span> Combos — Más por menos</h2>
-    <p class="section-sub-sell">Paquetes listos para ahorrar y disfrutar más</p>
+    <h2 class="section-title-sell"><span class="fire-icon">💥</span> Combos temporales — Más por menos</h2>
+    <p class="section-sub-sell">Paquetes por tiempo limitado para ahorrar y disfrutar más</p>
     <div class="combos-grid">
       {% for combo in combos %}
       <div class="combo-card combo-card-sell">
+        <div class="combo-badge-wrap">
+          <span class="combo-badge">Por tiempo limitado</span>
+          {% if combo.fecha_fin %}
+          <span class="combo-badge combo-badge-soft">Hasta {{ combo.fecha_fin.strftime('%d/%m') }}</span>
+          {% endif %}
+        </div>
         <div class="combo-emoji">{{ combo.emoji }}</div>
         <h3 class="combo-name">{{ combo.nombre }}</h3>
         <div class="combo-items">

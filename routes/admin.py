@@ -1,6 +1,7 @@
 import json
 import os
 import uuid
+from datetime import date
 from functools import wraps
 from hmac import compare_digest
 from time import time
@@ -31,6 +32,16 @@ admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 _failed = defaultdict(list)
 _MAX_ATTEMPTS = 5
 _LOCKOUT_SECS = 900
+
+
+def _parse_date_field(value):
+    value = (value or "").strip()
+    if not value:
+        return None
+    try:
+        return date.fromisoformat(value)
+    except ValueError:
+        return None
 
 
 def _ip():
@@ -94,6 +105,10 @@ def dashboard():
     promos    = Promo.query.order_by(Promo.id.desc()).all()
     n_dest    = Product.query.filter_by(destacado=True).count()
     prod_map  = {p.id: p for p in productos}
+    today     = date.today()
+    combos_vigentes = sum(1 for c in combos if c.activo and c.esta_vigente(today))
+    combos_programados = sum(1 for c in combos if c.estado_vigencia(today) == "programado")
+    combos_vencidos = sum(1 for c in combos if c.estado_vigencia(today) == "vencido")
 
     # IDs de combos con algún producto sin stock suficiente
     combos_sin_stock = set()
@@ -106,7 +121,10 @@ def dashboard():
 
     return render_template("admin.html", productos=productos, pedidos=pedidos,
                            combos=combos, combos_sin_stock=combos_sin_stock,
-                           promos=promos, n_dest=n_dest, max_dest=MAX_DESTACADOS)
+                           promos=promos, n_dest=n_dest, max_dest=MAX_DESTACADOS,
+                           combos_vigentes=combos_vigentes,
+                           combos_programados=combos_programados,
+                           combos_vencidos=combos_vencidos)
 
 
 def _restaurar_stock(order):
@@ -303,11 +321,15 @@ def crear_combo():
     nombre = request.form.get("nombre", "").strip()
     descripcion = request.form.get("descripcion", "").strip()
     emoji = request.form.get("emoji", "🎁").strip() or "🎁"
+    fecha_inicio = _parse_date_field(request.form.get("fecha_inicio"))
+    fecha_fin = _parse_date_field(request.form.get("fecha_fin"))
     try:
         precio = int(request.form.get("precio", 0))
         if precio <= 0:
             raise ValueError
     except (ValueError, TypeError):
+        return redirect(url_for("admin.dashboard") + "#tab-combos")
+    if fecha_inicio and fecha_fin and fecha_fin < fecha_inicio:
         return redirect(url_for("admin.dashboard") + "#tab-combos")
 
     items = []
@@ -322,6 +344,7 @@ def crear_combo():
     combo = Combo(
         nombre=nombre, descripcion=descripcion, emoji=emoji,
         precio=precio, items_json=json.dumps(items, ensure_ascii=False),
+        fecha_inicio=fecha_inicio, fecha_fin=fecha_fin,
     )
     db.session.add(combo)
     db.session.commit()
@@ -357,6 +380,20 @@ def update_combo_precio(cid):
     except (ValueError, TypeError):
         return redirect(url_for("admin.dashboard") + "#tab-combos")
     c.precio = nuevo
+    db.session.commit()
+    return redirect(url_for("admin.dashboard") + "#tab-combos")
+
+
+@admin_bp.route("/combo/<int:cid>/vigencia", methods=["POST"])
+@admin_required
+def update_combo_vigencia(cid):
+    c = Combo.query.get_or_404(cid)
+    fecha_inicio = _parse_date_field(request.form.get("fecha_inicio"))
+    fecha_fin = _parse_date_field(request.form.get("fecha_fin"))
+    if fecha_inicio and fecha_fin and fecha_fin < fecha_inicio:
+        return redirect(url_for("admin.dashboard") + "#tab-combos")
+    c.fecha_inicio = fecha_inicio
+    c.fecha_fin = fecha_fin
     db.session.commit()
     return redirect(url_for("admin.dashboard") + "#tab-combos")
 

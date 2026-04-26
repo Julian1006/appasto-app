@@ -1,3 +1,50 @@
+# =============================================================================
+# app.py — Punto de entrada principal de la aplicación Flask "Appasto"
+#
+# ARQUITECTURA:
+#   - Flask + SQLAlchemy (ORM) con SQLite en local y PostgreSQL en producción
+#   - 3 Blueprints: main_bp (tienda), cart_bp (carrito), admin_bp (panel admin)
+#   - Base de datos gestionada por db en database.py (instancia SQLAlchemy)
+#   - Configuración sensible (contraseñas, llaves) en variables de entorno via config.py
+#
+# MODELOS (model.py):
+#   - Product: productos del catálogo (stock, precio, imagen, activo/inactivo)
+#   - Order: pedidos guardados al hacer checkout
+#   - Combo: combos de productos (descuenta stock de cada producto incluido)
+#   - Promo: cupones de descuento (porcentaje o monto fijo, con límite de usos)
+#
+# SESIÓN (Flask session):
+#   - session["cart"]: dict {"<product_id>": qty, "combo_<combo_id>": qty}
+#   - session["admin"]: True cuando el admin está logueado
+#   - session["promo"]: dict {id, codigo, tipo, valor} cuando hay cupón activo
+#
+# FLUJO DE COMPRA:
+#   1. Cliente agrega productos/combos al carrito (rutas /agregar/, /agregar-combo/)
+#   2. Va al carrito (/carrito), opcionalmente aplica cupón (/aplicar-promo)
+#   3. Completa datos de entrega y elige método de pago
+#   4. Checkout genera URL de WhatsApp con el pedido pre-escrito y guarda Order en DB
+#   5. Admin ve el pedido en /admin y cambia el estado (pendiente→completado/cancelado)
+#      Al cancelar, el stock se restaura automáticamente
+#
+# PAGOS SOPORTADOS:
+#   - WhatsApp directo (checkout-whatsapp)
+#   - Billetera digital: Nequi / Daviplata (checkout-billetera)
+#   - Efectivo contra entrega (checkout-efectivo)
+#   - Tarjeta / PSE via Wompi (checkout-tarjeta) — requiere WOMPI_PUBLIC_KEY en .env
+#
+# VARIABLES DE ENTORNO (.env en local, vars en Render en producción):
+#   DATABASE_URL    → PostgreSQL en prod, SQLite si no está definida
+#   SECRET_KEY      → Llave secreta de Flask (sessions)
+#   ADMIN_PASSWORD  → Contraseña del panel admin
+#   WHATSAPP_NUMBER → Número de WhatsApp del negocio (con código de país, sin +)
+#   WOMPI_PUBLIC_KEY → Llave pública de Wompi para pagos con tarjeta
+#
+# IMÁGENES DE PRODUCTOS:
+#   - Se guardan en static/images/ con nombre aleatorio (prod_<uuid>.ext)
+#   - Se referencian en la DB como "images/prod_xxx.jpg"
+#   - Al mostrar en template: url_for('static', filename=producto.imagen)
+# =============================================================================
+
 from datetime import timedelta
 from flask import Flask, session
 from config import SECRET_KEY, DEBUG, BUSINESS_NAME, DATABASE_URL, WHATSAPP_NUMBER, WOMPI_PUBLIC_KEY
@@ -14,9 +61,9 @@ app.config.update(
     SQLALCHEMY_TRACK_MODIFICATIONS = False,
     SESSION_COOKIE_HTTPONLY        = True,
     SESSION_COOKIE_SAMESITE        = "Lax",
-    SESSION_COOKIE_SECURE          = not DEBUG,   # HTTPS en producción
+    SESSION_COOKIE_SECURE          = not DEBUG,   # Solo HTTPS en producción
     PERMANENT_SESSION_LIFETIME     = timedelta(hours=8),
-    MAX_CONTENT_LENGTH             = 8 * 1024 * 1024,  # 8 MB máx por imagen
+    MAX_CONTENT_LENGTH             = 8 * 1024 * 1024,  # 8 MB máx por imagen subida
 )
 
 db.init_app(app)
@@ -28,6 +75,7 @@ app.register_blueprint(admin_bp)
 
 @app.after_request
 def security_headers(response):
+    # Headers de seguridad básicos para producción
     response.headers["X-Frame-Options"]        = "SAMEORIGIN"
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["Referrer-Policy"]        = "strict-origin-when-cross-origin"
@@ -37,18 +85,21 @@ def security_headers(response):
 
 @app.context_processor
 def inject_globals():
+    # Variables disponibles en TODOS los templates automáticamente
     cart = session.get("cart", {})
     return {
-        "cart_count":     sum(cart.values()),
-        "business_name":  BUSINESS_NAME,
+        "cart_count":      sum(cart.values()),   # Número total de items en carrito (para badge navbar)
+        "business_name":   BUSINESS_NAME,
         "whatsapp_number": WHATSAPP_NUMBER,
-        "wompi_key":      WOMPI_PUBLIC_KEY,
+        "wompi_key":       WOMPI_PUBLIC_KEY,
     }
 
 
-_DESTACADOS_DEFAULT = {4, 5, 6, 1, 3, 29, 31, 49, 60, 73, 87, 8}
+_DESTACADOS_DEFAULT = {4, 5, 6, 1, 3, 29, 31, 49, 60, 73, 87, 8}  # IDs de productos destacados por defecto
 
 def _seed_db():
+    # Carga los productos iniciales (seed) solo si la tabla está vacía
+    # Los productos están definidos en model.py → SEED_PRODUCTS
     from model import Product, SEED_PRODUCTS
     if Product.query.count() == 0:
         for d in SEED_PRODUCTS:
@@ -63,8 +114,10 @@ def _seed_db():
 
 
 with app.app_context():
-    db.create_all()
+    db.create_all()  # Crea todas las tablas definidas en model.py si no existen
     try:
+        # Migraciones manuales para columnas agregadas después del deploy inicial
+        # db.create_all() no altera tablas existentes, por eso usamos ALTER TABLE
         from sqlalchemy import text, inspect as _inspect
         _cols = [c["name"] for c in _inspect(db.engine).get_columns("products")]
         if "stock" not in _cols:
@@ -72,9 +125,15 @@ with app.app_context():
             db.session.commit()
         if "destacado" not in _cols:
             db.session.execute(text("ALTER TABLE products ADD COLUMN destacado INTEGER NOT NULL DEFAULT 0"))
-            # Marcar los destacados por defecto
             _ids = ",".join(str(i) for i in [4, 5, 6, 1, 3, 29, 31, 49, 60, 73, 87, 8])
             db.session.execute(text(f"UPDATE products SET destacado=1 WHERE id IN ({_ids})"))
+            db.session.commit()
+        _combo_cols = [c["name"] for c in _inspect(db.engine).get_columns("combos")]
+        if "fecha_inicio" not in _combo_cols:
+            db.session.execute(text("ALTER TABLE combos ADD COLUMN fecha_inicio DATE"))
+            db.session.commit()
+        if "fecha_fin" not in _combo_cols:
+            db.session.execute(text("ALTER TABLE combos ADD COLUMN fecha_fin DATE"))
             db.session.commit()
     except Exception:
         pass

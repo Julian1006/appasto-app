@@ -1,3 +1,21 @@
+# =============================================================================
+# model.py — Modelos SQLAlchemy y datos seed del catálogo
+#
+# MODELOS:
+#   Order   → pedidos guardados al hacer checkout
+#   Product → productos del catálogo (con stock, imagen, precio)
+#   Combo   → combo de productos (precio fijo, descuenta stock de cada ingrediente)
+#   Promo   → cupones de descuento (porcentaje o monto fijo COP)
+#
+# NOTAS IMPORTANTES:
+#   - Product.stock = None significa stock ILIMITADO (no se controla)
+#   - Product.activo = False lo oculta del catálogo y del carrito
+#   - Cuando stock llega a 0, activo se pone False automáticamente (ver routes/cart.py)
+#   - Combo.items_json guarda JSON: [{"id": <product_id>, "nombre": "...", "cantidad": <libras>}]
+#   - Order.items_json guarda JSON con id de producto para poder restaurar stock al cancelar
+#   - Promo.tipo: "porcentaje" (ej: 20 = 20% off) o "monto" (ej: 5000 = $5.000 off)
+# =============================================================================
+
 import json
 from datetime import datetime, date as _date
 from database import db
@@ -9,12 +27,12 @@ class Order(db.Model):
     id        = db.Column(db.Integer, primary_key=True)
     fecha     = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     metodo    = db.Column(db.String(30), nullable=False)   # WhatsApp, Nequi, Daviplata, Efectivo, Tarjeta
-    total     = db.Column(db.Integer, nullable=False)
-    items_json= db.Column(db.Text, nullable=False)         # JSON con los items
+    total     = db.Column(db.Integer, nullable=False)       # Total en COP ya con descuento aplicado
+    items_json= db.Column(db.Text, nullable=False)          # JSON con items (incluye id para restaurar stock)
     tel       = db.Column(db.String(30), default="")
     direccion = db.Column(db.String(300), default="")
     ciudad    = db.Column(db.String(100), default="")
-    referencia= db.Column(db.String(50), default="")       # para pagos tarjeta
+    referencia= db.Column(db.String(50), default="")        # Referencia Wompi para pagos con tarjeta
     estado    = db.Column(db.String(20), default="pendiente")  # pendiente / completado / cancelado
 
     @property
@@ -41,19 +59,20 @@ class Product(db.Model):
 
     id          = db.Column(db.Integer, primary_key=True)
     nombre      = db.Column(db.String(200), nullable=False)
-    tipo        = db.Column(db.String(50))
-    categoria   = db.Column(db.String(50))
-    precio      = db.Column(db.Integer, nullable=False)
-    precio_orig = db.Column(db.Integer, nullable=False)
+    tipo        = db.Column(db.String(50))         # Res, Cerdo, Pollo, Pescado, Charcutería, Lácteos, Despensa
+    categoria   = db.Column(db.String(50))         # Premium, Especiales, Económicos, Huesos
+    precio      = db.Column(db.Integer, nullable=False)      # Precio actual en COP por libra
+    precio_orig = db.Column(db.Integer, nullable=False)      # Precio original (para mostrar tachado si hay oferta)
     descripcion = db.Column(db.Text)
     emoji       = db.Column(db.String(20))
-    stock       = db.Column(db.Integer, nullable=True)   # None = ilimitado
-    destacado   = db.Column(db.Boolean, default=False, nullable=False, server_default="0")
-    imagen      = db.Column(db.String(300), default="")
-    activo      = db.Column(db.Boolean, default=True, nullable=False)
+    stock       = db.Column(db.Integer, nullable=True)       # None = ilimitado; 0 = agotado
+    destacado   = db.Column(db.Boolean, default=False, nullable=False, server_default="0")  # Aparece en "Los más pedidos"
+    imagen      = db.Column(db.String(300), default="")      # Ruta relativa a static/ ej: "images/prod_abc.jpg"
+    activo      = db.Column(db.Boolean, default=True, nullable=False)  # False = oculto en catálogo
 
     @property
     def precio_modificado(self):
+        # True si el precio fue cambiado manualmente desde el admin (precio != precio_orig)
         return self.precio != self.precio_orig
 
     def to_dict(self):
@@ -82,6 +101,8 @@ def get_product_by_id(product_id):
 
 
 class Combo(db.Model):
+    # Un combo es un paquete de productos a precio fijo.
+    # Al comprarse, descuenta el stock de cada producto incluido según su cantidad.
     __tablename__ = "combos"
 
     id          = db.Column(db.Integer, primary_key=True)
@@ -89,12 +110,35 @@ class Combo(db.Model):
     descripcion = db.Column(db.Text, default="")
     emoji       = db.Column(db.String(20), default="🎁")
     precio      = db.Column(db.Integer, nullable=False)
-    items_json  = db.Column(db.Text, nullable=False, default="[]")
+    items_json  = db.Column(db.Text, nullable=False, default="[]")  # [{"id": int, "nombre": str, "cantidad": int}]
     activo      = db.Column(db.Boolean, default=True, nullable=False)
+    fecha_inicio= db.Column(db.Date, nullable=True)
+    fecha_fin   = db.Column(db.Date, nullable=True)
 
     @property
     def items(self):
         return json.loads(self.items_json)
+
+    def es_temporal(self):
+        return self.fecha_inicio is not None or self.fecha_fin is not None
+
+    def esta_vigente(self, today=None):
+        today = today or _date.today()
+        if self.fecha_inicio and today < self.fecha_inicio:
+            return False
+        if self.fecha_fin and today > self.fecha_fin:
+            return False
+        return True
+
+    def estado_vigencia(self, today=None):
+        today = today or _date.today()
+        if self.fecha_inicio and today < self.fecha_inicio:
+            return "programado"
+        if self.fecha_fin and today > self.fecha_fin:
+            return "vencido"
+        if self.es_temporal():
+            return "vigente"
+        return "permanente"
 
     def to_dict(self):
         return {
@@ -105,6 +149,11 @@ class Combo(db.Model):
             "precio": self.precio,
             "items": self.items,
             "activo": self.activo,
+            "temporal": self.es_temporal(),
+            "vigente": self.esta_vigente(),
+            "estado_vigencia": self.estado_vigencia(),
+            "fecha_inicio": self.fecha_inicio.isoformat() if self.fecha_inicio else None,
+            "fecha_fin": self.fecha_fin.isoformat() if self.fecha_fin else None,
         }
 
 
@@ -114,10 +163,14 @@ def get_combo_by_id(cid):
 
 
 class Promo(db.Model):
+    # Cupones de descuento que el cliente ingresa en el carrito.
+    # tipo="porcentaje": valor=20 → 20% off del total
+    # tipo="monto": valor=5000 → $5.000 off del total
+    # max_usos=None → ilimitado; fecha_expira=None → sin vencimiento
     __tablename__ = "promos"
 
     id          = db.Column(db.Integer, primary_key=True)
-    codigo      = db.Column(db.String(50), nullable=False, unique=True)
+    codigo      = db.Column(db.String(50), nullable=False, unique=True)   # Siempre en MAYÚSCULAS
     tipo        = db.Column(db.String(20), nullable=False)   # 'porcentaje' | 'monto'
     valor       = db.Column(db.Integer, nullable=False)       # % o COP
     activo      = db.Column(db.Boolean, default=True, nullable=False)
@@ -131,6 +184,7 @@ class Promo(db.Model):
         return min(self.valor, total)
 
     def is_valid(self):
+        # Devuelve (True, "") si el cupón se puede usar, (False, "motivo") si no
         if not self.activo:
             return False, "El cupón está inactivo."
         if self.max_usos is not None and self.veces_usado >= self.max_usos:
@@ -149,6 +203,8 @@ class Promo(db.Model):
 
 
 # ── Seed data (se carga una sola vez si la tabla está vacía) ──────────────────
+# Para agregar más productos permanentes, añadirlos aquí y borrar la DB para re-seedear.
+# En producción (Render) se puede agregar desde el admin sin tocar este archivo.
 SEED_PRODUCTS = [
     # ===== RES - Premium =====
     {"id": 1,  "nombre": "Lomo fino entero",           "tipo": "Res",    "categoria": "Premium",      "precio": 30900, "descripcion": "Corte premium de alta calidad, tierno y jugoso.",              "emoji": "🥩", "imagen": "images/carne/Lomo-fino-entero.webp"},
