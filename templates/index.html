@@ -1,122 +1,108 @@
 {% extends "base.html" %}
 
-{% block title %}{{ business_name }} — Carnes Premium a Pasto{% endblock %}
+{% block title %}{{ business_name }} — Carne Premium a Domicilio en Bogotá{% endblock %}
 
 {% block content %}
 
-<!-- HERO -->
-<section class="hero">
+<!-- ══ 1. HERO ══════════════════════════════════════════════════════════════ -->
+<section class="hero hero-sell">
   <div class="hero-content">
-    <span class="hero-tag">🌿 100% Natural · Sin concentrados</span>
-    <h1>Carnes frescas<br>de <em>calidad premium</em></h1>
-    <p>Del campo a tu mesa. Ganado Brahman criado a pasto libre,<br>seleccionado por familias ganaderas de Colombia.</p>
+    <div class="hero-pretag">🚚 Entrega a domicilio en Bogotá</div>
+    <h1>Carne premium<br>lista para pedir<br><em>en 30 segundos</em></h1>
+    <p class="hero-sub">🐄 Pastoreo real &nbsp;·&nbsp; 💪 Nutrición superior &nbsp;·&nbsp; 🔥 Sabor auténtico</p>
     <div class="hero-btns">
-      <a href="{{ url_for('main.catalogo') }}" class="btn btn-hero">Ver Catálogo →</a>
+      <a href="{{ url_for('main.catalogo') }}" class="btn btn-hero">🛒 Ver catálogo</a>
       <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" class="btn btn-hero-wa">📲 Pedir por WhatsApp</a>
     </div>
-  </div>
-</section>
-
-<!-- STATS -->
-<section class="stats-bar">
-  <div class="container">
-    <div class="stats-grid">
-      <div class="stat-item">
-        <span class="stat-n" data-target="3">0</span><span class="stat-unit">+</span>
-        <span class="stat-lbl">Años de experiencia</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-n" data-target="{{ productos_count }}">0</span><span class="stat-unit"></span>
-        <span class="stat-lbl">Productos disponibles</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-n" data-target="100">0</span><span class="stat-unit">%</span>
-        <span class="stat-lbl">A pasto natural</span>
-      </div>
-      <div class="stat-item">
-        <span class="stat-n" data-target="4">0</span><span class="stat-unit"></span>
-        <span class="stat-lbl">Departamentos ganaderos</span>
-      </div>
+    <div class="hero-trust">
+      <span>✅ Sin intermediarios</span>
+      <span>✅ Fresco garantizado</span>
+      <span>✅ Brahman a pasto</span>
     </div>
   </div>
 </section>
 
-<!-- PROPUESTA DE VALOR -->
-<section class="valor-section reveal">
+<!-- ══ 2. LOS MÁS PEDIDOS ════════════════════════════════════════════════ -->
+<section class="mas-pedidos reveal">
   <div class="container">
-    <div class="valor-banners">
-      <div class="valor-banner"><span class="vb-icon">🌿</span><div><strong>100% a pasto</strong><p>Ganado criado libre, sin granos ni concentrados.</p></div></div>
-      <div class="valor-banner"><span class="vb-icon">🐄</span><div><strong>Raza Brahman</strong><p>Ganado selecto de Boyacá, Casanare, Meta y Guaviare.</p></div></div>
-      <div class="valor-banner"><span class="vb-icon">🤝</span><div><strong>Comercio justo</strong><p>Apoyamos ganaderos locales con precios estables.</p></div></div>
-      <div class="valor-banner"><span class="vb-icon">📲</span><div><strong>Entrega a domicilio</strong><p>Pedido por WhatsApp, rápido y sencillo.</p></div></div>
-    </div>
-  </div>
-</section>
-
-<!-- ORIGEN -->
-<section class="origen-section reveal">
-  <div class="container">
-    <div class="origen-inner">
-      <div class="origen-text-col">
-        <span class="origen-label">Nuestro origen</span>
-        <h2>Del llano<br>a tu mesa</h2>
-        <p>Trabajamos directamente con familias ganaderas de Boyacá, Casanare, Meta y Guaviare. Ganado Brahman criado a pasto libre, sin granos ni concentrados. Carne con sabor real y trazabilidad total.</p>
-        <div class="origen-stats-mini">
-          <div class="or-mini-stat"><strong>4</strong><span>Departamentos</span></div>
-          <div class="or-mini-stat"><strong>100%</strong><span>A pasto</span></div>
-          <div class="or-mini-stat"><strong>Directo</strong><span>Del ganadero</span></div>
+    <h2 class="section-title-sell"><span class="fire-icon">🔥</span> Los más pedidos</h2>
+    <p class="section-sub-sell">Los cortes que más eligen nuestros clientes cada semana</p>
+    <div class="pedidos-grid">
+      {% for producto in productos[:4] %}
+      <div class="pedido-card"
+           onclick="abrirModal('{{ producto.nombre }}','{{ producto.tipo }} · {{ producto.categoria }}','{{ producto.descripcion }}','{{ producto.precio }}','{{ producto.emoji }}','{% if producto.imagen %}{{ url_for('static', filename=producto.imagen) }}{% endif %}','{{ producto.id }}','{{ url_for('main.index') }}','{{ producto.tipo }}',{{ 'true' if low_stock and producto.id in low_stock else 'false' }})">
+        <div class="pedido-img-wrap">
+          {% if badges and producto.id in badges %}
+          <span class="badge badge-{{ badges[producto.id][0] }}">{{ badges[producto.id][1] }}</span>
+          {% endif %}
+          {% if low_stock and producto.id in low_stock %}
+          <span class="low-stock-badge">⚡ Últimas unidades</span>
+          {% endif %}
+          {% if producto.imagen %}
+          <img src="{{ url_for('static', filename=producto.imagen) }}" alt="{{ producto.nombre }}" class="product-img" loading="lazy">
+          {% else %}
+          <div class="product-emoji" style="font-size:3rem">{{ producto.emoji }}</div>
+          {% endif %}
+        </div>
+        <div class="pedido-info">
+          <h3 class="pedido-name">{{ producto.nombre }}</h3>
+          <div class="pedido-footer">
+            <div class="pedido-price-block">
+              <span class="pedido-desde">desde</span>
+              <strong class="pedido-price">${{ "{:,}".format(producto.precio) }}</strong>
+              <span class="pedido-unit">/ lb</span>
+            </div>
+            <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST"
+                  class="add-form pedido-form" onclick="event.stopPropagation()">
+              <input type="hidden" name="cantidad" value="1">
+              <input type="hidden" name="next" value="{{ url_for('main.index') }}">
+              <button type="submit" class="btn btn-add">+ Agregar</button>
+            </form>
+          </div>
         </div>
       </div>
-      <div class="origen-timeline">
-        <div class="or-node"><div class="or-circle">🐄</div><span>Ganaderos<br>aliados</span></div>
-        <div class="or-dash"></div>
-        <div class="or-node"><div class="or-circle">✂️</div><span>Selección<br>y corte</span></div>
-        <div class="or-dash"></div>
-        <div class="or-node"><div class="or-circle">❄️</div><span>Cadena<br>de frío</span></div>
-        <div class="or-dash"></div>
-        <div class="or-node"><div class="or-circle">🏠</div><span>Tu<br>mesa</span></div>
-      </div>
+      {% endfor %}
+    </div>
+    <div class="see-all">
+      <a href="{{ url_for('main.catalogo') }}" class="btn btn-outline">Ver todos los productos →</a>
     </div>
   </div>
 </section>
 
-<!-- CÓMO FUNCIONA -->
-<section class="how-section reveal">
+<!-- ══ 3. COMBOS ═════════════════════════════════════════════════════════ -->
+{% if combos %}
+<section class="combos-section combos-sell reveal">
   <div class="container">
-    <h2 class="section-title">¿Cómo funciona?</h2>
-    <div class="how-steps">
-      <div class="how-step">
-        <div class="how-num">01</div>
-        <div class="how-icon">🔍</div>
-        <h3>Explora el catálogo</h3>
-        <p>Navega entre más de 89 productos frescos organizados por tipo y categoría.</p>
+    <h2 class="section-title-sell"><span class="fire-icon">💥</span> Combos — Más por menos</h2>
+    <p class="section-sub-sell">Paquetes listos para ahorrar y disfrutar más</p>
+    <div class="combos-grid">
+      {% for combo in combos %}
+      <div class="combo-card combo-card-sell">
+        <div class="combo-emoji">{{ combo.emoji }}</div>
+        <h3 class="combo-name">{{ combo.nombre }}</h3>
+        <div class="combo-items">
+          {% for item in combo.items %}
+          <span class="combo-item-tag">{{ item.nombre }} ×{{ item.cantidad }}</span>
+          {% endfor %}
+        </div>
+        {% if combo.descripcion %}
+        <p class="combo-desc">{{ combo.descripcion }}</p>
+        {% endif %}
+        <div class="combo-footer">
+          <span class="combo-price">${{ "{:,}".format(combo.precio) }}</span>
+          <form action="{{ url_for('cart.agregar_combo', combo_id=combo.id) }}" method="POST" onclick="event.stopPropagation()">
+            <input type="hidden" name="next" value="{{ url_for('main.index') }}">
+            <button type="submit" class="btn btn-add">🎁 Pedir combo</button>
+          </form>
+        </div>
       </div>
-      <div class="how-arrow">→</div>
-      <div class="how-step">
-        <div class="how-num">02</div>
-        <div class="how-icon">🛒</div>
-        <h3>Arma tu pedido</h3>
-        <p>Selecciona los cortes que quieras y la cantidad en libras.</p>
-      </div>
-      <div class="how-arrow">→</div>
-      <div class="how-step">
-        <div class="how-num">03</div>
-        <div class="how-icon">📲</div>
-        <h3>Pide por WhatsApp</h3>
-        <p>Con un clic envías tu pedido directo a nuestro WhatsApp. ¡Así de fácil!</p>
-      </div>
-      <div class="how-arrow">→</div>
-      <div class="how-step">
-        <div class="how-num">04</div>
-        <div class="how-icon">🏠</div>
-        <h3>Recibe en casa</h3>
-        <p>Entrega fresca a domicilio en Bogotá, empacada con cuidado.</p>
-      </div>
+      {% endfor %}
     </div>
   </div>
 </section>
+{% endif %}
 
-<!-- CATEGORÍAS RÁPIDAS -->
+<!-- ══ 4. CATEGORÍAS ═════════════════════════════════════════════════════ -->
 <section class="quick-cats reveal">
   <div class="container">
     <h2 class="section-title">Explorar por categoría</h2>
@@ -132,102 +118,42 @@
   </div>
 </section>
 
-<!-- PRODUCTOS DESTACADOS -->
-<section class="featured reveal">
+<!-- ══ 5. DIFERENCIAL ═══════════════════════════════════════════════════ -->
+<section class="diferencial-section reveal">
   <div class="container">
-    <h2 class="section-title">Productos Destacados</h2>
-    <div class="carousel-wrapper">
-      <button class="carousel-nav carousel-prev" id="featPrev" aria-label="Anterior">&#8249;</button>
-      <div class="products-carousel" id="featCarousel">
-        {% for producto in productos %}
-        <div class="product-card" onclick="abrirModal('{{ producto.nombre }}','{{ producto.tipo }} · {{ producto.categoria }}','{{ producto.descripcion }}','{{ producto.precio }}','{{ producto.emoji }}','{% if producto.imagen %}{{ url_for('static', filename=producto.imagen) }}{% endif %}','{{ producto.id }}','{{ url_for('main.index') }}','{{ producto.tipo }}',{{ 'true' if low_stock and producto.id in low_stock else 'false' }})">
-          <div class="card-img-wrap">
-            {% if badges and producto.id in badges %}
-            <span class="badge badge-{{ badges[producto.id][0] }}">{{ badges[producto.id][1] }}</span>
-            {% endif %}
-            {% if low_stock and producto.id in low_stock %}
-            <span class="low-stock-badge">⚡ Últimas unidades</span>
-            {% endif %}
-            {% if producto.imagen %}
-            <img src="{{ url_for('static', filename=producto.imagen) }}" alt="{{ producto.nombre }}" class="product-img" loading="lazy">
-            {% else %}
-            <div class="product-emoji">{{ producto.emoji }}</div>
-            {% endif %}
-            <div class="card-overlay">Ver detalle</div>
-          </div>
-          <div class="product-info">
-            <span class="product-category">{{ producto.categoria }}</span>
-            <h3 class="product-name">{{ producto.nombre }}</h3>
-            <div class="product-tags">
-              {% if producto.tipo == 'Res' %}<span class="ptag">🌿 A pasto</span><span class="ptag">🐄 Brahman</span>
-              {% elif producto.tipo == 'Cerdo' %}<span class="ptag">🐷 Criollo</span>
-              {% elif producto.tipo == 'Pollo' %}<span class="ptag">🍗 Fresco</span>
-              {% elif producto.tipo == 'Pescado' %}<span class="ptag">🌊 Del mar</span>
-              {% elif producto.tipo == 'Charcutería' %}<span class="ptag">🏆 Artesanal</span>
-              {% elif producto.tipo == 'Lácteos' %}<span class="ptag">🥛 Natural</span>
-              {% elif producto.tipo == 'Despensa' %}<span class="ptag">🫙 Gourmet</span>
-              {% endif %}
-              <span class="ptag">🇨🇴 Colombia</span>
-            </div>
-            <p class="product-desc">{{ producto.descripcion }}</p>
-            <div class="product-footer">
-              <span class="product-price">${{ "{:,}".format(producto.precio) }}/lb</span>
-              <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST" class="add-form" onclick="event.stopPropagation()">
-                <input type="hidden" name="next" value="{{ url_for('main.index') }}">
-                <div class="qty-stepper">
-                  <button type="button" class="qty-btn qty-minus">−</button>
-                  <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-num">
-                  <button type="button" class="qty-btn qty-plus">+</button>
-                </div>
-                <button type="submit" class="btn btn-add">Agregar</button>
-              </form>
-            </div>
-          </div>
-        </div>
-        {% endfor %}
+    <div class="dif-inner">
+      <div class="dif-text">
+        <span class="dif-label">🐄 Nuestro diferencial</span>
+        <h2>¿Por qué elegir<br><em>Apastto</em>?</h2>
+        <ul class="dif-list">
+          <li>
+            <span class="dif-icon">🌿</span>
+            <div><strong>Ganadería de pastoreo</strong><p>Sin granos ni concentrados. Cría libre y natural en el llano colombiano.</p></div>
+          </li>
+          <li>
+            <span class="dif-icon">💪</span>
+            <div><strong>Mejor perfil nutricional</strong><p>Rico en Omega 3 y CLA. Más sana que la carne de ganadería intensiva.</p></div>
+          </li>
+          <li>
+            <span class="dif-icon">🤝</span>
+            <div><strong>Directo del ganadero</strong><p>Sin intermediarios. Apoyamos familias ganaderas de Boyacá, Casanare y Meta.</p></div>
+          </li>
+        </ul>
+        <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" class="btn btn-hero-wa" style="margin-top:1.5rem;display:inline-flex">
+          📲 Quiero probarlo
+        </a>
       </div>
-      <button class="carousel-nav carousel-next" id="featNext" aria-label="Siguiente">&#8250;</button>
-    </div>
-    <div class="see-all">
-      <a href="{{ url_for('main.catalogo') }}" class="btn btn-outline">Ver todos los productos →</a>
+      <div class="dif-stats">
+        <div class="dif-stat"><strong>100%</strong><span>A pasto natural</span></div>
+        <div class="dif-stat"><strong>4</strong><span>Departamentos ganaderos</span></div>
+        <div class="dif-stat"><strong>3+</strong><span>Años de experiencia</span></div>
+        <div class="dif-stat"><strong>∞</strong><span>Sabor real</span></div>
+      </div>
     </div>
   </div>
 </section>
 
-{% if combos %}
-<!-- COMBOS ESPECIALES -->
-<section class="combos-section reveal">
-  <div class="container">
-    <h2 class="section-title">🎁 Combos especiales</h2>
-    <p style="text-align:center;color:var(--text-light);margin-top:-.5rem;margin-bottom:1rem">Paquetes seleccionados al mejor precio</p>
-    <div class="combos-grid">
-      {% for combo in combos %}
-      <div class="combo-card">
-        <div class="combo-emoji">{{ combo.emoji }}</div>
-        <h3 class="combo-name">{{ combo.nombre }}</h3>
-        <div class="combo-items">
-          {% for item in combo.items %}
-          <span class="combo-item-tag">{{ item.nombre }} ×{{ item.cantidad }}</span>
-          {% endfor %}
-        </div>
-        {% if combo.descripcion %}
-        <p class="combo-desc">{{ combo.descripcion }}</p>
-        {% endif %}
-        <div class="combo-footer">
-          <span class="combo-price">${{ "{:,}".format(combo.precio) }}</span>
-          <form action="{{ url_for('cart.agregar_combo', combo_id=combo.id) }}" method="POST" onclick="event.stopPropagation()">
-            <input type="hidden" name="next" value="{{ url_for('main.index') }}">
-            <button type="submit" class="btn btn-add">🎁 Agregar</button>
-          </form>
-        </div>
-      </div>
-      {% endfor %}
-    </div>
-  </div>
-</section>
-{% endif %}
-
-<!-- TESTIMONIOS -->
+<!-- ══ TESTIMONIOS ═════════════════════════════════════════════════════ -->
 <section class="testimonios reveal">
   <div class="container">
     <h2 class="section-title">Lo que dicen nuestros clientes</h2>
@@ -239,134 +165,35 @@
       </div>
       <div class="testi-card">
         <div class="testi-stars">★★★★★</div>
-        <p>"Llevo 6 meses pidiendo cada semana. La calidad es consistente y el servicio por WhatsApp es muy rápido. Excelente emprendimiento familiar."</p>
+        <p>"Llevo 6 meses pidiendo cada semana. La calidad es consistente y el servicio por WhatsApp es muy rápido. Excelente emprendimiento."</p>
         <div class="testi-autor"><span class="testi-avatar">L</span><div><strong>Laura P.</strong><small>Usaquén</small></div></div>
       </div>
       <div class="testi-card">
         <div class="testi-stars">★★★★★</div>
-        <p>"Por fin carne de pasto de verdad en Bogotá. Se nota en el sabor y en cómo me siento después de comerla. El lomo fino porcionado es una joya."</p>
+        <p>"Por fin carne de pasto de verdad en Bogotá. Se nota en el sabor. El lomo fino porcionado es una joya."</p>
         <div class="testi-autor"><span class="testi-avatar">A</span><div><strong>Andrés R.</strong><small>Chapinero</small></div></div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- COMBOS ESPECIALES -->
-<section class="promos-section reveal">
+<!-- ══ 6. CIERRE ════════════════════════════════════════════════════════ -->
+<section class="cierre-section reveal">
   <div class="container">
-    <h2 class="section-title">Combos Especiales</h2>
-    <p class="section-sub">Paquetes curados para ahorrar más y disfrutar mejor.</p>
-    <div class="promos-grid">
-
-      <div class="promo-card">
-        <span class="promo-badge">AHORRA 10%</span>
-        <div class="promo-emoji">🔥🥩</div>
-        <h3>Combo Parrillero</h3>
-        <ul class="promo-items">
-          <li>Tomahawk — 1 lb</li>
-          <li>Asado de tira — 2 lb</li>
-          <li>Panceta de cerdo — 1 lb</li>
-        </ul>
-        <div class="promo-price-wrap">
-          <span class="promo-original">$76.600 precio normal</span>
-          <span class="promo-price">$69.000</span>
-        </div>
-        <button onclick="pedirCombo('Combo Parrillero: Tomahawk 1lb + Asado de tira 2lb + Panceta de cerdo 1lb (4lb en total)')" class="btn btn-hero-wa promo-btn">📲 Pedir este combo</button>
-      </div>
-
-      <div class="promo-card promo-destacado">
-        <span class="promo-badge promo-badge-gold">★ MÁS POPULAR</span>
-        <div class="promo-emoji">👨‍👩‍👧‍👦🍗</div>
-        <h3>Combo Familiar</h3>
-        <ul class="promo-items">
-          <li>Cadera de res — 2 lb</li>
-          <li>Pechuga entera — 2 lb</li>
-          <li>Costilla de cerdo — 1 lb</li>
-        </ul>
-        <div class="promo-price-wrap">
-          <span class="promo-original">$74.500 precio normal</span>
-          <span class="promo-price">$66.000</span>
-        </div>
-        <button onclick="pedirCombo('Combo Familiar: Cadera de res 2lb + Pechuga entera 2lb + Costilla de cerdo 1lb (5lb en total)')" class="btn btn-hero-wa promo-btn">📲 Pedir este combo</button>
-      </div>
-
-      <div class="promo-card">
-        <span class="promo-badge promo-badge-purple">PREMIUM</span>
-        <div class="promo-emoji">💎✨</div>
-        <h3>Combo Premium</h3>
-        <ul class="promo-items">
-          <li>Lomo fino porcionado — 1 lb</li>
-          <li>Ribeye — 1 lb</li>
-          <li>T-bone — 1 lb</li>
-        </ul>
-        <div class="promo-price-wrap">
-          <span class="promo-original">$87.200 precio normal</span>
-          <span class="promo-price">$78.500</span>
-        </div>
-        <button onclick="pedirCombo('Combo Premium: Lomo fino porcionado 1lb + Ribeye 1lb + T-bone 1lb (3lb en total)')" class="btn btn-hero-wa promo-btn">📲 Pedir este combo</button>
-      </div>
-
-    </div>
-  </div>
-</section>
-
-<!-- CTA FINAL -->
-<section class="cta-section reveal">
-  <div class="container">
-    <div class="cta-box">
-      <h2>¿Listo para probar la diferencia?</h2>
-      <p>Únete a cientos de familias bogotanas que ya eligen carne a pasto.</p>
-      <div class="hero-btns">
-        <a href="{{ url_for('main.catalogo') }}" class="btn btn-hero">Ver Catálogo →</a>
-        <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" class="btn btn-hero-wa">📲 Escríbenos</a>
-      </div>
+    <div class="cierre-box">
+      <div class="cierre-icon">📲</div>
+      <h2>Haz tu pedido<br>en segundos</h2>
+      <p>Te confirmamos por WhatsApp y listo.<br>Sin complicaciones. Sin esperas.</p>
+      <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" class="btn-cierre-wa">
+        PEDIR POR WHATSAPP &nbsp;🔥
+      </a>
+      <p class="cierre-sub">✅ Entrega a domicilio &nbsp;·&nbsp; ✅ Pago flexible &nbsp;·&nbsp; ✅ Frescura garantizada</p>
     </div>
   </div>
 </section>
 
 <script>
-// Contador animado
-function animarContadores() {
-  document.querySelectorAll('.stat-n').forEach(el => {
-    const target = +el.dataset.target;
-    let cur = 0;
-    const step = Math.ceil(target / 40);
-    const timer = setInterval(() => {
-      cur = Math.min(cur + step, target);
-      el.textContent = cur;
-      if (cur >= target) clearInterval(timer);
-    }, 40);
-  });
-}
-const observer = new IntersectionObserver(entries => {
-  if (entries[0].isIntersecting) { animarContadores(); observer.disconnect(); }
-}, { threshold: 0.5 });
-const statsEl = document.querySelector('.stats-bar');
-if (statsEl) observer.observe(statsEl);
-
-// Featured carousel navigation
-(function() {
-  const carousel = document.getElementById('featCarousel');
-  if (!carousel) return;
-  function getScrollAmount() {
-    const card = carousel.querySelector('.product-card');
-    return card ? card.offsetWidth + 24 : 280;
-  }
-  document.getElementById('featPrev').addEventListener('click', () => {
-    carousel.scrollBy({ left: -getScrollAmount() * 2, behavior: 'smooth' });
-  });
-  document.getElementById('featNext').addEventListener('click', () => {
-    carousel.scrollBy({ left: getScrollAmount() * 2, behavior: 'smooth' });
-  });
-})();
-
-// Combos WhatsApp
-function pedirCombo(desc) {
-  var msg = '¡Hola Appasto! Quiero pedir el ' + desc + '. Por favor confirmar precio y disponibilidad. ¡Gracias!';
-  window.open('https://wa.me/{{ whatsapp_number }}?text=' + encodeURIComponent(msg), '_blank');
-}
-
-// Botones +/- cantidad
+// Botones +/- cantidad (Los más pedidos)
 document.querySelectorAll('.qty-minus').forEach(function(btn) {
   btn.addEventListener('click', function(e) {
     e.stopPropagation();
@@ -382,14 +209,17 @@ document.querySelectorAll('.qty-plus').forEach(function(btn) {
   });
 });
 
-// Cart button feedback
+// Feedback botón agregar
 document.querySelectorAll('.add-form').forEach(form => {
   form.addEventListener('submit', function() {
     const btn = this.querySelector('.btn-add');
     if (!btn) return;
     btn.textContent = '✓ Listo';
     btn.style.background = '#27ae60';
-    btn.classList.add('btn-added');
+    setTimeout(function() {
+      btn.textContent = '+ Agregar';
+      btn.style.background = '';
+    }, 1800);
   });
 });
 </script>
