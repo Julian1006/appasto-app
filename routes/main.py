@@ -56,7 +56,7 @@ def catalogo():
         productos = todos
 
     return render_template("catalog.html", productos=productos,
-                           tabs=TABS, filtro_activo=filtro, badges=BADGES, low_stock=LOW_STOCK)
+                           tabs=TABS, filtro_activo=filtro, low_stock=LOW_STOCK)
 
 
 @main_bp.route("/api/related/<tipo>/<int:product_id>")
