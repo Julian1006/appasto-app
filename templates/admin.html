@@ -108,6 +108,11 @@
 
     .hora-badge { font-size: .72rem; color: #888; margin-top: .15rem; }
 
+    /* Contador destacados */
+    .dest-counter { font-size: .82rem; color: #555; padding: .35rem .8rem; border-radius: 20px; background: #f0f0f0; }
+    .dest-counter strong { color: #1a1a1a; }
+    .dest-full { background: #fef3cd; color: #856404; font-weight: 600; }
+
     .estado-form { display: flex; align-items: center; gap: .35rem; margin-top: .45rem; }
     .estado-form select { padding: .28rem .5rem; border: 1px solid #ddd; border-radius: 6px; font-size: .78rem; outline: none; }
     .estado-form select:focus { border-color: #c0392b; }
@@ -151,6 +156,12 @@
     <span class="tab-badge">{{ pendientes_count }}</span>
     {% endif %}
   </button>
+  <button class="tab-btn" id="btn-tab-combos" onclick="switchTab('combos')">
+    🎁 Combos
+    {% if combos %}
+    <span style="color:#aaa;font-weight:400">({{ combos|length }})</span>
+    {% endif %}
+  </button>
 </div>
 
 <!-- ══════════════════ TAB: PRODUCTOS ══════════════════ -->
@@ -161,71 +172,107 @@
     <div class="stat-pill">Sin stock: <strong>{{ productos|selectattr('stock')|selectattr('stock','equalto',0)|list|length }}</strong></div>
   </div>
   <div class="toolbar">
+    <button onclick="document.getElementById('modal-producto').style.display='flex'"
+      style="background:#1a1a1a;color:#fff;border:none;padding:.55rem 1.2rem;border-radius:8px;font-size:.88rem;font-weight:700;cursor:pointer">
+      + Crear producto
+    </button>
     <input type="text" id="buscar" placeholder="🔍 Buscar producto..." oninput="filtrarTabla()">
+    <span class="dest-counter {{ 'dest-full' if n_dest >= max_dest else '' }}">
+      ⭐ Destacados: <strong>{{ n_dest }}/{{ max_dest }}</strong>
+      {% if n_dest >= max_dest %} — límite alcanzado{% endif %}
+    </span>
     <span style="font-size:.82rem;color:#777" id="conteo"></span>
   </div>
   <div class="table-wrap">
     <table id="tabla">
       <thead>
         <tr>
-          <th>#</th>
+          <th style="width:2rem">#</th>
           <th>Producto</th>
-          <th>Tipo</th>
-          <th>Precio</th>
-          <th>Cambiar precio</th>
-          <th>Stock disponible</th>
-          <th>Destacado ⭐</th>
-          <th>Habilitado</th>
+          <th style="width:7rem">Precio/lb</th>
+          <th style="width:9rem">Stock</th>
+          <th style="width:5rem;text-align:center">⭐</th>
+          <th style="width:5rem;text-align:center">Activo</th>
+          <th style="width:7rem;text-align:center">Acciones</th>
         </tr>
       </thead>
       <tbody>
         {% for p in productos %}
+        {% set lleno = n_dest >= max_dest and not p.destacado %}
         <tr class="{{ '' if p.activo else 'disabled-row' }}" data-nombre="{{ p.nombre|lower }}">
-          <td style="color:#bbb;font-size:.75rem">{{ p.id }}</td>
-          <td><strong>{{ p.nombre }}</strong><br><span style="font-size:.73rem;color:#aaa">{{ p.categoria }}</span></td>
-          <td><span class="badge-tipo tipo-{{ p.tipo }}">{{ p.tipo }}</span></td>
+
+          <td style="color:#ccc;font-size:.75rem">{{ p.id }}</td>
+
+          <!-- Producto -->
           <td>
-            <span class="{{ 'price-override' if p.precio_modificado else '' }}">${{ "{:,}".format(p.precio) }}/lb</span>
-            <div class="inline-form" style="margin-top:.35rem">
-              <form class="inline-form" method="POST" action="{{ url_for('admin.update_precio', pid=p.id) }}">
-                <input type="number" name="precio" class="num-input" value="{{ p.precio }}" min="1" max="999999" step="100">
-                <button type="submit" class="btn-save">Guardar</button>
-              </form>
-              <form method="POST" action="{{ url_for('admin.reset_precio', pid=p.id) }}">
-                <button type="submit" class="btn-reset">↺</button>
-              </form>
+            <div style="font-weight:600;font-size:.88rem">{{ p.nombre }}</div>
+            <div style="display:flex;align-items:center;gap:.4rem;margin-top:.25rem">
+              <span class="badge-tipo tipo-{{ p.tipo }}">{{ p.tipo }}</span>
+              <span style="font-size:.72rem;color:#aaa">{{ p.categoria }}</span>
             </div>
           </td>
+
+          <!-- Precio -->
           <td>
-            {% if p.stock is none %}
-              <span class="stock-inf">∞ Ilimitado</span>
-            {% elif p.stock == 0 %}
-              <span class="stock-out">⚠ Agotado</span>
-            {% elif p.stock <= 5 %}
-              <span class="stock-low">⚡ {{ p.stock }} lb</span>
-            {% else %}
-              <span class="stock-ok">✓ {{ p.stock }} lb</span>
-            {% endif %}
-            <form class="inline-form" method="POST" action="{{ url_for('admin.update_stock', pid=p.id) }}" style="margin-top:.35rem">
-              <input type="number" name="stock" class="num-input" value="{{ p.stock if p.stock is not none else '' }}" min="0" max="9999" placeholder="∞ libre">
-              <button type="submit" class="btn-save">Guardar</button>
+            <div class="{{ 'price-override' if p.precio_modificado else '' }}" style="font-weight:700;font-size:.88rem;margin-bottom:.3rem">${{ "{:,}".format(p.precio) }}</div>
+            <form class="inline-form" method="POST" action="{{ url_for('admin.update_precio', pid=p.id) }}">
+              <input type="number" name="precio" class="num-input" value="{{ p.precio }}" min="1" max="999999" step="100" style="width:80px">
+              <button type="submit" class="btn-save">✓</button>
+              <form method="POST" action="{{ url_for('admin.reset_precio', pid=p.id) }}" style="display:inline">
+                <button type="submit" class="btn-reset" title="Restablecer">↺</button>
+              </form>
             </form>
           </td>
+
+          <!-- Stock -->
+          <td>
+            <div style="margin-bottom:.3rem;font-size:.82rem">
+              {% if p.stock is none %}<span class="stock-inf">∞ libre</span>
+              {% elif p.stock == 0 %}<span class="stock-out">⚠ Agotado</span>
+              {% elif p.stock <= 5 %}<span class="stock-low">⚡ {{ p.stock }} lb</span>
+              {% else %}<span class="stock-ok">✓ {{ p.stock }} lb</span>{% endif %}
+            </div>
+            <form class="inline-form" method="POST" action="{{ url_for('admin.update_stock', pid=p.id) }}">
+              <input type="number" name="stock" class="num-input" value="{{ p.stock if p.stock is not none else '' }}" min="0" max="9999" placeholder="∞" style="width:68px">
+              <button type="submit" class="btn-save">✓</button>
+            </form>
+          </td>
+
+          <!-- Destacado -->
           <td style="text-align:center">
             <form method="POST" action="{{ url_for('admin.toggle_destacado', pid=p.id) }}">
-              <button type="submit" title="{{ 'Quitar de destacados' if p.destacado else 'Agregar a destacados' }}"
-                style="background:none;border:none;font-size:1.4rem;cursor:pointer;opacity:{{ '1' if p.destacado else '0.2' }};transition:opacity .2s">
-                ⭐
-              </button>
+              <button type="submit"
+                {% if lleno %}disabled title="Límite de {{ max_dest }} alcanzado"{% else %}title="{{ 'Quitar de destacados' if p.destacado else 'Agregar a destacados' }}"{% endif %}
+                style="background:none;border:none;font-size:1.5rem;line-height:1;
+                       cursor:{{ 'not-allowed' if lleno else 'pointer' }};
+                       opacity:{{ '1' if p.destacado else ('0.15' if lleno else '0.25') }};
+                       transition:opacity .2s;filter:{{ 'none' if p.destacado else 'grayscale(1)' }}">⭐</button>
             </form>
           </td>
-          <td>
+
+          <!-- Habilitado -->
+          <td style="text-align:center">
             <form method="POST" action="{{ url_for('admin.toggle_producto', pid=p.id) }}">
               <label class="switch">
                 <input type="checkbox" {{ 'checked' if p.activo else '' }} onchange="this.form.submit()">
                 <span class="slider"></span>
               </label>
             </form>
+          </td>
+
+          <!-- Acciones -->
+          <td style="text-align:center">
+            <div style="display:flex;gap:.35rem;justify-content:center">
+              <button type="button"
+                onclick='abrirEditProd({{ {"id": p.id, "nombre": p.nombre, "emoji": p.emoji, "tipo": p.tipo, "categoria": p.categoria, "descripcion": p.descripcion, "precio": p.precio, "stock": p.stock if p.stock is not none else "", "imagen_url": url_for("static", filename=p.imagen) if p.imagen else ""} | tojson }})'
+                title="Editar"
+                style="background:none;border:1px solid #ddd;color:#555;padding:.3rem .5rem;border-radius:7px;cursor:pointer;font-size:.82rem">✏️</button>
+              <form method="POST" action="{{ url_for('admin.delete_producto', pid=p.id) }}"
+                onsubmit="return confirm('¿Eliminar {{ p.nombre }}? Esta acción no se puede deshacer.')">
+                <button type="submit" title="Eliminar"
+                  style="background:none;border:1px solid #ddd;color:#c0392b;padding:.3rem .5rem;border-radius:7px;cursor:pointer;font-size:.82rem">🗑</button>
+              </form>
+            </div>
           </td>
         </tr>
         {% endfor %}
@@ -326,6 +373,369 @@
   </div>
 </div>
 
+<!-- ══════════════════ TAB: COMBOS ══════════════════ -->
+<div class="tab-content" id="tab-combos">
+  <div class="stats-bar">
+    <div class="stat-pill">Total: <strong>{{ combos|length }}</strong> combos</div>
+    <div class="stat-pill" style="background:#d1e7dd">Activos: <strong>{{ combos|selectattr('activo')|list|length }}</strong></div>
+  </div>
+  <div class="toolbar">
+    <button onclick="document.getElementById('modal-combo').style.display='flex'"
+      style="background:#c0392b;color:#fff;border:none;padding:.55rem 1.2rem;border-radius:8px;font-size:.88rem;font-weight:700;cursor:pointer">
+      + Crear combo
+    </button>
+  </div>
+  <div class="table-wrap">
+    {% if combos %}
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Combo</th>
+          <th>Productos incluidos</th>
+          <th style="width:9rem">Precio</th>
+          <th style="width:5rem;text-align:center">Activo</th>
+          <th style="width:4rem;text-align:center">Eliminar</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in combos %}
+        <tr class="{{ '' if c.activo else 'disabled-row' }}">
+          <td style="color:#ccc;font-size:.75rem">{{ c.id }}</td>
+          <td>
+            <div style="font-size:1.5rem;line-height:1;margin-bottom:.3rem">{{ c.emoji }}</div>
+            <div style="font-weight:700;font-size:.9rem">{{ c.nombre }}</div>
+            {% if c.descripcion %}
+            <div style="font-size:.75rem;color:#aaa;margin-top:.15rem">{{ c.descripcion }}</div>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display:flex;flex-wrap:wrap;gap:.3rem">
+              {% for item in c.items %}
+              <span style="background:#f4f4f5;color:#555;font-size:.7rem;font-weight:600;padding:.15rem .45rem;border-radius:20px">
+                {{ item.nombre }} ×{{ item.cantidad }}
+              </span>
+              {% endfor %}
+            </div>
+          </td>
+          <td>
+            <div style="font-weight:800;color:#c0392b;font-size:.95rem;margin-bottom:.3rem">${{ "{:,}".format(c.precio) }}</div>
+            <form class="inline-form" method="POST" action="{{ url_for('admin.update_combo_precio', cid=c.id) }}">
+              <input type="number" name="precio" class="num-input" value="{{ c.precio }}" min="1" step="100" style="width:80px">
+              <button type="submit" class="btn-save">✓</button>
+            </form>
+          </td>
+          <td style="text-align:center">
+            <form method="POST" action="{{ url_for('admin.toggle_combo', cid=c.id) }}">
+              <label class="switch">
+                <input type="checkbox" {{ 'checked' if c.activo else '' }} onchange="this.form.submit()">
+                <span class="slider"></span>
+              </label>
+            </form>
+          </td>
+          <td style="text-align:center">
+            <form method="POST" action="{{ url_for('admin.delete_combo', cid=c.id) }}"
+              onsubmit="return confirm('¿Eliminar el combo {{ c.nombre }}?')">
+              <button type="submit"
+                style="background:none;border:1px solid #ddd;color:#c0392b;padding:.3rem .55rem;border-radius:7px;cursor:pointer;font-size:.82rem">
+                🗑
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-msg">🎁 Aún no hay combos.<br><span style="font-size:.8rem">Crea tu primer combo con el botón de arriba.</span></div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ══════════════════ MODAL EDITAR PRODUCTO ══════════════════ -->
+<div id="modal-editar" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:flex-start;justify-content:center;overflow-y:auto;padding:2rem 1rem">
+  <div style="background:#fff;width:100%;max-width:640px;border-radius:16px;overflow:hidden;margin:auto">
+    <div style="background:#c0392b;color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between">
+      <strong style="font-size:1rem">✏️ Editar producto</strong>
+      <button onclick="document.getElementById('modal-editar').style.display='none'"
+        style="background:none;border:none;color:#fff;font-size:1.6rem;line-height:1;cursor:pointer">×</button>
+    </div>
+    <form id="edit-form" method="POST" enctype="multipart/form-data"
+          style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem">
+
+      <!-- Nombre + Emoji -->
+      <div style="display:grid;grid-template-columns:1fr 70px;gap:.75rem;align-items:end">
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Nombre *</label>
+          <input type="text" id="edit-nombre" name="nombre" required
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none">
+        </div>
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Emoji</label>
+          <input type="text" id="edit-emoji" name="emoji" maxlength="4"
+            style="width:100%;padding:.55rem .5rem;border:1.5px solid #ddd;border-radius:8px;font-size:1.2rem;text-align:center;outline:none">
+        </div>
+      </div>
+
+      <!-- Tipo + Categoría -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Tipo *</label>
+          <select id="edit-tipo" name="tipo" required
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.88rem;outline:none;background:#fff">
+            <option>Res</option><option>Cerdo</option><option>Pollo</option>
+            <option>Pescado</option><option>Charcutería</option>
+            <option>Lácteos</option><option>Despensa</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Categoría <span style="color:#aaa;font-weight:400">(opcional)</span></label>
+          <select id="edit-categoria" name="categoria"
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.88rem;outline:none;background:#fff">
+            <option value="">— Ninguna —</option>
+            <option>Premium</option><option>Especiales</option>
+            <option>Económicos</option><option>Huesos</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      <div>
+        <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Descripción</label>
+        <textarea id="edit-desc" name="descripcion" rows="2"
+          style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.88rem;outline:none;resize:vertical;font-family:inherit"></textarea>
+      </div>
+
+      <!-- Precio + Stock -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Precio por lb ($)</label>
+          <input type="number" id="edit-precio" name="precio" min="1" step="100"
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none">
+        </div>
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Stock <span style="color:#aaa;font-weight:400">(vacío = ilimitado)</span></label>
+          <input type="number" id="edit-stock" name="stock" min="0"
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none">
+        </div>
+      </div>
+
+      <!-- Imagen -->
+      <div>
+        <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.5rem">Imagen <span style="color:#aaa;font-weight:400">(sube una nueva para reemplazar)</span></label>
+        <div style="display:flex;align-items:center;gap:1rem">
+          <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                        width:110px;height:110px;border:2px dashed #ddd;border-radius:12px;
+                        cursor:pointer;flex-shrink:0;overflow:hidden"
+                 id="edit-img-label" for="edit-img-input">
+            <img id="edit-img-preview" src="" alt=""
+              style="display:none;width:100%;height:100%;object-fit:cover">
+            <span id="edit-img-placeholder" style="display:flex;flex-direction:column;align-items:center;gap:.3rem;color:#bbb;font-size:.75rem;text-align:center;padding:.5rem">
+              <span style="font-size:1.6rem">🖼️</span>Cambiar imagen
+            </span>
+          </label>
+          <input type="file" name="imagen" id="edit-img-input" accept=".jpg,.jpeg,.png,.webp"
+            style="display:none" onchange="prevImgEdit(this)">
+          <div style="font-size:.8rem;color:#888;line-height:1.6">
+            Haz clic para subir una foto nueva.<br>
+            <span style="color:#aaa">Deja vacío para conservar la imagen actual.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div style="display:flex;gap:.75rem;justify-content:flex-end;padding-top:.5rem">
+        <button type="button" onclick="document.getElementById('modal-editar').style.display='none'"
+          style="background:#f4f4f5;color:#555;border:none;padding:.6rem 1.2rem;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer">Cancelar</button>
+        <button type="submit"
+          style="background:#c0392b;color:#fff;border:none;padding:.6rem 1.4rem;border-radius:8px;font-size:.88rem;font-weight:700;cursor:pointer">✓ Guardar cambios</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════ MODAL CREAR PRODUCTO ══════════════════ -->
+<div id="modal-producto" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:flex-start;justify-content:center;overflow-y:auto;padding:2rem 1rem">
+  <div style="background:#fff;width:100%;max-width:640px;border-radius:16px;overflow:hidden;margin:auto">
+    <div style="background:#1a1a1a;color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between">
+      <strong style="font-size:1rem">📦 Crear nuevo producto</strong>
+      <button onclick="document.getElementById('modal-producto').style.display='none'"
+        style="background:none;border:none;color:#fff;font-size:1.6rem;line-height:1;cursor:pointer">×</button>
+    </div>
+    <form method="POST" action="{{ url_for('admin.crear_producto') }}"
+          enctype="multipart/form-data" style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem">
+
+      <!-- Nombre + Emoji -->
+      <div style="display:grid;grid-template-columns:1fr 70px;gap:.75rem;align-items:end">
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Nombre *</label>
+          <input type="text" name="nombre" required placeholder="ej: Lomo de res premium"
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none">
+        </div>
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Emoji</label>
+          <input type="text" name="emoji" value="🥩" maxlength="4"
+            style="width:100%;padding:.55rem .5rem;border:1.5px solid #ddd;border-radius:8px;font-size:1.2rem;text-align:center;outline:none">
+        </div>
+      </div>
+
+      <!-- Tipo + Categoría -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Tipo *</label>
+          <select name="tipo" required
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.88rem;outline:none;background:#fff">
+            <option value="">— Selecciona —</option>
+            <option>Res</option><option>Cerdo</option><option>Pollo</option>
+            <option>Pescado</option><option>Charcutería</option>
+            <option>Lácteos</option><option>Despensa</option>
+          </select>
+        </div>
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Categoría <span style="color:#aaa;font-weight:400">(opcional)</span></label>
+          <select name="categoria"
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.88rem;outline:none;background:#fff">
+            <option value="">— Ninguna —</option>
+            <option>Premium</option><option>Especiales</option>
+            <option>Económicos</option><option>Huesos</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Descripción -->
+      <div>
+        <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Descripción</label>
+        <textarea name="descripcion" rows="2" placeholder="ej: Corte magro, ideal para asar o freír..."
+          style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.88rem;outline:none;resize:vertical;font-family:inherit"></textarea>
+      </div>
+
+      <!-- Precio + Stock -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Precio por lb * ($)</label>
+          <input type="number" name="precio" required min="1" step="100" placeholder="0"
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none">
+        </div>
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Stock inicial <span style="color:#aaa;font-weight:400">(vacío = ilimitado)</span></label>
+          <input type="number" name="stock" min="0" placeholder="∞"
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none">
+        </div>
+      </div>
+
+      <!-- Imagen -->
+      <div>
+        <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.5rem">Imagen del producto <span style="color:#aaa;font-weight:400">(JPG/PNG/WEBP, máx 8 MB)</span></label>
+        <div style="display:flex;align-items:center;gap:1rem">
+          <label style="display:flex;flex-direction:column;align-items:center;justify-content:center;
+                        width:110px;height:110px;border:2px dashed #ddd;border-radius:12px;
+                        cursor:pointer;transition:border-color .2s;flex-shrink:0"
+                 id="img-drop-label" for="img-file-input">
+            <img id="img-preview" src="" alt="" style="display:none;width:100%;height:100%;object-fit:cover;border-radius:10px">
+            <span id="img-placeholder" style="display:flex;flex-direction:column;align-items:center;gap:.3rem;color:#bbb;font-size:.75rem;text-align:center;padding:.5rem">
+              <span style="font-size:1.6rem">🖼️</span>
+              Subir imagen
+            </span>
+          </label>
+          <input type="file" name="imagen" id="img-file-input" accept=".jpg,.jpeg,.png,.webp"
+            style="display:none" onchange="prevImg(this)">
+          <div style="font-size:.8rem;color:#888;line-height:1.6">
+            Haz clic en el recuadro para<br>seleccionar una foto.<br>
+            <span style="color:#aaa">Si no subes imagen se mostrará el emoji.</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Acciones -->
+      <div style="display:flex;gap:.75rem;justify-content:flex-end;padding-top:.5rem">
+        <button type="button" onclick="document.getElementById('modal-producto').style.display='none'"
+          style="background:#f4f4f5;color:#555;border:none;padding:.6rem 1.2rem;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer">Cancelar</button>
+        <button type="submit"
+          style="background:#1a1a1a;color:#fff;border:none;padding:.6rem 1.4rem;border-radius:8px;font-size:.88rem;font-weight:700;cursor:pointer">✓ Crear producto</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════ MODAL CREAR COMBO ══════════════════ -->
+<div id="modal-combo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:flex-start;justify-content:center;overflow-y:auto;padding:2rem 1rem">
+  <div style="background:#fff;width:100%;max-width:700px;border-radius:16px;overflow:hidden;margin:auto">
+    <!-- Header -->
+    <div style="background:#1a1a1a;color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between">
+      <strong style="font-size:1rem">🎁 Crear nuevo combo</strong>
+      <button onclick="document.getElementById('modal-combo').style.display='none'"
+        style="background:none;border:none;color:#fff;font-size:1.6rem;line-height:1;cursor:pointer">×</button>
+    </div>
+    <!-- Form -->
+    <form method="POST" action="{{ url_for('admin.crear_combo') }}" style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem">
+      <!-- Fila 1: nombre + emoji -->
+      <div style="display:grid;grid-template-columns:1fr auto;gap:.75rem;align-items:end">
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Nombre del combo *</label>
+          <input type="text" name="nombre" required placeholder="ej: Combo Asado Familiar"
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none">
+        </div>
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Emoji</label>
+          <input type="text" name="emoji" value="🎁" maxlength="4"
+            style="width:60px;padding:.55rem .5rem;border:1.5px solid #ddd;border-radius:8px;font-size:1.1rem;text-align:center;outline:none">
+        </div>
+      </div>
+      <!-- Fila 2: descripcion + precio -->
+      <div style="display:grid;grid-template-columns:1fr auto;gap:.75rem;align-items:end">
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Descripción (opcional)</label>
+          <input type="text" name="descripcion" placeholder="ej: Perfecto para una parrillada de 4 personas"
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.88rem;outline:none">
+        </div>
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Precio * ($)</label>
+          <input type="number" name="precio" required min="1" step="100" placeholder="0"
+            style="width:110px;padding:.55rem .7rem;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none">
+        </div>
+      </div>
+      <!-- Selector de productos -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:.6rem">
+          <label style="font-size:.78rem;font-weight:600;color:#555">Productos incluidos * <span style="color:#aaa;font-weight:400">(pon cantidad 0 para excluir)</span></label>
+          <input type="text" id="buscar-combo" placeholder="🔍 Filtrar..." oninput="filtrarCombo()"
+            style="padding:.35rem .7rem;border:1.5px solid #ddd;border-radius:8px;font-size:.8rem;outline:none;width:160px">
+        </div>
+        <div id="combo-prod-list" style="max-height:320px;overflow-y:auto;border:1.5px solid #eee;border-radius:10px;padding:.5rem">
+          {% set ns = namespace(tipo_actual='') %}
+          {% for p in productos if p.activo %}
+          {% if p.tipo != ns.tipo_actual %}
+          {% set ns.tipo_actual = p.tipo %}
+          <div class="combo-tipo-hdr" data-tipo="{{ p.tipo }}" style="font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:#aaa;padding:.4rem .6rem .2rem;margin-top:.3rem">{{ p.tipo }}</div>
+          {% endif %}
+          <div class="combo-prod-row" data-nombre="{{ p.nombre|lower }}" data-tipo="{{ p.tipo|lower }}"
+            style="display:flex;align-items:center;justify-content:space-between;padding:.4rem .6rem;border-radius:8px;transition:background .15s">
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <span style="font-size:1rem">{{ p.emoji }}</span>
+              <span style="font-size:.83rem;font-weight:500">{{ p.nombre }}</span>
+              <span class="badge-tipo tipo-{{ p.tipo }}" style="font-size:.6rem">{{ p.tipo }}</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:.4rem;flex-shrink:0">
+              <span style="font-size:.75rem;color:#aaa">${{ "{:,}".format(p.precio) }}/lb</span>
+              <input type="number" name="item_{{ p.id }}" value="0" min="0" max="99" class="combo-qty"
+                style="width:54px;padding:.25rem .4rem;border:1.5px solid #ddd;border-radius:6px;font-size:.82rem;text-align:center;outline:none">
+              <span style="font-size:.72rem;color:#aaa">lb</span>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+      <!-- Botones -->
+      <div style="display:flex;gap:.75rem;justify-content:flex-end;padding-top:.5rem">
+        <button type="button" onclick="document.getElementById('modal-combo').style.display='none'"
+          style="background:#f4f4f5;color:#555;border:none;padding:.6rem 1.2rem;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer">Cancelar</button>
+        <button type="submit"
+          style="background:#c0392b;color:#fff;border:none;padding:.6rem 1.4rem;border-radius:8px;font-size:.88rem;font-weight:700;cursor:pointer">✓ Crear combo</button>
+      </div>
+    </form>
+  </div>
+</div>
+
 <script>
 function switchTab(name) {
   document.querySelectorAll('.tab-btn').forEach(function(b) { b.classList.remove('active'); });
@@ -340,6 +750,7 @@ function switchTab(name) {
   var hash = location.hash.replace('#tab-', '');
   var saved = hash || (function() { try { return localStorage.getItem('adminTab'); } catch(e) {} }());
   if (saved === 'pedidos') switchTab('pedidos');
+  else if (saved === 'combos') switchTab('combos');
 })();
 
 // Filtrar tabla productos
@@ -371,6 +782,90 @@ function filtrarPedidos() {
   document.getElementById('conteo-pedidos').textContent = visible + ' pedido' + (visible !== 1 ? 's' : '');
 }
 filtrarPedidos();
+
+// Filtrar productos dentro del modal combo
+function filtrarCombo() {
+  var q = document.getElementById('buscar-combo').value.toLowerCase();
+  document.querySelectorAll('.combo-prod-row').forEach(function(row) {
+    var ok = !q || row.dataset.nombre.includes(q) || row.dataset.tipo.includes(q);
+    row.style.display = ok ? '' : 'none';
+  });
+  document.querySelectorAll('.combo-tipo-hdr').forEach(function(hdr) {
+    var tipo = hdr.dataset.tipo.toLowerCase();
+    hdr.style.display = (!q || tipo.includes(q)) ? '' : 'none';
+  });
+}
+
+// Abrir modal de edición y pre-llenar con datos del producto
+function abrirEditProd(data) {
+  document.getElementById('edit-form').action = '/admin/producto/' + data.id + '/editar';
+  document.getElementById('edit-nombre').value  = data.nombre;
+  document.getElementById('edit-emoji').value   = data.emoji;
+  document.getElementById('edit-precio').value  = data.precio;
+  document.getElementById('edit-stock').value   = data.stock !== null ? data.stock : '';
+  document.getElementById('edit-desc').value    = data.descripcion || '';
+
+  var tipoSel = document.getElementById('edit-tipo');
+  for (var i = 0; i < tipoSel.options.length; i++) {
+    tipoSel.options[i].selected = tipoSel.options[i].value === data.tipo;
+  }
+  var catSel = document.getElementById('edit-categoria');
+  for (var i = 0; i < catSel.options.length; i++) {
+    catSel.options[i].selected = catSel.options[i].value === data.categoria;
+  }
+
+  var preview = document.getElementById('edit-img-preview');
+  var placeholder = document.getElementById('edit-img-placeholder');
+  if (data.imagen_url) {
+    preview.src = data.imagen_url;
+    preview.style.display = 'block';
+    placeholder.style.display = 'none';
+    document.getElementById('edit-img-label').style.borderColor = '#27ae60';
+  } else {
+    preview.style.display = 'none';
+    placeholder.style.display = 'flex';
+    document.getElementById('edit-img-label').style.borderColor = '#ddd';
+  }
+  document.getElementById('edit-img-input').value = '';
+  document.getElementById('modal-editar').style.display = 'flex';
+}
+
+function prevImgEdit(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById('edit-img-preview');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    document.getElementById('edit-img-placeholder').style.display = 'none';
+    document.getElementById('edit-img-label').style.borderColor = '#c0392b';
+  };
+  reader.readAsDataURL(file);
+}
+
+// Preview imagen producto
+function prevImg(input) {
+  var file = input.files[0];
+  if (!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var img = document.getElementById('img-preview');
+    img.src = e.target.result;
+    img.style.display = 'block';
+    document.getElementById('img-placeholder').style.display = 'none';
+    document.getElementById('img-drop-label').style.borderColor = '#27ae60';
+  };
+  reader.readAsDataURL(file);
+}
+
+// Resaltar filas con qty > 0 en el modal combo
+document.getElementById('combo-prod-list').addEventListener('input', function(e) {
+  if (e.target.classList.contains('combo-qty')) {
+    var row = e.target.closest('.combo-prod-row');
+    row.style.background = parseInt(e.target.value) > 0 ? '#f0fff4' : '';
+  }
+});
 </script>
 </body>
 </html>

@@ -81,6 +81,38 @@ def get_product_by_id(product_id):
     return p.to_dict() if p else None
 
 
+class Combo(db.Model):
+    __tablename__ = "combos"
+
+    id          = db.Column(db.Integer, primary_key=True)
+    nombre      = db.Column(db.String(200), nullable=False)
+    descripcion = db.Column(db.Text, default="")
+    emoji       = db.Column(db.String(20), default="🎁")
+    precio      = db.Column(db.Integer, nullable=False)
+    items_json  = db.Column(db.Text, nullable=False, default="[]")
+    activo      = db.Column(db.Boolean, default=True, nullable=False)
+
+    @property
+    def items(self):
+        return json.loads(self.items_json)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "nombre": self.nombre,
+            "descripcion": self.descripcion,
+            "emoji": self.emoji,
+            "precio": self.precio,
+            "items": self.items,
+            "activo": self.activo,
+        }
+
+
+def get_combo_by_id(cid):
+    c = Combo.query.get(cid)
+    return c.to_dict() if c else None
+
+
 # ── Seed data (se carga una sola vez si la tabla está vacía) ──────────────────
 SEED_PRODUCTS = [
     # ===== RES - Premium =====

@@ -16,6 +16,7 @@ app.config.update(
     SESSION_COOKIE_SAMESITE        = "Lax",
     SESSION_COOKIE_SECURE          = not DEBUG,   # HTTPS en producción
     PERMANENT_SESSION_LIFETIME     = timedelta(hours=8),
+    MAX_CONTENT_LENGTH             = 8 * 1024 * 1024,  # 8 MB máx por imagen
 )
 
 db.init_app(app)

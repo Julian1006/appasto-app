@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request, jsonify
 from urllib.parse import quote
 import uuid, json
-from model import get_product_by_id, Order
+from model import get_product_by_id, get_combo_by_id, Order
 from database import db
 from config import WHATSAPP_NUMBER, BUSINESS_NAME, WOMPI_PUBLIC_KEY
 
@@ -18,14 +18,16 @@ def _save_order(metodo, items, total, tel="", dir_="", ciudad="", referencia="")
             tel=tel, direccion=dir_, ciudad=ciudad, referencia=referencia,
         )
         db.session.add(order)
-        # Descontar stock y desactivar si llega a 0
+        # Descontar stock solo para productos individuales (no combos)
         for item in items:
-            p = _Product.query.get(item["id"])
-            if p and p.stock is not None:
-                p.stock = max(0, p.stock - item["cantidad"])
-                if p.stock <= 0:
-                    p.stock = 0
-                    p.activo = False
+            pid = item.get("id")
+            if isinstance(pid, int):
+                p = _Product.query.get(pid)
+                if p and p.stock is not None:
+                    p.stock = max(0, p.stock - item["cantidad"])
+                    if p.stock <= 0:
+                        p.stock = 0
+                        p.activo = False
         db.session.commit()
     except Exception:
         db.session.rollback()
@@ -35,12 +37,22 @@ def get_cart_items():
     cart = session.get("cart", {})
     items = []
     total = 0
-    for pid_str, qty in cart.items():
-        product = get_product_by_id(int(pid_str))
-        if product:
-            subtotal = product["precio"] * qty
-            items.append({**product, "cantidad": qty, "subtotal": subtotal})
-            total += subtotal
+    for key, qty in cart.items():
+        if key.startswith("combo_"):
+            cid = int(key[6:])
+            combo = get_combo_by_id(cid)
+            if combo and combo["activo"]:
+                subtotal = combo["precio"] * qty
+                items.append({**combo, "cantidad": qty, "subtotal": subtotal,
+                               "is_combo": True, "cart_key": key, "emoji": combo["emoji"]})
+                total += subtotal
+        else:
+            product = get_product_by_id(int(key))
+            if product:
+                subtotal = product["precio"] * qty
+                items.append({**product, "cantidad": qty, "subtotal": subtotal,
+                               "is_combo": False, "cart_key": key})
+                total += subtotal
     return items, total
 
 
@@ -196,6 +208,55 @@ def checkout_whatsapp():
     mensaje = "\n".join(lineas)
     url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(mensaje)}"
     return redirect(url)
+
+
+@cart_bp.route("/agregar-combo/<int:combo_id>", methods=["POST"])
+def agregar_combo(combo_id):
+    combo = get_combo_by_id(combo_id)
+    if not combo or not combo.get("activo"):
+        return redirect(url_for("main.index"))
+    cart = session.get("cart", {})
+    key = f"combo_{combo_id}"
+    try:
+        qty = int(request.form.get("cantidad", 1))
+        qty = max(1, min(qty, 20))
+    except (ValueError, TypeError):
+        qty = 1
+    cart[key] = cart.get(key, 0) + qty
+    session["cart"] = cart
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        new_qty = cart.get(key, 0)
+        subtotal = combo["precio"] * new_qty
+        _, total = get_cart_items()
+        return jsonify({"ok": True, "count": sum(cart.values()),
+                        "qty": new_qty, "subtotal": subtotal, "total": total})
+    next_url = request.form.get("next") or request.referrer or url_for("main.index")
+    return redirect(next_url)
+
+
+@cart_bp.route("/quitar-combo/<int:combo_id>", methods=["POST"])
+def quitar_combo(combo_id):
+    cart = session.get("cart", {})
+    key = f"combo_{combo_id}"
+    if key in cart:
+        if cart[key] > 1:
+            cart[key] -= 1
+        else:
+            del cart[key]
+    session["cart"] = cart
+    return redirect(url_for("cart.carrito"))
+
+
+@cart_bp.route("/eliminar-combo/<int:combo_id>", methods=["POST"])
+def eliminar_combo(combo_id):
+    cart = session.get("cart", {})
+    cart.pop(f"combo_{combo_id}", None)
+    session["cart"] = cart
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        _, total = get_cart_items()
+        return jsonify({"ok": True, "count": sum(cart.values()),
+                        "total": total, "removed": True})
+    return redirect(url_for("cart.carrito"))
 
 
 @cart_bp.route("/checkout-tarjeta", methods=["POST"])

@@ -28,7 +28,7 @@ LOW_STOCK = {2, 5, 14, 29, 49, 60}
 
 @main_bp.route("/")
 def index():
-    from model import Product
+    from model import Product, Combo
     todos = [p for p in get_all_products() if p.get("activo", True)]
     id_map = {p["id"]: p for p in todos}
     dest_ids = [p.id for p in Product.query.filter_by(destacado=True).order_by(Product.id).all()]
@@ -36,7 +36,9 @@ def index():
         destacados = [id_map[i] for i in dest_ids if i in id_map]
     else:
         destacados = [id_map[i] for i in DESTACADOS_IDS if i in id_map]
-    return render_template("index.html", productos=destacados, badges=BADGES, low_stock=LOW_STOCK)
+    combos = Combo.query.filter_by(activo=True).order_by(Combo.id).all()
+    return render_template("index.html", productos=destacados, badges=BADGES,
+                           low_stock=LOW_STOCK, combos=combos)
 
 
 @main_bp.route("/nosotros")

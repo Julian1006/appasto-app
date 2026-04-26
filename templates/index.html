@@ -190,6 +190,39 @@
   </div>
 </section>
 
+{% if combos %}
+<!-- COMBOS ESPECIALES -->
+<section class="combos-section reveal">
+  <div class="container">
+    <h2 class="section-title">🎁 Combos especiales</h2>
+    <p style="text-align:center;color:var(--text-light);margin-top:-.5rem;margin-bottom:1rem">Paquetes seleccionados al mejor precio</p>
+    <div class="combos-grid">
+      {% for combo in combos %}
+      <div class="combo-card">
+        <div class="combo-emoji">{{ combo.emoji }}</div>
+        <h3 class="combo-name">{{ combo.nombre }}</h3>
+        <div class="combo-items">
+          {% for item in combo.items %}
+          <span class="combo-item-tag">{{ item.nombre }} ×{{ item.cantidad }}</span>
+          {% endfor %}
+        </div>
+        {% if combo.descripcion %}
+        <p class="combo-desc">{{ combo.descripcion }}</p>
+        {% endif %}
+        <div class="combo-footer">
+          <span class="combo-price">${{ "{:,}".format(combo.precio) }}</span>
+          <form action="{{ url_for('cart.agregar_combo', combo_id=combo.id) }}" method="POST" onclick="event.stopPropagation()">
+            <input type="hidden" name="next" value="{{ url_for('main.index') }}">
+            <button type="submit" class="btn btn-add">🎁 Agregar</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
 <!-- TESTIMONIOS -->
 <section class="testimonios reveal">
   <div class="container">

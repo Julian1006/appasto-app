@@ -405,6 +405,39 @@ ul { list-style: none; }
   padding: 0 .5rem; flex-shrink: 0;
 }
 
+/* ===== Combos ===== */
+.combos-section { padding: 4rem 0; background: var(--white); }
+.combos-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5rem; margin-top: 2rem; }
+.combo-card {
+  background: #fff;
+  border: 2px solid #f0f0f0;
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  display: flex; flex-direction: column; gap: .75rem;
+  box-shadow: var(--shadow);
+  transition: transform .2s, box-shadow .2s;
+  position: relative;
+  overflow: hidden;
+}
+.combo-card::before {
+  content: '';
+  position: absolute; top: 0; left: 0; right: 0; height: 4px;
+  background: linear-gradient(90deg, var(--red), #e74c3c);
+}
+.combo-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.1); }
+.combo-emoji { font-size: 2.5rem; line-height: 1; }
+.combo-name { font-size: 1.05rem; font-weight: 700; color: var(--text); }
+.combo-items { display: flex; flex-wrap: wrap; gap: .4rem; }
+.combo-item-tag {
+  background: #f4f4f5; color: #555;
+  font-size: .72rem; font-weight: 600;
+  padding: .2rem .55rem; border-radius: 20px;
+}
+.combo-desc { font-size: .85rem; color: var(--text-light); line-height: 1.5; }
+.combo-footer { display: flex; align-items: center; justify-content: space-between; margin-top: auto; padding-top: .5rem; }
+.combo-price { font-size: 1.25rem; font-weight: 800; color: var(--red); }
+.combo-savings { font-size: .72rem; color: #27ae60; font-weight: 600; }
+
 /* ===== Testimonios ===== */
 .testimonios { padding: 4.5rem 0; background: var(--gray-light); }
 .testi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem; }
