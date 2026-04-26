@@ -92,15 +92,51 @@ def dashboard():
     pedidos   = Order.query.order_by(Order.fecha.desc()).all()
     combos    = Combo.query.order_by(Combo.id.desc()).all()
     n_dest    = Product.query.filter_by(destacado=True).count()
+    prod_map  = {p.id: p for p in productos}
+
+    # IDs de combos con algún producto sin stock suficiente
+    combos_sin_stock = set()
+    for c in combos:
+        for item in c.items:
+            p = prod_map.get(item["id"])
+            if not p or not p.activo or (p.stock is not None and p.stock < item["cantidad"]):
+                combos_sin_stock.add(c.id)
+                break
+
     return render_template("admin.html", productos=productos, pedidos=pedidos,
-                           combos=combos, n_dest=n_dest, max_dest=MAX_DESTACADOS)
+                           combos=combos, combos_sin_stock=combos_sin_stock,
+                           n_dest=n_dest, max_dest=MAX_DESTACADOS)
+
+
+def _restaurar_stock(order):
+    try:
+        items = json.loads(order.items_json)
+        for item in items:
+            if item.get("is_combo"):
+                for sub in item.get("combo_items", []):
+                    p = Product.query.get(sub.get("id"))
+                    if p and p.stock is not None:
+                        p.stock += sub["cantidad"] * item["cantidad"]
+                        if p.stock > 0:
+                            p.activo = True
+            else:
+                p = Product.query.get(item.get("id"))
+                if p and p.stock is not None:
+                    p.stock += item["cantidad"]
+                    if p.stock > 0:
+                        p.activo = True
+    except Exception:
+        pass
 
 
 @admin_bp.route("/pedido/<int:oid>/estado", methods=["POST"])
 @admin_required
 def update_estado(oid):
     o = Order.query.get_or_404(oid)
-    o.estado = request.form.get("estado", o.estado)
+    nuevo = request.form.get("estado", o.estado)
+    if nuevo == "cancelado" and o.estado != "cancelado":
+        _restaurar_stock(o)
+    o.estado = nuevo
     db.session.commit()
     return redirect(url_for("admin.dashboard") + "#tab-pedidos")
 

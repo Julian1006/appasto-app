@@ -12,8 +12,8 @@
       <thead>
         <tr>
           <th>Producto</th>
-          <th>Precio/lb</th>
-          <th>Cantidad (kg)</th>
+          <th>Precio</th>
+          <th>Cantidad</th>
           <th>Subtotal</th>
           <th></th>
         </tr>
@@ -25,20 +25,20 @@
             <span class="cart-emoji">{{ item.emoji }}</span>
             <span>{{ item.nombre }}</span>
           </td>
-          <td>${{ "{:,}".format(item.precio) }}</td>
+          <td>${{ "{:,}".format(item.precio) }}{% if not item.is_combo %}/lb{% endif %}</td>
           <td class="cart-qty">
-            <form action="{{ url_for('cart.quitar', product_id=item.id) }}" method="POST" class="cart-ctrl-form" style="display:inline">
+            <form action="{{ item.url_minus }}" method="POST" class="cart-ctrl-form" style="display:inline">
               <button type="submit" class="qty-btn">−</button>
             </form>
             <span class="qty-num">{{ item.cantidad }}</span>
-            <form action="{{ url_for('cart.agregar', product_id=item.id) }}" method="POST" class="cart-ctrl-form" style="display:inline">
+            <form action="{{ item.url_plus }}" method="POST" class="cart-ctrl-form" style="display:inline">
               <input type="hidden" name="cantidad" value="1">
               <button type="submit" class="qty-btn">+</button>
             </form>
           </td>
           <td class="cart-subtotal">${{ "{:,}".format(item.subtotal) }}</td>
           <td>
-            <form action="{{ url_for('cart.eliminar', product_id=item.id) }}" method="POST" class="cart-ctrl-form">
+            <form action="{{ item.url_remove }}" method="POST" class="cart-ctrl-form">
               <button type="submit" class="remove-btn" title="Eliminar">✕</button>
             </form>
           </td>
@@ -153,6 +153,15 @@
     })
     .then(function(r) { return r.json(); })
     .then(function(data) {
+      if (data.ok === false && data.msg) {
+        if (typeof showToast === 'function') showToast(data.msg, 'error');
+        // Aún así actualiza los valores que vienen en la respuesta
+        var qtyEl = row.querySelector('.qty-num');
+        var subEl = row.querySelector('.cart-subtotal');
+        if (qtyEl && data.qty !== undefined) qtyEl.textContent = data.qty;
+        if (subEl && data.subtotal !== undefined) subEl.textContent = '$' + data.subtotal.toLocaleString('es-CO');
+        return;
+      }
       if (data.removed || (data.qty !== undefined && data.qty <= 0)) {
         row.style.transition = 'opacity .22s';
         row.style.opacity = '0';

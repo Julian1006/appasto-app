@@ -158,6 +158,25 @@ ul { list-style: none; }
 }
 .qty-input:focus { outline: none; border-color: var(--red); }
 
+/* Stepper +/- */
+.qty-stepper { display: flex; align-items: center; border: 1.5px solid var(--gray); border-radius: 8px; overflow: hidden; }
+.qty-btn {
+  background: #f4f4f5; border: none; width: 30px; height: 34px;
+  font-size: 1.1rem; font-weight: 700; cursor: pointer; color: var(--text);
+  transition: background .15s; display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; line-height: 1;
+}
+.qty-btn:hover { background: #e5e5e5; }
+.qty-btn:active { background: #d4d4d4; }
+.qty-num {
+  width: 34px; border: none; border-left: 1.5px solid var(--gray); border-right: 1.5px solid var(--gray);
+  padding: .3rem 0; font-size: .88rem; text-align: center; color: var(--text);
+  background: #fff; -moz-appearance: textfield;
+}
+.qty-num:focus { outline: none; }
+.qty-num::-webkit-outer-spin-button,
+.qty-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+
 /* Card hover overlay */
 .card-img-wrap { position: relative; overflow: hidden; }
 .card-overlay {

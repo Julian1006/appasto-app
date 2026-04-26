@@ -367,5 +367,32 @@
   }
   </script>
 
+  <!-- Toast de stock / notificaciones -->
+  <div id="toast-container" style="position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;align-items:center;gap:.6rem;pointer-events:none"></div>
+
+  <script>
+  function showToast(msg, type) {
+    var colors = { error: '#c0392b', warning: '#e67e22', success: '#27ae60', info: '#2980b9' };
+    var bg = colors[type] || colors.error;
+    var el = document.createElement('div');
+    el.textContent = msg;
+    el.style.cssText = 'background:' + bg + ';color:#fff;padding:.65rem 1.4rem;border-radius:24px;font-size:.88rem;font-weight:600;box-shadow:0 4px 16px rgba(0,0,0,.18);opacity:0;transition:opacity .25s;pointer-events:none;white-space:nowrap;max-width:90vw;text-align:center';
+    document.getElementById('toast-container').appendChild(el);
+    requestAnimationFrame(function() {
+      el.style.opacity = '1';
+      setTimeout(function() {
+        el.style.opacity = '0';
+        setTimeout(function() { el.remove(); }, 260);
+      }, 3200);
+    });
+  }
+  // Mostrar flash messages de Flask como toasts
+  {% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+  showToast({{ message | tojson }}, {{ category | tojson }});
+  {% endfor %}
+  {% endwith %}
+  </script>
+
 </body>
 </html>

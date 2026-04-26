@@ -26,7 +26,7 @@
         <span class="stat-lbl">Años de experiencia</span>
       </div>
       <div class="stat-item">
-        <span class="stat-n" data-target="89">0</span><span class="stat-unit"></span>
+        <span class="stat-n" data-target="{{ productos_count }}">0</span><span class="stat-unit"></span>
         <span class="stat-lbl">Productos disponibles</span>
       </div>
       <div class="stat-item">
@@ -174,8 +174,12 @@
               <span class="product-price">${{ "{:,}".format(producto.precio) }}/lb</span>
               <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST" class="add-form" onclick="event.stopPropagation()">
                 <input type="hidden" name="next" value="{{ url_for('main.index') }}">
-                <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-input">
-                <button type="submit" class="btn btn-add">+ Agregar</button>
+                <div class="qty-stepper">
+                  <button type="button" class="qty-btn qty-minus">−</button>
+                  <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-num">
+                  <button type="button" class="qty-btn qty-plus">+</button>
+                </div>
+                <button type="submit" class="btn btn-add">Agregar</button>
               </form>
             </div>
           </div>
@@ -361,6 +365,22 @@ function pedirCombo(desc) {
   var msg = '¡Hola Appasto! Quiero pedir el ' + desc + '. Por favor confirmar precio y disponibilidad. ¡Gracias!';
   window.open('https://wa.me/{{ whatsapp_number }}?text=' + encodeURIComponent(msg), '_blank');
 }
+
+// Botones +/- cantidad
+document.querySelectorAll('.qty-minus').forEach(function(btn) {
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var inp = this.closest('.qty-stepper').querySelector('.qty-num');
+    inp.value = Math.max(1, parseInt(inp.value || 1) - 1);
+  });
+});
+document.querySelectorAll('.qty-plus').forEach(function(btn) {
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var inp = this.closest('.qty-stepper').querySelector('.qty-num');
+    inp.value = Math.min(50, parseInt(inp.value || 1) + 1);
+  });
+});
 
 // Cart button feedback
 document.querySelectorAll('.add-form').forEach(form => {

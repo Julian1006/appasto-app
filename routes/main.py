@@ -36,9 +36,18 @@ def index():
         destacados = [id_map[i] for i in dest_ids if i in id_map]
     else:
         destacados = [id_map[i] for i in DESTACADOS_IDS if i in id_map]
-    combos = Combo.query.filter_by(activo=True).order_by(Combo.id).all()
+    prod_map = {p.id: p for p in Product.query.all()}
+    combos = [
+        c for c in Combo.query.filter_by(activo=True).order_by(Combo.id).all()
+        if all(
+            (p := prod_map.get(item["id"])) and p.activo and
+            (p.stock is None or p.stock >= item["cantidad"])
+            for item in c.items
+        )
+    ]
     return render_template("index.html", productos=destacados, badges=BADGES,
-                           low_stock=LOW_STOCK, combos=combos)
+                           low_stock=LOW_STOCK, combos=combos,
+                           productos_count=len(todos))
 
 
 @main_bp.route("/nosotros")
