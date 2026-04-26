@@ -135,6 +135,12 @@ with app.app_context():
             _ids = ",".join(str(i) for i in [4, 5, 6, 1, 3, 29, 31, 49, 60, 73, 87, 8])
             db.session.execute(text(f"UPDATE products SET destacado=1 WHERE id IN ({_ids})"))
             db.session.commit()
+        if "orden_destacado" not in _cols:
+            db.session.execute(text("ALTER TABLE products ADD COLUMN orden_destacado INTEGER DEFAULT 0"))
+            db.session.commit()
+        if "badge" not in _cols:
+            db.session.execute(text("ALTER TABLE products ADD COLUMN badge VARCHAR(20) DEFAULT ''"))
+            db.session.commit()
         _combo_cols = [c["name"] for c in _inspect(db.engine).get_columns("combos")]
         if "fecha_inicio" not in _combo_cols:
             db.session.execute(text("ALTER TABLE combos ADD COLUMN fecha_inicio DATE"))

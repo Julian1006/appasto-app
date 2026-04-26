@@ -361,6 +361,18 @@ def crear_producto():
     return redirect(url_for("admin.dashboard"))
 
 
+@admin_bp.route("/producto/<int:pid>/destacado-config", methods=["POST"])
+@admin_required
+def destacado_config(pid):
+    p = Product.query.get_or_404(pid)
+    badge = request.form.get("badge", "").strip()
+    orden_raw = request.form.get("orden_destacado", "0").strip()
+    p.badge = badge if badge in ("Favorito", "Popular", "Premium", "Nuevo", "Oferta") else ""
+    p.orden_destacado = int(orden_raw) if orden_raw.isdigit() else 0
+    db.session.commit()
+    return redirect(url_for("admin.dashboard") + "#tab-productos")
+
+
 @admin_bp.route("/producto/<int:pid>/destacado", methods=["POST"])
 @admin_required
 def toggle_destacado(pid):

@@ -32,8 +32,8 @@
       <div class="pedido-card"
            onclick="abrirModal('{{ producto.nombre }}','{{ producto.tipo }} · {{ producto.categoria }}','{{ producto.descripcion }}','{{ producto.precio }}','{{ producto.emoji }}','{% if producto.imagen %}{{ url_for('static', filename=producto.imagen) }}{% endif %}','{{ producto.id }}','{{ url_for('main.index') }}','{{ producto.tipo }}',{{ 'true' if low_stock and producto.id in low_stock else 'false' }})">
         <div class="pedido-img-wrap">
-          {% if badges and producto.id in badges %}
-          <span class="badge badge-{{ badges[producto.id][0] }}">{{ badges[producto.id][1] }}</span>
+          {% if producto.badge %}
+          <span class="badge badge-{{ producto.badge | lower }}">{{ producto.badge }}</span>
           {% endif %}
           {% if low_stock and producto.id in low_stock %}
           <span class="low-stock-badge">⚡ Últimas unidades</span>

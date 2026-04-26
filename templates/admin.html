@@ -295,6 +295,46 @@
       </tbody>
     </table>
   </div>
+
+  <!-- ── Gestionar destacados ─────────────────────────────────── -->
+  {% set dest = productos | selectattr('destacado') | list %}
+  {% if dest %}
+  <div style="padding:1.5rem 2rem 2rem">
+    <h3 style="font-size:.9rem;font-weight:700;color:#1a1a1a;margin-bottom:1rem;display:flex;align-items:center;gap:.5rem">
+      ⭐ Gestionar destacados
+      <span style="font-size:.75rem;font-weight:400;color:#888">(orden y badge de cada producto en "Los más pedidos")</span>
+    </h3>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:.75rem">
+      {% for p in dest | sort(attribute='orden_destacado') %}
+      <form method="POST" action="{{ url_for('admin.destacado_config', pid=p.id) }}"
+            style="background:#f9f9f9;border:1px solid #e5e5e5;border-radius:10px;padding:.85rem 1rem;display:flex;align-items:center;gap:.75rem">
+        <span style="font-size:1.3rem">{{ p.emoji }}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.nombre }}</div>
+          <div style="display:flex;gap:.5rem;margin-top:.4rem;align-items:center">
+            <select name="badge" style="padding:.28rem .5rem;border:1.5px solid #ddd;border-radius:6px;font-size:.78rem;background:#fff;outline:none">
+              <option value="" {{ 'selected' if not p.badge }}>Sin badge</option>
+              <option value="Favorito" {{ 'selected' if p.badge == 'Favorito' }}>🔴 Favorito</option>
+              <option value="Popular"  {{ 'selected' if p.badge == 'Popular'  }}>🟢 Popular</option>
+              <option value="Nuevo"    {{ 'selected' if p.badge == 'Nuevo'    }}>🔵 Nuevo</option>
+              <option value="Oferta"   {{ 'selected' if p.badge == 'Oferta'   }}>🟠 Oferta</option>
+              <option value="Premium"  {{ 'selected' if p.badge == 'Premium'  }}>🟣 Premium</option>
+            </select>
+            <input type="number" name="orden_destacado" value="{{ p.orden_destacado or '' }}"
+              placeholder="Orden" min="0" max="12"
+              title="Posición en home (1 = primero, 0 = sin prioridad)"
+              style="width:62px;padding:.28rem .45rem;border:1.5px solid #ddd;border-radius:6px;font-size:.78rem;text-align:center;outline:none">
+          </div>
+        </div>
+        <button type="submit"
+          style="background:#1a1a1a;color:#fff;border:none;padding:.38rem .7rem;border-radius:7px;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap">
+          Guardar
+        </button>
+      </form>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
 </div>
 
 <!-- ══════════════════ TAB: PEDIDOS ══════════════════ -->

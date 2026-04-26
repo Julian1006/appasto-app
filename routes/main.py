@@ -10,19 +10,6 @@ CATEGORIAS = ["Premium", "Especiales", "Económicos", "Huesos"]
 
 DESTACADOS_IDS = [4, 5, 6, 1, 3, 29, 31, 49, 60, 73, 87, 8]  # fallback solo si DB vacía
 
-BADGES = {
-    1: ('premium', 'Premium'),
-    2: ('premium', 'Premium'),
-    3: ('premium', 'Premium'),
-    4: ('hot', 'Favorito'),
-    5: ('hot', 'Favorito'),
-    6: ('popular', 'Popular'),
-    8: ('popular', 'Popular'),
-    14: ('popular', 'Popular'),
-    29: ('hot', 'Favorito'),
-    31: ('popular', 'Popular'),
-}
-
 LOW_STOCK = {2, 5, 14, 29, 49, 60}
 
 
@@ -31,9 +18,10 @@ def index():
     from model import Product, Combo
     todos = [p for p in get_all_products() if p.get("activo", True)]
     id_map = {p["id"]: p for p in todos}
-    dest_ids = [p.id for p in Product.query.filter_by(destacado=True).order_by(Product.id).all()]
-    if dest_ids:
-        destacados = [id_map[i] for i in dest_ids if i in id_map]
+    dest_prods = Product.query.filter_by(destacado=True).all()
+    if dest_prods:
+        dest_prods.sort(key=lambda p: (p.orden_destacado if p.orden_destacado and p.orden_destacado > 0 else 999, p.id))
+        destacados = [id_map[p.id] for p in dest_prods if p.id in id_map]
     else:
         destacados = [id_map[i] for i in DESTACADOS_IDS if i in id_map]
     prod_map = {p.id: p for p in Product.query.all()}
@@ -45,7 +33,7 @@ def index():
             for item in c.items
         )
     ]
-    return render_template("index.html", productos=destacados, badges=BADGES,
+    return render_template("index.html", productos=destacados,
                            low_stock=LOW_STOCK, combos=combos,
                            productos_count=len(todos))
 

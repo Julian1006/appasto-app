@@ -689,9 +689,13 @@ ul { list-style: none; }
   text-transform: uppercase; letter-spacing: .5px; color: white;
   box-shadow: 0 2px 8px rgba(0,0,0,.25);
 }
-.badge-hot      { background: linear-gradient(135deg, #a83232, #e74c3c); }
-.badge-premium  { background: linear-gradient(135deg, #5b2386, #8e44ad); }
+.badge-favorito { background: linear-gradient(135deg, #a83232, #e74c3c); }
 .badge-popular  { background: linear-gradient(135deg, #1a6b3a, #27ae60); }
+.badge-premium  { background: linear-gradient(135deg, #5b2386, #8e44ad); }
+.badge-nuevo    { background: linear-gradient(135deg, #0d6b8e, #2980b9); }
+.badge-oferta   { background: linear-gradient(135deg, #b05a00, #e67e22); }
+/* legacy aliases */
+.badge-hot      { background: linear-gradient(135deg, #a83232, #e74c3c); }
 
 /* ===== Origen section ===== */
 .origen-section { padding: 5rem 0; background: #170804; color: var(--white); }

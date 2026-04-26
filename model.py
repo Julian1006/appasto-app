@@ -95,9 +95,11 @@ class Product(db.Model):
     descripcion = db.Column(db.Text)
     emoji       = db.Column(db.String(20))
     stock       = db.Column(db.Integer, nullable=True)       # None = ilimitado; 0 = agotado
-    destacado   = db.Column(db.Boolean, default=False, nullable=False, server_default="0")  # Aparece en "Los más pedidos"
-    imagen      = db.Column(db.String(300), default="")      # Ruta relativa a static/ ej: "images/prod_abc.jpg"
-    activo      = db.Column(db.Boolean, default=True, nullable=False)  # False = oculto en catálogo
+    destacado        = db.Column(db.Boolean, default=False, nullable=False, server_default="0")
+    orden_destacado  = db.Column(db.Integer, default=0)        # 1-12 controla posición en home; 0 = sin orden
+    badge            = db.Column(db.String(20), default="")    # Favorito | Popular | Premium | Nuevo | Oferta
+    imagen           = db.Column(db.String(300), default="")
+    activo           = db.Column(db.Boolean, default=True, nullable=False)
 
     @property
     def precio_modificado(self):
@@ -117,6 +119,8 @@ class Product(db.Model):
             "emoji": self.emoji,
             "imagen": self.imagen or "",
             "activo": self.activo,
+            "badge": self.badge or "",
+            "orden_destacado": self.orden_destacado or 0,
         }
 
 
