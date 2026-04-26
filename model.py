@@ -25,6 +25,7 @@ class Order(db.Model):
     __tablename__ = "orders"
 
     id        = db.Column(db.Integer, primary_key=True)
+    user_id   = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     fecha     = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
     metodo    = db.Column(db.String(30), nullable=False)   # WhatsApp, Nequi, Daviplata, Efectivo, Tarjeta
     total     = db.Column(db.Integer, nullable=False)       # Total en COP ya con descuento aplicado
@@ -34,6 +35,7 @@ class Order(db.Model):
     ciudad    = db.Column(db.String(100), default="")
     referencia= db.Column(db.String(50), default="")        # Referencia Wompi para pagos con tarjeta
     estado    = db.Column(db.String(20), default="pendiente")  # pendiente / completado / cancelado
+    reward_code = db.Column(db.String(50), nullable=True)    # Cupón de fidelidad generado al completar este pedido
 
     @property
     def items(self):
@@ -51,6 +53,33 @@ class Order(db.Model):
             "ciudad": self.ciudad,
             "referencia": self.referencia,
             "estado": self.estado,
+        }
+
+
+class User(db.Model):
+    __tablename__ = "users"
+
+    id            = db.Column(db.Integer, primary_key=True)
+    nombre        = db.Column(db.String(120), nullable=False)
+    email         = db.Column(db.String(180), nullable=False, unique=True, index=True)
+    password_hash = db.Column(db.String(255), nullable=False)
+    telefono      = db.Column(db.String(30), default="")
+    direccion     = db.Column(db.String(300), default="")
+    ciudad        = db.Column(db.String(100), default="")
+    reward_200k_issued = db.Column(db.Boolean, default=False, nullable=False, server_default="0")
+    reward_200k_code   = db.Column(db.String(50), nullable=True)
+    fecha_creado  = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
+
+    pedidos = db.relationship("Order", backref="user", lazy=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "nombre": self.nombre,
+            "email": self.email,
+            "telefono": self.telefono,
+            "direccion": self.direccion,
+            "ciudad": self.ciudad,
         }
 
 
@@ -174,6 +203,7 @@ class Promo(db.Model):
     tipo        = db.Column(db.String(20), nullable=False)   # 'porcentaje' | 'monto'
     valor       = db.Column(db.Integer, nullable=False)       # % o COP
     activo      = db.Column(db.Boolean, default=True, nullable=False)
+    visible_cliente = db.Column(db.Boolean, default=False, nullable=False, server_default="0")
     max_usos    = db.Column(db.Integer, nullable=True)        # None = ilimitado
     veces_usado = db.Column(db.Integer, default=0, nullable=False)
     fecha_expira= db.Column(db.Date, nullable=True)
@@ -197,6 +227,7 @@ class Promo(db.Model):
         return {
             "id": self.id, "codigo": self.codigo, "tipo": self.tipo,
             "valor": self.valor, "activo": self.activo,
+            "visible_cliente": self.visible_cliente,
             "max_usos": self.max_usos, "veces_usado": self.veces_usado,
             "fecha_expira": self.fecha_expira.isoformat() if self.fecha_expira else None,
         }

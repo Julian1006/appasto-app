@@ -47,21 +47,21 @@
         </div>
         <div class="checkout-field-grid">
           <div class="checkout-field">
-            <input type="text" id="cliente-nombre" placeholder="Nombre">
+            <input type="text" id="cliente-nombre" placeholder="Nombre" value="{{ current_user.nombre if current_user else '' }}">
           </div>
           <div class="checkout-field">
             <input type="text" id="cliente-apellido" placeholder="Apellido">
           </div>
         </div>
         <div class="checkout-field">
-          <input type="text" id="cliente-direccion" placeholder="Direccion de entrega *" required>
+          <input type="text" id="cliente-direccion" placeholder="Direccion de entrega *" required value="{{ current_user.direccion if current_user else '' }}">
         </div>
         <div class="checkout-field">
           <input type="text" id="cliente-apto" placeholder="Apartamento, torre, casa, referencia">
         </div>
         <div class="checkout-field-grid checkout-field-grid-3">
           <div class="checkout-field">
-            <input type="text" id="cliente-ciudad" placeholder="Ciudad / Barrio">
+            <input type="text" id="cliente-ciudad" placeholder="Ciudad / Barrio" value="{{ current_user.ciudad if current_user else '' }}">
           </div>
           <div class="checkout-field checkout-select">
             <select id="cliente-zona">
@@ -77,7 +77,7 @@
           </div>
         </div>
         <div class="checkout-field">
-          <input type="tel" id="cliente-tel" placeholder="Telefono *" required>
+          <input type="tel" id="cliente-tel" placeholder="Telefono *" required value="{{ current_user.telefono if current_user else '' }}">
         </div>
         <label class="checkout-check">
           <input type="checkbox" id="cliente-guardar">

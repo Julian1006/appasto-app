@@ -4,13 +4,14 @@ import uuid, json
 from model import get_product_by_id, get_combo_by_id, Order, Promo
 from database import db
 from config import WHATSAPP_NUMBER, BUSINESS_NAME, WOMPI_PUBLIC_KEY
+from rewards import LOYALTY_DISCOUNT_PERCENT, LOYALTY_DAYS_VALID, maybe_generate_loyalty_coupon
 
 cart_bp = Blueprint("cart", __name__)
 
-
-def _save_order(metodo, items, total, tel="", dir_="", ciudad="", referencia=""):
+def _save_order(metodo, items, total, tel="", dir_="", ciudad="", referencia="", issue_reward=False):
     try:
         from model import Product as _Product
+        reward_code = None
         items_data = []
         for i in items:
             entry = {"nombre": i["nombre"], "cantidad": i["cantidad"], "subtotal": i["subtotal"]}
@@ -23,6 +24,7 @@ def _save_order(metodo, items, total, tel="", dir_="", ciudad="", referencia="")
                     entry["id"] = i["id"]
             items_data.append(entry)
         order = Order(
+            user_id=session.get("user_id"),
             metodo=metodo, total=total,
             items_json=json.dumps(items_data, ensure_ascii=False),
             tel=tel, direccion=dir_, ciudad=ciudad, referencia=referencia,
@@ -48,9 +50,14 @@ def _save_order(metodo, items, total, tel="", dir_="", ciudad="", referencia="")
                 if isinstance(pid, int):
                     _descontar(pid, item["cantidad"])
 
+        db.session.flush()
+        if issue_reward:
+            reward_code = maybe_generate_loyalty_coupon(order.user_id)
         db.session.commit()
+        return reward_code
     except Exception:
         db.session.rollback()
+        return None
 
 
 def _cart_total(cart):
@@ -293,6 +300,7 @@ def checkout_billetera():
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
     lineas.append(f"\nPor favor indicarme el número {metodo} para realizar el pago y confirmar disponibilidad. ¡Gracias!")
     _save_order(metodo, items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
+    session.pop("cart", None)
     url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
     return redirect(url)
 
@@ -322,6 +330,7 @@ def checkout_efectivo():
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
     lineas.append("\nPor favor confirmar disponibilidad y coordinar la entrega. ¡Gracias!")
     _save_order("Efectivo", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
+    session.pop("cart", None)
     url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
     return redirect(url)
 
@@ -355,6 +364,7 @@ def checkout_whatsapp():
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
     lineas.append("\nPor favor confirmar disponibilidad y precio final. ¡Gracias!")
     _save_order("WhatsApp", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
+    session.pop("cart", None)
     mensaje = "\n".join(lineas)
     url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(mensaje)}"
     return redirect(url)
@@ -447,6 +457,7 @@ def checkout_tarjeta():
     referencia = f"APASTTO-{uuid.uuid4().hex[:8].upper()}"
     monto_centavos = total_final * 100
     _save_order("Tarjeta", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad, referencia=referencia)
+    session.pop("cart", None)
     return render_template("checkout_tarjeta.html",
                            items=items, total=total_final,
                            referencia=referencia,

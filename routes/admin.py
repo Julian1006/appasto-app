@@ -11,6 +11,7 @@ from werkzeug.utils import secure_filename
 from config import ADMIN_PASSWORD
 from database import db
 from model import Product, Order, Combo, Promo
+from rewards import LOYALTY_DISCOUNT_PERCENT, LOYALTY_DAYS_VALID, maybe_generate_loyalty_coupon, remove_loyalty_coupon_for_order
 
 _UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "images")
 _ALLOWED_EXT = {"png", "jpg", "jpeg", "webp"}
@@ -65,6 +66,24 @@ def admin_required(f):
             return redirect(url_for("admin.login"))
         return f(*args, **kwargs)
     return decorated
+
+
+@admin_bp.route("/activar", methods=["POST"])
+def activar():
+    """Activa la sesión de admin desde la página de cuenta del cliente."""
+    ip = _ip()
+    if _is_locked(ip):
+        flash("Demasiados intentos fallidos. Espera 15 minutos.", "error")
+        return redirect(request.referrer or url_for("auth.account"))
+    pwd = request.form.get("password", "")
+    if compare_digest(pwd, ADMIN_PASSWORD):
+        session.permanent = True
+        session["admin"] = True
+        _failed.pop(ip, None)
+        return redirect(url_for("admin.dashboard"))
+    _record_fail(ip)
+    flash("Código incorrecto.", "error")
+    return redirect(request.referrer or url_for("auth.account"))
 
 
 @admin_bp.route("/login", methods=["GET", "POST"])
@@ -124,7 +143,9 @@ def dashboard():
                            promos=promos, n_dest=n_dest, max_dest=MAX_DESTACADOS,
                            combos_vigentes=combos_vigentes,
                            combos_programados=combos_programados,
-                           combos_vencidos=combos_vencidos)
+                           combos_vencidos=combos_vencidos,
+                           loyalty_percent=LOYALTY_DISCOUNT_PERCENT,
+                           loyalty_days=LOYALTY_DAYS_VALID)
 
 
 def _restaurar_stock(order):
@@ -153,11 +174,18 @@ def _restaurar_stock(order):
 def update_estado(oid):
     o = Order.query.get_or_404(oid)
     nuevo = request.form.get("estado", o.estado)
-    if nuevo == "cancelado" and o.estado != "cancelado":
+    estado_anterior = o.estado
+    if nuevo == "cancelado" and estado_anterior != "cancelado":
         _restaurar_stock(o)
+        remove_loyalty_coupon_for_order(o)
     o.estado = nuevo
+    reward_code = None
+    if nuevo == "completado" and estado_anterior != "completado":
+        db.session.flush()
+        reward_code = maybe_generate_loyalty_coupon(o.user_id, order=o)
     db.session.commit()
-    return redirect(url_for("admin.dashboard") + "#tab-pedidos")
+    suffix = f"&reward={reward_code}" if reward_code else ""
+    return redirect(url_for("admin.dashboard") + f"?updated={o.id}{suffix}#tab-pedidos")
 
 
 @admin_bp.route("/producto/<int:pid>/precio", methods=["POST"])
@@ -431,7 +459,15 @@ def crear_promo():
     if Promo.query.filter_by(codigo=codigo).first():
         return redirect(url_for("admin.dashboard") + "#tab-promos")
 
-    p = Promo(codigo=codigo, tipo=tipo, valor=valor, max_usos=max_usos, fecha_expira=fecha_expira)
+    visible_cliente = request.form.get("visible_cliente") == "on"
+    p = Promo(
+        codigo=codigo,
+        tipo=tipo,
+        valor=valor,
+        max_usos=max_usos,
+        fecha_expira=fecha_expira,
+        visible_cliente=visible_cliente,
+    )
     db.session.add(p)
     db.session.commit()
     return redirect(url_for("admin.dashboard") + "#tab-promos")
@@ -442,6 +478,15 @@ def crear_promo():
 def toggle_promo(pid):
     p = Promo.query.get_or_404(pid)
     p.activo = not p.activo
+    db.session.commit()
+    return redirect(url_for("admin.dashboard") + "#tab-promos")
+
+
+@admin_bp.route("/promo/<int:pid>/visible", methods=["POST"])
+@admin_required
+def toggle_promo_visible(pid):
+    p = Promo.query.get_or_404(pid)
+    p.visible_cliente = not p.visible_cliente
     db.session.commit()
     return redirect(url_for("admin.dashboard") + "#tab-promos")
 

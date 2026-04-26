@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+
+{% block title %}Mi cuenta - {{ business_name }}{% endblock %}
+
+{% block content %}
+<section class="account-page">
+  <div class="account-shell">
+    <div class="account-header">
+      <div>
+        <span class="auth-kicker">Cliente Appasto</span>
+        <h1>Hola, {{ user.nombre }}</h1>
+        <p>{{ user.email }}</p>
+      </div>
+      <a href="{{ url_for('auth.logout') }}" class="account-logout">Cerrar sesion</a>
+    </div>
+
+    <div class="account-grid">
+      <section class="account-card">
+        <h2>Mis datos</h2>
+        <div class="account-spend">
+          <span>Compras acumuladas</span>
+          <strong>${{ "{:,}".format(total_compras) }}</strong>
+        </div>
+        <a href="{{ url_for('auth.discounts') }}" class="account-discount-link">Ver mis descuentos</a>
+        {% if user.reward_200k_code %}
+        <div class="account-reward">
+          <span>Tu cupón activo</span>
+          <strong>{{ user.reward_200k_code }}</strong>
+          <small>10% off · un solo uso · válido 7 días desde que fue emitido.</small>
+        </div>
+        {% else %}
+        <div class="account-reward account-reward-progress">
+          <span>Próximo cupón</span>
+          <small>Gana 10% off cuando acumules $500.000 en compras o completes 6 pedidos confirmados.</small>
+        </div>
+        {% endif %}
+        <dl>
+          <div><dt>Telefono</dt><dd>{{ user.telefono or 'Sin telefono guardado' }}</dd></div>
+          <div><dt>Direccion</dt><dd>{{ user.direccion or 'Sin direccion guardada' }}</dd></div>
+          <div><dt>Ciudad / Barrio</dt><dd>{{ user.ciudad or 'Sin ciudad guardada' }}</dd></div>
+        </dl>
+      </section>
+
+      <section class="account-card">
+        <h2>Mis pedidos</h2>
+        {% if pedidos %}
+        <div class="account-orders">
+          {% for pedido in pedidos %}
+          <article class="account-order">
+            <div>
+              <strong>#{{ pedido.id }} - {{ pedido.metodo }}</strong>
+              <span>{{ pedido.fecha.strftime('%d/%m/%Y %I:%M %p') }}</span>
+            </div>
+            <div>
+              <strong>${{ "{:,}".format(pedido.total) }}</strong>
+              <span class="order-status order-status-{{ pedido.estado }}">{{ pedido.estado }}</span>
+            </div>
+          </article>
+          {% endfor %}
+        </div>
+        {% else %}
+        <p class="account-empty">Aun no tienes pedidos guardados en esta cuenta.</p>
+        <a href="{{ url_for('main.catalogo') }}" class="btn btn-primary">Ver catalogo</a>
+        {% endif %}
+      </section>
+    </div>
+
+    {% if not session.get('admin') %}
+    <form method="POST" action="{{ url_for('admin.activar') }}" class="account-admin-form">
+      <input type="password" name="password" placeholder="Código administrador" autocomplete="off">
+      <button type="submit">Entrar</button>
+    </form>
+    {% else %}
+    <div style="text-align:center;margin-top:1rem">
+      <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary" style="font-size:.85rem">⚙ Ir al panel admin</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

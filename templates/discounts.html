@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Mis descuentos - {{ business_name }}{% endblock %}
+
+{% block content %}
+<section class="discounts-page">
+  <div class="discounts-shell">
+    <div class="discounts-hero">
+      <span class="auth-kicker">Beneficios Appasto</span>
+      <h1>Tus descuentos</h1>
+      <p>Cupones disponibles para tu cuenta y promociones elegidas desde el panel admin.</p>
+    </div>
+
+    <div class="discounts-grid">
+      {% if reward %}
+      <article class="discount-card discount-card-featured">
+        <span class="discount-label">Ganado por tus compras</span>
+        <h2>{{ reward.codigo }}</h2>
+        <p>{{ reward.valor }}% off por superar $200.000 en compras completadas.</p>
+        <small>Valido hasta {{ reward.fecha_expira.strftime('%d/%m/%Y') if reward.fecha_expira else 'sin fecha limite' }}.</small>
+      </article>
+      {% endif %}
+
+      {% for promo in promos %}
+      <article class="discount-card">
+        <span class="discount-label">Promo Appasto</span>
+        <h2>{{ promo.codigo }}</h2>
+        {% if promo.tipo == 'porcentaje' %}
+        <p>{{ promo.valor }}% off en tu pedido.</p>
+        {% else %}
+        <p>${{ "{:,}".format(promo.valor) }} de descuento.</p>
+        {% endif %}
+        <small>
+          {% if promo.fecha_expira %}
+          Valido hasta {{ promo.fecha_expira.strftime('%d/%m/%Y') }}.
+          {% else %}
+          Disponible por tiempo limitado.
+          {% endif %}
+        </small>
+      </article>
+      {% endfor %}
+    </div>
+
+    {% if not reward and not promos %}
+    <div class="discount-empty">
+      <h2>Aun no tienes descuentos activos</h2>
+      <p>Cuando confirmemos compras acumuladas por mas de $200.000, o activemos promos para clientes registrados, apareceran aqui.</p>
+      <a href="{{ url_for('main.catalogo') }}" class="btn btn-primary">Ver catalogo</a>
+    </div>
+    {% else %}
+    <div class="discounts-footer">
+      <a href="{{ url_for('cart.carrito') }}" class="btn btn-primary">Usar un cupon</a>
+      <a href="{{ url_for('auth.account') }}" class="btn btn-outline">Volver a mi cuenta</a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}

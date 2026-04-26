@@ -29,6 +29,15 @@
       <li><a href="{{ url_for('main.index') }}">Inicio</a></li>
       <li><a href="{{ url_for('main.catalogo') }}">Catálogo</a></li>
       <li><a href="{{ url_for('main.nosotros') }}">Nosotros</a></li>
+      {% if session.get('admin') %}
+      <li><a href="{{ url_for('admin.dashboard') }}" class="nav-admin-link">⚙ Admin</a></li>
+      {% endif %}
+      {% if current_user %}
+      <li><a href="{{ url_for('auth.discounts') }}">Descuentos</a></li>
+      <li><a href="{{ url_for('auth.account') }}">Hola, {{ current_user.nombre.split()[0] }}</a></li>
+      {% else %}
+      <li><a href="{{ url_for('auth.login') }}">Ingresar</a></li>
+      {% endif %}
       <li>
         <a href="{{ url_for('cart.carrito') }}" class="cart-link">
           🛒 Carrito
@@ -61,6 +70,8 @@
           <li><a href="{{ url_for('main.catalogo') }}">Catálogo</a></li>
           <li><a href="{{ url_for('main.nosotros') }}">Nosotros</a></li>
           <li><a href="{{ url_for('cart.carrito') }}">Carrito</a></li>
+          <li><a href="{{ url_for('auth.account' if current_user else 'auth.login') }}">Mi cuenta</a></li>
+          {% if current_user %}<li><a href="{{ url_for('auth.discounts') }}">Descuentos</a></li>{% endif %}
         </ul>
       </div>
       <div class="footer-col">

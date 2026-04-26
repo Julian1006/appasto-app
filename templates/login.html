@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+
+{% set is_register = mode == "register" %}
+{% block title %}{{ 'Crear cuenta' if is_register else 'Iniciar sesion' }} - {{ business_name }}{% endblock %}
+
+{% block content %}
+<section class="auth-page">
+  <div class="auth-card">
+    <span class="auth-kicker">Cuenta Appasto</span>
+    <h1>{{ 'Crear cuenta' if is_register else 'Iniciar sesion' }}</h1>
+    <p>{{ 'Guarda tus datos y revisa tus pedidos mas rapido.' if is_register else 'Entra para comprar mas rapido y ver tus pedidos.' }}</p>
+
+    {% if error %}
+    <div class="auth-error">{{ error }}</div>
+    {% endif %}
+
+    <form method="POST" class="auth-form">
+      <input type="hidden" name="next" value="{{ next_url }}">
+      {% if is_register %}
+      <label>
+        Nombre
+        <input type="text" name="nombre" required autocomplete="name">
+      </label>
+      {% endif %}
+
+      <label>
+        Correo
+        <input type="email" name="email" required autocomplete="email">
+      </label>
+
+      <label>
+        Contrasena
+        <input type="password" name="password" required autocomplete="{{ 'new-password' if is_register else 'current-password' }}" minlength="8">
+      </label>
+
+      {% if is_register %}
+      <div class="auth-grid">
+        <label>
+          Telefono
+          <input type="tel" name="telefono" autocomplete="tel">
+        </label>
+        <label>
+          Ciudad / Barrio
+          <input type="text" name="ciudad" autocomplete="address-level2">
+        </label>
+      </div>
+      <label>
+        Direccion
+        <input type="text" name="direccion" autocomplete="street-address">
+      </label>
+      {% endif %}
+
+      <button type="submit" class="auth-submit">{{ 'Crear mi cuenta' if is_register else 'Entrar' }}</button>
+    </form>
+
+    <div class="auth-switch">
+      {% if is_register %}
+      Ya tienes cuenta? <a href="{{ url_for('auth.login', next=next_url) }}">Inicia sesion</a>
+      {% else %}
+      Nuevo en Appasto? <a href="{{ url_for('auth.register', next=next_url) }}">Crea tu cuenta</a>
+      {% endif %}
+    </div>
+  </div>
+</section>
+{% endblock %}

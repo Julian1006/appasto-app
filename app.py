@@ -52,6 +52,7 @@ from database import db
 from routes.main import main_bp
 from routes.cart import cart_bp
 from routes.admin import admin_bp
+from routes.auth import auth_bp
 
 app = Flask(__name__, static_folder="static")
 
@@ -71,6 +72,7 @@ db.init_app(app)
 app.register_blueprint(main_bp)
 app.register_blueprint(cart_bp)
 app.register_blueprint(admin_bp)
+app.register_blueprint(auth_bp)
 
 
 @app.after_request
@@ -87,11 +89,16 @@ def security_headers(response):
 def inject_globals():
     # Variables disponibles en TODOS los templates automáticamente
     cart = session.get("cart", {})
+    current_user = None
+    if session.get("user_id"):
+        from model import User
+        current_user = User.query.get(session["user_id"])
     return {
         "cart_count":      sum(cart.values()),   # Número total de items en carrito (para badge navbar)
         "business_name":   BUSINESS_NAME,
         "whatsapp_number": WHATSAPP_NUMBER,
         "wompi_key":       WOMPI_PUBLIC_KEY,
+        "current_user":    current_user,
     }
 
 
@@ -134,6 +141,24 @@ with app.app_context():
             db.session.commit()
         if "fecha_fin" not in _combo_cols:
             db.session.execute(text("ALTER TABLE combos ADD COLUMN fecha_fin DATE"))
+            db.session.commit()
+        _order_cols = [c["name"] for c in _inspect(db.engine).get_columns("orders")]
+        if "user_id" not in _order_cols:
+            db.session.execute(text("ALTER TABLE orders ADD COLUMN user_id INTEGER"))
+            db.session.commit()
+        if "reward_code" not in _order_cols:
+            db.session.execute(text("ALTER TABLE orders ADD COLUMN reward_code VARCHAR(50)"))
+            db.session.commit()
+        _promo_cols = [c["name"] for c in _inspect(db.engine).get_columns("promos")]
+        if "visible_cliente" not in _promo_cols:
+            db.session.execute(text("ALTER TABLE promos ADD COLUMN visible_cliente INTEGER NOT NULL DEFAULT 0"))
+            db.session.commit()
+        _user_cols = [c["name"] for c in _inspect(db.engine).get_columns("users")]
+        if "reward_200k_issued" not in _user_cols:
+            db.session.execute(text("ALTER TABLE users ADD COLUMN reward_200k_issued INTEGER NOT NULL DEFAULT 0"))
+            db.session.commit()
+        if "reward_200k_code" not in _user_cols:
+            db.session.execute(text("ALTER TABLE users ADD COLUMN reward_200k_code VARCHAR(50)"))
             db.session.commit()
     except Exception:
         pass

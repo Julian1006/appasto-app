@@ -170,6 +170,14 @@
   </button>
 </div>
 
+{% if request.args.get('reward') %}
+<div style="margin:1rem 2rem 0;background:#f0fff4;border:1px solid #b7e4c7;color:#1a7f37;border-radius:10px;padding:.85rem 1rem;font-size:.9rem;font-weight:700">
+  Cupón generado al confirmar pedido #{{ request.args.get('updated') }}:
+  <strong>{{ request.args.get('reward') }}</strong>
+  ({{ loyalty_percent }}% off, válido {{ loyalty_days }} días).
+</div>
+{% endif %}
+
 <!-- ══════════════════ TAB: PRODUCTOS ══════════════════ -->
 <div class="tab-content active" id="tab-productos">
   <div class="stats-bar">
@@ -490,6 +498,11 @@
   <div class="stats-bar">
     <div class="stat-pill">Total: <strong>{{ promos|length }}</strong></div>
     <div class="stat-pill">Activos: <strong>{{ promos|selectattr('activo')|list|length }}</strong></div>
+    <div class="stat-pill">Visibles clientes: <strong>{{ promos|selectattr('visible_cliente')|list|length }}</strong></div>
+    <div class="stat-pill" title="Cupones automáticos por fidelidad">
+      Fidelidad: <strong>{{ loyalty_percent }}% off</strong> · válido {{ loyalty_days }}d ·
+      ${{ "{:,}".format(loyalty_repeat_cop) }} o {{ loyalty_repeat_orders }} pedidos · cooldown {{ loyalty_cooldown }}d
+    </div>
   </div>
   <div class="toolbar">
     <button onclick="document.getElementById('modal-promo').style.display='flex'"
@@ -507,6 +520,7 @@
           <th>Valor</th>
           <th>Usos</th>
           <th>Expira</th>
+          <th>Visible</th>
           <th>Activo</th>
           <th>Acciones</th>
         </tr>
@@ -538,6 +552,14 @@
             {% endif %}
           </td>
           <td>{{ p.fecha_expira.strftime('%d/%m/%Y') if p.fecha_expira else '—' }}</td>
+          <td style="text-align:center">
+            <form method="POST" action="{{ url_for('admin.toggle_promo_visible', pid=p.id) }}">
+              <label class="switch">
+                <input type="checkbox" {{ 'checked' if p.visible_cliente else '' }} onchange="this.form.submit()">
+                <span class="slider"></span>
+              </label>
+            </form>
+          </td>
           <td style="text-align:center">
             <form method="POST" action="{{ url_for('admin.toggle_promo', pid=p.id) }}">
               <label class="switch">
@@ -611,6 +633,11 @@
             style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.88rem;outline:none;background:#fff">
         </div>
       </div>
+
+      <label style="display:flex;align-items:center;gap:.55rem;background:#f0fff4;border:1px solid #b7e4c7;border-radius:10px;padding:.7rem .8rem;font-size:.86rem;font-weight:700;color:#1a7f37">
+        <input type="checkbox" name="visible_cliente" style="width:16px;height:16px;accent-color:#27ae60">
+        Mostrar este cupón en la sección Descuentos de clientes registrados
+      </label>
 
       <div style="display:flex;gap:.75rem;justify-content:flex-end;padding-top:.25rem">
         <button type="button" onclick="document.getElementById('modal-promo').style.display='none'"

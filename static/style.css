@@ -1826,3 +1826,416 @@ ul { list-style: none; }
   transition: color .25s;
 }
 .admin-link:hover { color: rgba(255,255,255,.55); }
+
+/* ===== Cliente: login, registro y cuenta ===== */
+.auth-page,
+.account-page {
+  min-height: calc(100vh - 64px);
+  background:
+    linear-gradient(135deg, rgba(93,22,15,.08), rgba(104,122,62,.08)),
+    var(--cream);
+  padding: 4rem 1rem;
+}
+.auth-card,
+.account-shell {
+  max-width: 520px;
+  margin: 0 auto;
+  background: #fffdf9;
+  border: 1px solid var(--bone);
+  border-radius: 8px;
+  box-shadow: 0 18px 45px rgba(74,42,28,.1);
+  padding: 2rem;
+}
+.auth-kicker {
+  display: inline-block;
+  color: var(--pasture);
+  font-size: .76rem;
+  font-weight: 800;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+  margin-bottom: .4rem;
+}
+.auth-card h1,
+.account-header h1,
+.account-card h2 {
+  color: var(--charcoal);
+  line-height: 1.05;
+}
+.auth-card h1 {
+  font-size: 2.5rem;
+  margin-bottom: .45rem;
+}
+.auth-card p,
+.account-header p,
+.account-empty {
+  color: var(--text-light);
+  line-height: 1.55;
+}
+.auth-error {
+  margin: 1rem 0;
+  background: #f8d7da;
+  color: #842029;
+  border-radius: 8px;
+  padding: .75rem .9rem;
+  font-weight: 700;
+  font-size: .9rem;
+}
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: .9rem;
+  margin-top: 1.4rem;
+}
+.auth-form label {
+  display: flex;
+  flex-direction: column;
+  gap: .35rem;
+  color: var(--hide);
+  font-size: .84rem;
+  font-weight: 800;
+}
+.auth-form input {
+  min-height: 46px;
+  border: 1px solid #d6c5b6;
+  border-radius: 8px;
+  background: var(--cream);
+  padding: .72rem .85rem;
+  font: inherit;
+  color: var(--charcoal);
+  outline: none;
+}
+.auth-form input:focus {
+  border-color: var(--red);
+  box-shadow: 0 0 0 3px rgba(158,47,36,.13);
+}
+.auth-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: .75rem;
+}
+.auth-submit {
+  min-height: 48px;
+  border: 0;
+  border-radius: 8px;
+  background: var(--red-dark);
+  color: var(--cream);
+  font-weight: 900;
+  cursor: pointer;
+  margin-top: .3rem;
+}
+.auth-submit:hover {
+  background: var(--red);
+}
+.auth-switch {
+  margin-top: 1.2rem;
+  text-align: center;
+  color: var(--text-light);
+  font-size: .92rem;
+}
+.auth-switch a,
+.account-logout {
+  color: var(--red);
+  font-weight: 800;
+}
+.account-shell {
+  max-width: 920px;
+}
+.account-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+.account-header h1 {
+  font-size: 2.5rem;
+}
+.account-grid {
+  display: grid;
+  grid-template-columns: .8fr 1.2fr;
+  gap: 1rem;
+}
+.account-card {
+  border: 1px solid var(--bone);
+  border-radius: 8px;
+  padding: 1.2rem;
+  background: var(--cream);
+}
+.account-card h2 {
+  font-size: 1.55rem;
+  margin-bottom: .8rem;
+}
+.account-spend {
+  background: #fffdf9;
+  border: 1px solid var(--bone);
+  border-radius: 8px;
+  padding: .85rem;
+  margin-bottom: .8rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  align-items: center;
+}
+.account-spend span {
+  color: var(--text-light);
+  font-size: .84rem;
+  font-weight: 700;
+}
+.account-spend strong {
+  color: var(--red-dark);
+}
+.account-reward {
+  background: #f0fff4;
+  border: 1px solid #b7e4c7;
+  color: #1a7f37;
+  border-radius: 8px;
+  padding: .85rem;
+  margin-bottom: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+}
+.account-reward span,
+.account-reward small {
+  font-size: .82rem;
+}
+.account-reward strong {
+  color: #14532d;
+  font-size: 1.15rem;
+  letter-spacing: .04em;
+}
+.account-reward-progress {
+  background: #fafafa;
+  border-color: #e5e5e5;
+  color: #555;
+}
+.account-discount-link {
+  display: block;
+  text-align: center;
+  margin: 0 0 1rem;
+  padding: .7rem .9rem;
+  border-radius: 8px;
+  background: var(--red-dark);
+  color: var(--cream);
+  font-weight: 900;
+}
+.account-discount-link:hover {
+  background: var(--red);
+}
+.account-card dl {
+  display: flex;
+  flex-direction: column;
+  gap: .75rem;
+}
+.account-card dt {
+  color: var(--pasture);
+  font-size: .75rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+.account-card dd {
+  color: var(--charcoal);
+  font-weight: 700;
+}
+.account-orders {
+  display: flex;
+  flex-direction: column;
+  gap: .65rem;
+}
+.account-order {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--bone);
+  padding-bottom: .65rem;
+}
+.account-order:last-child {
+  border-bottom: 0;
+}
+.account-order div {
+  display: flex;
+  flex-direction: column;
+  gap: .15rem;
+}
+.account-order span {
+  color: var(--text-light);
+  font-size: .82rem;
+}
+.order-status {
+  align-self: flex-end;
+  border-radius: 20px;
+  padding: .1rem .55rem;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+.order-status-pendiente { background: #fef3cd; color: #856404; }
+.order-status-completado { background: #d1e7dd; color: #0f5132; }
+.order-status-cancelado { background: #f8d7da; color: #842029; }
+
+.account-admin-form {
+  display: flex;
+  gap: .5rem;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--bone);
+}
+.account-admin-form input {
+  flex: 1;
+  padding: .5rem .75rem;
+  border: 1.5px solid #ddd;
+  border-radius: 8px;
+  font-size: .85rem;
+  outline: none;
+  color: #555;
+}
+.account-admin-form input:focus { border-color: #1a1a1a; }
+.account-admin-form button {
+  padding: .5rem 1rem;
+  background: #1a1a1a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: .85rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+.account-admin-form button:hover { background: #333; }
+
+.nav-admin-link {
+  background: #1a1a1a !important;
+  color: #fff !important;
+  border-radius: 6px;
+  padding: .25rem .7rem !important;
+  font-weight: 700 !important;
+  font-size: .82rem !important;
+}
+
+@media (max-width: 720px) {
+  .auth-grid,
+  .account-grid {
+    grid-template-columns: 1fr;
+  }
+  .account-header {
+    flex-direction: column;
+  }
+}
+
+/* ===== Cliente: descuentos ===== */
+.discounts-page {
+  min-height: calc(100vh - 64px);
+  background:
+    radial-gradient(circle at 12% 12%, rgba(104,122,62,.18), transparent 32%),
+    linear-gradient(135deg, rgba(93,22,15,.08), rgba(104,122,62,.08)),
+    var(--cream);
+  padding: 4rem 1rem;
+}
+.discounts-shell {
+  max-width: 980px;
+  margin: 0 auto;
+}
+.discounts-hero {
+  max-width: 620px;
+  margin-bottom: 1.6rem;
+}
+.discounts-hero h1 {
+  font-size: clamp(2.4rem, 6vw, 4rem);
+  line-height: .95;
+  color: var(--charcoal);
+}
+.discounts-hero p {
+  color: var(--text-light);
+  font-size: 1.02rem;
+  line-height: 1.6;
+  margin-top: .65rem;
+}
+.discounts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1rem;
+}
+.discount-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 210px;
+  background: #fffdf9;
+  border: 1px solid var(--bone);
+  border-radius: 14px;
+  box-shadow: 0 18px 45px rgba(74,42,28,.1);
+  padding: 1.35rem;
+}
+.discount-card::after {
+  content: "";
+  position: absolute;
+  right: -36px;
+  bottom: -36px;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: rgba(158,47,36,.1);
+}
+.discount-card-featured {
+  background: linear-gradient(135deg, var(--red-dark), var(--hide));
+  color: var(--cream);
+  border-color: transparent;
+}
+.discount-label {
+  display: inline-flex;
+  border-radius: 999px;
+  background: rgba(104,122,62,.16);
+  color: var(--pasture);
+  padding: .25rem .65rem;
+  font-size: .72rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+}
+.discount-card-featured .discount-label {
+  background: rgba(255,248,239,.14);
+  color: var(--cream);
+}
+.discount-card h2 {
+  margin: 1.1rem 0 .5rem;
+  font-family: 'Source Sans 3', sans-serif;
+  font-size: 1.65rem;
+  letter-spacing: .04em;
+  color: inherit;
+}
+.discount-card p {
+  color: var(--text-light);
+  line-height: 1.55;
+}
+.discount-card-featured p {
+  color: rgba(255,248,239,.82);
+}
+.discount-card small {
+  display: block;
+  margin-top: 1rem;
+  color: var(--pasture);
+  font-weight: 800;
+}
+.discount-card-featured small {
+  color: rgba(255,248,239,.76);
+}
+.discount-empty {
+  background: #fffdf9;
+  border: 1px solid var(--bone);
+  border-radius: 14px;
+  box-shadow: 0 18px 45px rgba(74,42,28,.1);
+  padding: 2rem;
+}
+.discount-empty h2 {
+  font-size: 2rem;
+  margin-bottom: .45rem;
+}
+.discount-empty p {
+  color: var(--text-light);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+.discounts-footer {
+  display: flex;
+  gap: .75rem;
+  flex-wrap: wrap;
+  margin-top: 1.4rem;
+}
