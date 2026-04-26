@@ -147,7 +147,10 @@ def dashboard():
                            combos_programados=combos_programados,
                            combos_vencidos=combos_vencidos,
                            loyalty_percent=LOYALTY_DISCOUNT_PERCENT,
-                           loyalty_days=LOYALTY_DAYS_VALID)
+                           loyalty_days=LOYALTY_DAYS_VALID,
+                           loyalty_repeat_cop=LOYALTY_REPEAT_COP,
+                           loyalty_repeat_orders=LOYALTY_REPEAT_ORDERS,
+                           loyalty_cooldown=LOYALTY_COOLDOWN_DAYS)
 
 
 def _restaurar_stock(order):
