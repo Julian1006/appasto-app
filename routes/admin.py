@@ -1,7 +1,7 @@
 import json
 import os
 import uuid
-from datetime import date
+from datetime import date, datetime, timedelta
 from functools import wraps
 from hmac import compare_digest
 from time import time
@@ -120,8 +120,11 @@ def logout():
 @admin_bp.route("/")
 @admin_required
 def dashboard():
+    _cleanup_old_orders()
     productos = Product.query.order_by(Product.id).all()
     pedidos   = Order.query.order_by(Order.fecha.desc()).all()
+    ahora = datetime.utcnow()
+    deletable_ids = {o.id for o in pedidos if ahora - o.fecha >= timedelta(hours=24)}
     combos    = Combo.query.order_by(Combo.id.desc()).all()
     promos    = Promo.query.order_by(Promo.id.desc()).all()
     n_dest    = Product.query.filter_by(destacado=True).count()
@@ -146,6 +149,7 @@ def dashboard():
                            combos_vigentes=combos_vigentes,
                            combos_programados=combos_programados,
                            combos_vencidos=combos_vencidos,
+                           deletable_ids=deletable_ids,
                            loyalty_percent=LOYALTY_DISCOUNT_PERCENT,
                            loyalty_days=LOYALTY_DAYS_VALID,
                            loyalty_repeat_cop=LOYALTY_REPEAT_COP,
@@ -172,6 +176,34 @@ def _restaurar_stock(order):
                         p.activo = True
     except Exception:
         pass
+
+
+def _cleanup_old_orders():
+    """Borra automáticamente pedidos con más de 7 días. Restaura stock si estaban pendientes."""
+    limite = datetime.utcnow() - timedelta(days=7)
+    viejos = Order.query.filter(Order.fecha < limite).all()
+    for o in viejos:
+        if o.estado == "pendiente":
+            _restaurar_stock(o)
+            remove_loyalty_coupon_for_order(o)
+        db.session.delete(o)
+    if viejos:
+        db.session.commit()
+
+
+@admin_bp.route("/pedido/<int:oid>/delete", methods=["POST"])
+@admin_required
+def delete_pedido(oid):
+    """Borrado manual de pedidos con más de 24 horas."""
+    o = Order.query.get_or_404(oid)
+    if datetime.utcnow() - o.fecha < timedelta(hours=24):
+        return redirect(url_for("admin.dashboard") + "#tab-pedidos")
+    if o.estado == "pendiente":
+        _restaurar_stock(o)
+        remove_loyalty_coupon_for_order(o)
+    db.session.delete(o)
+    db.session.commit()
+    return redirect(url_for("admin.dashboard") + "#tab-pedidos")
 
 
 @admin_bp.route("/pedido/<int:oid>/estado", methods=["POST"])

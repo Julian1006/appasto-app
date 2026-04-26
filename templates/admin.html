@@ -91,6 +91,8 @@
     .btn-reset:hover { border-color: #c0392b; color: #c0392b; }
     .btn-confirm { background: #25D366; color: #fff; border: none; padding: .38rem .85rem; border-radius: 7px; font-size: .78rem; font-weight: 700; cursor: pointer; white-space: nowrap; }
     .btn-confirm:hover { background: #1da851; }
+    .btn-delete-order { background: none; border: 1px solid #ddd; color: #c0392b; padding: .32rem .65rem; border-radius: 7px; font-size: .76rem; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .btn-delete-order:hover { background: #fdf0ee; border-color: #c0392b; }
 
     .price-override { color: #c0392b; font-weight: 700; }
 
@@ -374,6 +376,12 @@
             <form method="POST" action="{{ url_for('admin.update_estado', oid=o.id) }}" style="margin-top:.35rem">
               <input type="hidden" name="estado" value="completado">
               <button type="submit" class="btn-confirm">✅ Confirmar</button>
+            </form>
+            {% endif %}
+            {% if o.id in deletable_ids %}
+            <form method="POST" action="{{ url_for('admin.delete_pedido', oid=o.id) }}" style="margin-top:.35rem"
+              onsubmit="return confirm('¿Borrar el pedido #{{ o.id }}? Esta acción no se puede deshacer.')">
+              <button type="submit" class="btn-delete-order">🗑 Borrar</button>
             </form>
             {% endif %}
           </td>
