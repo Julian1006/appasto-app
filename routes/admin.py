@@ -124,7 +124,11 @@ def dashboard():
     productos = Product.query.order_by(Product.id).all()
     pedidos   = Order.query.order_by(Order.fecha.desc()).all()
     ahora = datetime.utcnow()
-    deletable_ids = {o.id for o in pedidos if ahora - o.fecha >= timedelta(hours=24)}
+    try:
+        deletable_ids = {o.id for o in pedidos
+                         if o.fecha and ahora - o.fecha >= timedelta(hours=24)}
+    except Exception:
+        deletable_ids = set()
     combos    = Combo.query.order_by(Combo.id.desc()).all()
     promos    = Promo.query.order_by(Promo.id.desc()).all()
     n_dest    = Product.query.filter_by(destacado=True).count()
@@ -180,15 +184,21 @@ def _restaurar_stock(order):
 
 def _cleanup_old_orders():
     """Borra automáticamente pedidos con más de 7 días. Restaura stock si estaban pendientes."""
-    limite = datetime.utcnow() - timedelta(days=7)
-    viejos = Order.query.filter(Order.fecha < limite).all()
-    for o in viejos:
-        if o.estado == "pendiente":
-            _restaurar_stock(o)
-            remove_loyalty_coupon_for_order(o)
-        db.session.delete(o)
-    if viejos:
-        db.session.commit()
+    try:
+        limite = datetime.utcnow() - timedelta(days=7)
+        viejos = Order.query.filter(Order.fecha < limite).all()
+        for o in viejos:
+            if o.estado == "pendiente":
+                _restaurar_stock(o)
+                try:
+                    remove_loyalty_coupon_for_order(o)
+                except Exception:
+                    pass
+            db.session.delete(o)
+        if viejos:
+            db.session.commit()
+    except Exception:
+        db.session.rollback()
 
 
 @admin_bp.route("/pedido/<int:oid>/delete", methods=["POST"])
