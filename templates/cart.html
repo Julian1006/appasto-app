@@ -26,63 +26,21 @@
 
       <section class="checkout-section">
         <div class="checkout-heading-row">
-          <h1>Contacto</h1>
+          <h1>Datos de entrega</h1>
           <span>Pedido seguro</span>
         </div>
         <div class="checkout-field">
-          <input type="email" id="cliente-email" placeholder="Correo electronico">
-        </div>
-        <label class="checkout-check">
-          <input type="checkbox" id="cliente-updates">
-          <span>Recibir novedades y ofertas de {{ business_name }}</span>
-        </label>
-      </section>
-
-      <section class="checkout-section">
-        <h2>Entrega</h2>
-        <div class="checkout-field checkout-select">
-          <select id="cliente-pais">
-            <option>Colombia</option>
-          </select>
-        </div>
-        <div class="checkout-field-grid">
-          <div class="checkout-field">
-            <input type="text" id="cliente-nombre" placeholder="Nombre" value="{{ current_user.nombre if current_user else '' }}">
-          </div>
-          <div class="checkout-field">
-            <input type="text" id="cliente-apellido" placeholder="Apellido">
-          </div>
+          <input type="email" id="cliente-email" placeholder="Correo electrónico"
+            style="font-size:16px" value="{{ current_user.email if current_user else '' }}">
         </div>
         <div class="checkout-field">
-          <input type="text" id="cliente-direccion" placeholder="Direccion de entrega *" required value="{{ current_user.direccion if current_user else '' }}">
+          <input type="tel" id="cliente-tel" placeholder="Número de teléfono *" required
+            style="font-size:16px" value="{{ current_user.telefono if current_user else '' }}">
         </div>
         <div class="checkout-field">
-          <input type="text" id="cliente-apto" placeholder="Apartamento, torre, casa, referencia">
+          <input type="text" id="cliente-direccion" placeholder="Dirección de entrega *" required
+            style="font-size:16px" value="{{ current_user.direccion if current_user else '' }}">
         </div>
-        <div class="checkout-field-grid checkout-field-grid-3">
-          <div class="checkout-field">
-            <input type="text" id="cliente-ciudad" placeholder="Ciudad / Barrio" value="{{ current_user.ciudad if current_user else '' }}">
-          </div>
-          <div class="checkout-field checkout-select">
-            <select id="cliente-zona">
-              <option>Bogota</option>
-              <option>Usaquen</option>
-              <option>Chapinero</option>
-              <option>Suba</option>
-              <option>Otra zona</option>
-            </select>
-          </div>
-          <div class="checkout-field">
-            <input type="text" id="cliente-postal" placeholder="Codigo postal">
-          </div>
-        </div>
-        <div class="checkout-field">
-          <input type="tel" id="cliente-tel" placeholder="Telefono *" required value="{{ current_user.telefono if current_user else '' }}">
-        </div>
-        <label class="checkout-check">
-          <input type="checkbox" id="cliente-guardar">
-          <span>Guardar estos datos para el proximo pedido</span>
-        </label>
       </section>
 
       <section class="checkout-section">
@@ -293,25 +251,24 @@
   });
 
   function _getDelivery() {
-    var address = document.getElementById('cliente-direccion').value.trim();
-    var apto = document.getElementById('cliente-apto').value.trim();
-    var zona = document.getElementById('cliente-zona').value.trim();
-    var ciudad = document.getElementById('cliente-ciudad').value.trim();
-    var nombre = [document.getElementById('cliente-nombre').value.trim(), document.getElementById('cliente-apellido').value.trim()]
-      .filter(Boolean).join(' ');
     return {
-      nombre: nombre,
       tel: document.getElementById('cliente-tel').value.trim(),
-      dir: [address, apto].filter(Boolean).join(' - '),
-      ciudad: [ciudad, zona].filter(Boolean).join(' / '),
+      dir: document.getElementById('cliente-direccion').value.trim(),
+      ciudad: '',
+      nombre: '',
     };
   }
 
   function _validateDelivery() {
     var d = _getDelivery();
-    if (!d.tel || !d.dir) {
-      alert('Por favor completa telefono y direccion de entrega.');
-      document.getElementById(!d.dir ? 'cliente-direccion' : 'cliente-tel').focus();
+    if (!d.tel) {
+      if (typeof showToast === 'function') showToast('Por favor ingresa tu número de teléfono.', 'error');
+      document.getElementById('cliente-tel').focus();
+      return null;
+    }
+    if (!d.dir) {
+      if (typeof showToast === 'function') showToast('Por favor ingresa tu dirección de entrega.', 'error');
+      document.getElementById('cliente-direccion').focus();
       return null;
     }
     return d;
