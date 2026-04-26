@@ -47,6 +47,16 @@ ul { list-style: none; }
   font-size: .7rem; font-weight: 700;
   display: flex; align-items: center; justify-content: center;
 }
+.navbar-cart-fixed {
+  display: flex; align-items: center; position: relative;
+  color: var(--text); margin-left: auto; padding: .4rem .5rem;
+  border-radius: 6px; transition: color .2s, background .2s;
+}
+.navbar-cart-fixed:hover { color: var(--red); background: var(--gray-light); }
+.navbar-cart-fixed .cart-badge {
+  position: absolute; top: 2px; right: 2px;
+  width: 17px; height: 17px; font-size: .65rem;
+}
 .nav-toggle {
   display: none; background: none; border: none;
   font-size: 1.6rem; cursor: pointer; color: var(--text); padding: .2rem .4rem;

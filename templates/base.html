@@ -24,6 +24,13 @@
       <img src="{{ url_for('static', filename='images/appasto imagen.png') }}" alt="{{ business_name }}" class="nav-logo-img">
       {{ business_name }}
     </a>
+    <!-- Carrito siempre visible a la derecha -->
+    <a href="{{ url_for('cart.carrito') }}" class="cart-link navbar-cart-fixed" aria-label="Ver carrito">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      {% if cart_count > 0 %}
+        <span class="cart-badge">{{ cart_count }}</span>
+      {% endif %}
+    </a>
     <button class="nav-toggle" id="navToggle" aria-label="Menú">&#9776;</button>
     <ul class="nav-links" id="navLinks">
       <li><a href="{{ url_for('main.index') }}">Inicio</a></li>
@@ -38,14 +45,6 @@
       {% else %}
       <li><a href="{{ url_for('auth.login') }}">Ingresar</a></li>
       {% endif %}
-      <li>
-        <a href="{{ url_for('cart.carrito') }}" class="cart-link">
-          🛒 Carrito
-          {% if cart_count > 0 %}
-            <span class="cart-badge">{{ cart_count }}</span>
-          {% endif %}
-        </a>
-      </li>
       <li><button id="pwa-install-btn" title="Instalar app en tu celular">📲 Instalar app</button></li>
     </ul>
   </nav>
@@ -211,11 +210,7 @@
     document.body.style.overflow = 'hidden';
   }
 
-  // Abrir mini-carrito al hacer clic en icono del navbar
-  (function() {
-    var cl = document.querySelector('.cart-link');
-    if (cl) cl.addEventListener('click', function(e) { e.preventDefault(); openMiniCart(); });
-  })();
+  // El cart-link del navbar navega directamente a /carrito (sin mini-cart drawer)
 
   // ── AJAX add-to-cart ────────────────────────────────────────
   document.addEventListener('submit', function(e) {
@@ -256,8 +251,6 @@
         btn.style.background = '';
         btn.classList.remove('btn-added');
       }, 1600);
-      // Abrir mini-carrito
-      openMiniCart();
     })
     .catch(function() { form.submit(); });
   });
