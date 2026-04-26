@@ -9,7 +9,7 @@ from flask import Blueprint, render_template, request, redirect, url_for, sessio
 from werkzeug.utils import secure_filename
 from config import ADMIN_PASSWORD
 from database import db
-from model import Product, Order, Combo
+from model import Product, Order, Combo, Promo
 
 _UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "images")
 _ALLOWED_EXT = {"png", "jpg", "jpeg", "webp"}
@@ -91,6 +91,7 @@ def dashboard():
     productos = Product.query.order_by(Product.id).all()
     pedidos   = Order.query.order_by(Order.fecha.desc()).all()
     combos    = Combo.query.order_by(Combo.id.desc()).all()
+    promos    = Promo.query.order_by(Promo.id.desc()).all()
     n_dest    = Product.query.filter_by(destacado=True).count()
     prod_map  = {p.id: p for p in productos}
 
@@ -105,7 +106,7 @@ def dashboard():
 
     return render_template("admin.html", productos=productos, pedidos=pedidos,
                            combos=combos, combos_sin_stock=combos_sin_stock,
-                           n_dest=n_dest, max_dest=MAX_DESTACADOS)
+                           promos=promos, n_dest=n_dest, max_dest=MAX_DESTACADOS)
 
 
 def _restaurar_stock(order):
@@ -358,3 +359,69 @@ def update_combo_precio(cid):
     c.precio = nuevo
     db.session.commit()
     return redirect(url_for("admin.dashboard") + "#tab-combos")
+
+
+# ── Promos ────────────────────────────────────────────────────────────────────
+
+@admin_bp.route("/promo/crear", methods=["POST"])
+@admin_required
+def crear_promo():
+    from datetime import date
+    codigo = request.form.get("codigo", "").strip().upper()
+    tipo   = request.form.get("tipo", "").strip()
+    if not codigo or tipo not in ("porcentaje", "monto"):
+        return redirect(url_for("admin.dashboard") + "#tab-promos")
+    try:
+        valor = int(request.form.get("valor", 0))
+        if valor <= 0:
+            raise ValueError
+    except (ValueError, TypeError):
+        return redirect(url_for("admin.dashboard") + "#tab-promos")
+    if tipo == "porcentaje" and valor > 100:
+        valor = 100
+
+    max_usos_str = request.form.get("max_usos", "").strip()
+    max_usos = int(max_usos_str) if max_usos_str.isdigit() and int(max_usos_str) > 0 else None
+
+    fecha_str = request.form.get("fecha_expira", "").strip()
+    fecha_expira = None
+    if fecha_str:
+        try:
+            fecha_expira = date.fromisoformat(fecha_str)
+        except ValueError:
+            pass
+
+    if Promo.query.filter_by(codigo=codigo).first():
+        return redirect(url_for("admin.dashboard") + "#tab-promos")
+
+    p = Promo(codigo=codigo, tipo=tipo, valor=valor, max_usos=max_usos, fecha_expira=fecha_expira)
+    db.session.add(p)
+    db.session.commit()
+    return redirect(url_for("admin.dashboard") + "#tab-promos")
+
+
+@admin_bp.route("/promo/<int:pid>/toggle", methods=["POST"])
+@admin_required
+def toggle_promo(pid):
+    p = Promo.query.get_or_404(pid)
+    p.activo = not p.activo
+    db.session.commit()
+    return redirect(url_for("admin.dashboard") + "#tab-promos")
+
+
+@admin_bp.route("/promo/<int:pid>/delete", methods=["POST"])
+@admin_required
+def delete_promo(pid):
+    p = Promo.query.get_or_404(pid)
+    db.session.delete(p)
+    db.session.commit()
+    return redirect(url_for("admin.dashboard") + "#tab-promos")
+
+
+@admin_bp.route("/promo/<int:pid>/reset", methods=["POST"])
+@admin_required
+def reset_promo(pid):
+    p = Promo.query.get_or_404(pid)
+    p.veces_usado = 0
+    db.session.commit()
+    return redirect(url_for("admin.dashboard") + "#tab-promos")

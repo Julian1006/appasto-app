@@ -1164,6 +1164,50 @@ ul { list-style: none; }
   .pay-card-wide { grid-column: span 1; flex-direction: column; align-items: flex-start; }
 }
 
+/* ===== Promo / cupón en carrito ===== */
+.cart-total-block { margin-bottom: .75rem; }
+.cart-subtotal-row {
+  display: flex; justify-content: space-between; align-items: center;
+  font-size: .95rem; color: var(--text-light); margin-bottom: .3rem;
+}
+.cart-promo-row {
+  display: flex; align-items: center; gap: .5rem; flex-wrap: wrap;
+  background: #f0fff4; border: 1px solid #b7e4c7; border-radius: 10px;
+  padding: .5rem .85rem; margin-bottom: .4rem; font-size: .88rem; color: #1a7f37;
+}
+.promo-saving { font-weight: 700; color: #1a7f37; margin-left: auto; }
+.remove-promo-btn {
+  background: none; border: none; color: #aaa; cursor: pointer;
+  font-size: .9rem; line-height: 1; padding: .1rem .25rem;
+  border-radius: 4px; transition: color .15s;
+}
+.remove-promo-btn:hover { color: #c0392b; }
+.promo-form { display: flex; gap: .5rem; margin-bottom: 1rem; }
+.promo-input {
+  flex: 1; padding: .55rem .85rem;
+  border: 1.5px solid #ddd; border-radius: 10px;
+  font-size: .88rem; outline: none; font-family: inherit;
+  transition: border-color .2s;
+}
+.promo-input:focus { border-color: var(--red); }
+.btn-promo {
+  background: var(--text); color: #fff; border: none;
+  padding: .55rem 1.1rem; border-radius: 10px;
+  font-size: .88rem; font-weight: 600; cursor: pointer;
+  white-space: nowrap; transition: background .18s;
+}
+.btn-promo:hover { background: var(--red); }
+
+/* ===== PWA install button ===== */
+#pwa-install-btn {
+  display: none; align-items: center; gap: .5rem;
+  background: var(--red); color: #fff;
+  border: none; border-radius: 20px;
+  padding: .38rem 1rem; font-size: .8rem; font-weight: 600;
+  cursor: pointer; white-space: nowrap; transition: background .18s;
+}
+#pwa-install-btn:hover { background: var(--red-dark); }
+
 /* ===== Admin link footer ===== */
 .footer-bottom { display: flex; flex-direction: column; align-items: center; gap: .4rem; }
 .admin-link {

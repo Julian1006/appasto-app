@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, session, redirect, url_for, request, jsonify, flash
 from urllib.parse import quote
 import uuid, json
-from model import get_product_by_id, get_combo_by_id, Order
+from model import get_product_by_id, get_combo_by_id, Order, Promo
 from database import db
 from config import WHATSAPP_NUMBER, BUSINESS_NAME, WOMPI_PUBLIC_KEY
 
@@ -109,10 +109,79 @@ def api_cart():
     })
 
 
+def _get_promo_info(total):
+    """Returns (promo_dict, descuento) from session. Clears if invalid."""
+    promo_data = session.get("promo")
+    if not promo_data or total == 0:
+        return None, 0
+    p = Promo.query.get(promo_data.get("id"))
+    if not p:
+        session.pop("promo", None)
+        return None, 0
+    ok, _ = p.is_valid()
+    if not ok:
+        session.pop("promo", None)
+        return None, 0
+    descuento = p.calcular_descuento(total)
+    return {"id": p.id, "codigo": p.codigo, "tipo": p.tipo, "valor": p.valor, "descuento": descuento}, descuento
+
+
+def _aplicar_y_limpiar_promo(total):
+    """Increments usage, clears session promo. Returns (descuento, codigo)."""
+    promo_data = session.get("promo")
+    if not promo_data:
+        return 0, None
+    p = Promo.query.get(promo_data.get("id"))
+    if not p:
+        session.pop("promo", None)
+        return 0, None
+    ok, _ = p.is_valid()
+    if not ok:
+        session.pop("promo", None)
+        return 0, None
+    descuento = p.calcular_descuento(total)
+    p.veces_usado += 1
+    db.session.commit()
+    session.pop("promo", None)
+    return descuento, p.codigo
+
+
 @cart_bp.route("/carrito")
 def carrito():
     items, total = get_cart_items()
-    return render_template("cart.html", items=items, total=total)
+    promo, descuento = _get_promo_info(total)
+    total_final = total - descuento
+    return render_template("cart.html", items=items, total=total,
+                           promo=promo, descuento=descuento, total_final=total_final)
+
+
+@cart_bp.route("/aplicar-promo", methods=["POST"])
+def aplicar_promo():
+    codigo = request.form.get("codigo", "").strip().upper()
+    if not codigo:
+        return redirect(url_for("cart.carrito"))
+    p = Promo.query.filter_by(codigo=codigo).first()
+    if not p:
+        flash(f"❌ El cupón '{codigo}' no existe.", "error")
+        return redirect(url_for("cart.carrito"))
+    ok, msg = p.is_valid()
+    if not ok:
+        flash(f"❌ {msg}", "error")
+        return redirect(url_for("cart.carrito"))
+    items, total = get_cart_items()
+    if not items:
+        flash("El carrito está vacío.", "error")
+        return redirect(url_for("cart.carrito"))
+    descuento = p.calcular_descuento(total)
+    session["promo"] = {"id": p.id, "codigo": p.codigo, "tipo": p.tipo, "valor": p.valor}
+    flash(f"✅ Cupón '{p.codigo}' aplicado — ahorras ${descuento:,}", "success")
+    return redirect(url_for("cart.carrito"))
+
+
+@cart_bp.route("/quitar-promo", methods=["POST"])
+def quitar_promo():
+    session.pop("promo", None)
+    return redirect(url_for("cart.carrito"))
 
 
 @cart_bp.route("/agregar/<int:product_id>", methods=["POST"])
@@ -207,17 +276,23 @@ def checkout_billetera():
     tel   = request.args.get("tel", "")
     dir_  = request.args.get("dir", "")
     ciudad = request.args.get("ciudad", "")
+    descuento, promo_cod = _aplicar_y_limpiar_promo(total)
+    total_final = total - descuento
     lineas = [f"¡Hola {BUSINESS_NAME}! Quiero pagar con *{metodo}*:\n"]
     for item in items:
         lineas.append(f"• {item['nombre']} x{item['cantidad']}lb — ${item['subtotal']:,}")
-    lineas.append(f"\n*Total: ${total:,}*")
+    if descuento:
+        lineas.append(f"\n🏷️ Cupón {promo_cod}: -${descuento:,}")
+        lineas.append(f"*Total: ${total_final:,}*")
+    else:
+        lineas.append(f"\n*Total: ${total:,}*")
     if tel or dir_:
         lineas.append(f"\n📦 *Datos de entrega:*")
         if tel:    lineas.append(f"Teléfono: {tel}")
         if dir_:   lineas.append(f"Dirección: {dir_}")
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
     lineas.append(f"\nPor favor indicarme el número {metodo} para realizar el pago y confirmar disponibilidad. ¡Gracias!")
-    _save_order(metodo, items, total, tel=tel, dir_=dir_, ciudad=ciudad)
+    _save_order(metodo, items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
     url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
     return redirect(url)
 
@@ -230,17 +305,23 @@ def checkout_efectivo():
     tel   = request.args.get("tel", "")
     dir_  = request.args.get("dir", "")
     ciudad = request.args.get("ciudad", "")
+    descuento, promo_cod = _aplicar_y_limpiar_promo(total)
+    total_final = total - descuento
     lineas = [f"¡Hola {BUSINESS_NAME}! Quiero pagar en *efectivo contra entrega*:\n"]
     for item in items:
         lineas.append(f"• {item['nombre']} x{item['cantidad']}lb — ${item['subtotal']:,}")
-    lineas.append(f"\n*Total a pagar: ${total:,}*")
+    if descuento:
+        lineas.append(f"\n🏷️ Cupón {promo_cod}: -${descuento:,}")
+        lineas.append(f"*Total a pagar: ${total_final:,}*")
+    else:
+        lineas.append(f"\n*Total a pagar: ${total:,}*")
     if tel or dir_:
         lineas.append(f"\n📦 *Datos de entrega:*")
         if tel:    lineas.append(f"Teléfono: {tel}")
         if dir_:   lineas.append(f"Dirección: {dir_}")
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
     lineas.append("\nPor favor confirmar disponibilidad y coordinar la entrega. ¡Gracias!")
-    _save_order("Efectivo", items, total, tel=tel, dir_=dir_, ciudad=ciudad)
+    _save_order("Efectivo", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
     url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
     return redirect(url)
 
@@ -256,10 +337,16 @@ def checkout_whatsapp():
     dir_ = request.args.get("dir", "")
     ciudad = request.args.get("ciudad", "")
 
+    descuento, promo_cod = _aplicar_y_limpiar_promo(total)
+    total_final = total - descuento
     lineas = [f"¡Hola {BUSINESS_NAME}! Quiero hacer el siguiente pedido:\n"]
     for item in items:
-        lineas.append(f"• {item['nombre']} x{item['cantidad']}kg — ${item['subtotal']:,}")
-    lineas.append(f"\n*Total estimado: ${total:,}*")
+        lineas.append(f"• {item['nombre']} x{item['cantidad']}lb — ${item['subtotal']:,}")
+    if descuento:
+        lineas.append(f"\n🏷️ Cupón {promo_cod}: -${descuento:,}")
+        lineas.append(f"*Total estimado: ${total_final:,}*")
+    else:
+        lineas.append(f"\n*Total estimado: ${total:,}*")
     if nombre or dir_:
         lineas.append(f"\n📦 *Datos de entrega:*")
         if nombre: lineas.append(f"Nombre: {nombre}")
@@ -267,7 +354,7 @@ def checkout_whatsapp():
         if dir_: lineas.append(f"Dirección: {dir_}")
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
     lineas.append("\nPor favor confirmar disponibilidad y precio final. ¡Gracias!")
-    _save_order("WhatsApp", items, total, tel=tel, dir_=dir_, ciudad=ciudad)
+    _save_order("WhatsApp", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
     mensaje = "\n".join(lineas)
     url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(mensaje)}"
     return redirect(url)
@@ -352,11 +439,13 @@ def checkout_tarjeta():
     items, total = get_cart_items()
     if not items:
         return redirect(url_for("cart.carrito"))
+    descuento, promo_cod = _aplicar_y_limpiar_promo(total)
+    total_final = total - descuento
     referencia = f"APASTTO-{uuid.uuid4().hex[:8].upper()}"
-    monto_centavos = total * 100
-    _save_order("Tarjeta", items, total, referencia=referencia)
+    monto_centavos = total_final * 100
+    _save_order("Tarjeta", items, total_final, referencia=referencia)
     return render_template("checkout_tarjeta.html",
-                           items=items, total=total,
+                           items=items, total=total_final,
                            referencia=referencia,
                            monto_centavos=monto_centavos,
                            wompi_key=WOMPI_PUBLIC_KEY)

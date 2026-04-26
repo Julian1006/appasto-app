@@ -162,6 +162,12 @@
     <span style="color:#aaa;font-weight:400">({{ combos|length }})</span>
     {% endif %}
   </button>
+  <button class="tab-btn" id="btn-tab-promos" onclick="switchTab('promos')">
+    🏷️ Promos
+    {% if promos %}
+    <span style="color:#aaa;font-weight:400">({{ promos|length }})</span>
+    {% endif %}
+  </button>
 </div>
 
 <!-- ══════════════════ TAB: PRODUCTOS ══════════════════ -->
@@ -455,6 +461,143 @@
     {% else %}
     <div class="empty-msg">🎁 Aún no hay combos.<br><span style="font-size:.8rem">Crea tu primer combo con el botón de arriba.</span></div>
     {% endif %}
+  </div>
+</div>
+
+<!-- ══════════════════ TAB: PROMOS ══════════════════ -->
+<div class="tab-content" id="tab-promos">
+  <div class="stats-bar">
+    <div class="stat-pill">Total: <strong>{{ promos|length }}</strong></div>
+    <div class="stat-pill">Activos: <strong>{{ promos|selectattr('activo')|list|length }}</strong></div>
+  </div>
+  <div class="toolbar">
+    <button onclick="document.getElementById('modal-promo').style.display='flex'"
+      style="background:#1a1a1a;color:#fff;border:none;padding:.55rem 1.2rem;border-radius:8px;font-size:.88rem;font-weight:700;cursor:pointer">
+      + Crear cupón
+    </button>
+  </div>
+  <div class="table-wrap">
+    {% if promos %}
+    <table>
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Tipo</th>
+          <th>Valor</th>
+          <th>Usos</th>
+          <th>Expira</th>
+          <th>Activo</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in promos %}
+        <tr {% if not p.activo %}class="disabled-row"{% endif %}>
+          <td><strong style="font-family:monospace;font-size:.95rem;letter-spacing:.04em">{{ p.codigo }}</strong></td>
+          <td>
+            {% if p.tipo == 'porcentaje' %}
+            <span class="badge-tipo" style="background:#8e44ad">% Porcentaje</span>
+            {% else %}
+            <span class="badge-tipo" style="background:#2980b9">$ Monto fijo</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if p.tipo == 'porcentaje' %}
+            <strong>{{ p.valor }}%</strong> off
+            {% else %}
+            <strong>${{ "{:,}".format(p.valor) }}</strong>
+            {% endif %}
+          </td>
+          <td>
+            {{ p.veces_usado }}{% if p.max_usos %} / {{ p.max_usos }}{% else %} / ∞{% endif %}
+            {% if p.veces_usado > 0 %}
+            <form method="POST" action="{{ url_for('admin.reset_promo', pid=p.id) }}" style="display:inline;margin-left:.4rem">
+              <button type="submit" class="btn-reset" title="Resetear contador">↺</button>
+            </form>
+            {% endif %}
+          </td>
+          <td>{{ p.fecha_expira.strftime('%d/%m/%Y') if p.fecha_expira else '—' }}</td>
+          <td style="text-align:center">
+            <form method="POST" action="{{ url_for('admin.toggle_promo', pid=p.id) }}">
+              <label class="switch">
+                <input type="checkbox" {{ 'checked' if p.activo else '' }} onchange="this.form.submit()">
+                <span class="slider"></span>
+              </label>
+            </form>
+          </td>
+          <td style="text-align:center">
+            <form method="POST" action="{{ url_for('admin.delete_promo', pid=p.id) }}"
+              onsubmit="return confirm('¿Eliminar el cupón {{ p.codigo }}?')">
+              <button type="submit"
+                style="background:none;border:1px solid #ddd;color:#c0392b;padding:.3rem .55rem;border-radius:7px;cursor:pointer;font-size:.82rem">
+                🗑
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-msg">🏷️ Aún no hay cupones de descuento.<br><span style="font-size:.8rem">Crea tu primer cupón con el botón de arriba.</span></div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- ══════════════════ MODAL CREAR PROMO ══════════════════ -->
+<div id="modal-promo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:center;justify-content:center;padding:2rem 1rem">
+  <div style="background:#fff;width:100%;max-width:480px;border-radius:16px;overflow:hidden">
+    <div style="background:#1a1a1a;color:#fff;padding:1rem 1.5rem;display:flex;align-items:center;justify-content:space-between">
+      <strong style="font-size:1rem">🏷️ Crear cupón de descuento</strong>
+      <button onclick="document.getElementById('modal-promo').style.display='none'"
+        style="background:none;border:none;color:#fff;font-size:1.6rem;line-height:1;cursor:pointer">×</button>
+    </div>
+    <form method="POST" action="{{ url_for('admin.crear_promo') }}"
+          style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem">
+
+      <div>
+        <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Código * <span style="color:#aaa;font-weight:400">(se guarda en mayúsculas)</span></label>
+        <input type="text" name="codigo" required placeholder="ej: VERANO20 · DESCUENTO10"
+          style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none;text-transform:uppercase;font-family:monospace;letter-spacing:.04em">
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Tipo *</label>
+          <select name="tipo" required id="promo-tipo"
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.88rem;outline:none;background:#fff"
+            onchange="document.getElementById('promo-valor-lbl').textContent = this.value==='porcentaje' ? 'Descuento (%) *' : 'Descuento en $ *'">
+            <option value="porcentaje">% Porcentaje</option>
+            <option value="monto">$ Monto fijo (COP)</option>
+          </select>
+        </div>
+        <div>
+          <label id="promo-valor-lbl" style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Descuento (%) *</label>
+          <input type="number" name="valor" required min="1" placeholder="ej: 20"
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none">
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Máximo de usos <span style="color:#aaa;font-weight:400">(vacío = ilimitado)</span></label>
+          <input type="number" name="max_usos" min="1" placeholder="∞"
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none">
+        </div>
+        <div>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Fecha de expiración <span style="color:#aaa;font-weight:400">(opcional)</span></label>
+          <input type="date" name="fecha_expira"
+            style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.88rem;outline:none;background:#fff">
+        </div>
+      </div>
+
+      <div style="display:flex;gap:.75rem;justify-content:flex-end;padding-top:.25rem">
+        <button type="button" onclick="document.getElementById('modal-promo').style.display='none'"
+          style="background:#f4f4f5;color:#555;border:none;padding:.6rem 1.2rem;border-radius:8px;font-size:.88rem;font-weight:600;cursor:pointer">Cancelar</button>
+        <button type="submit"
+          style="background:#1a1a1a;color:#fff;border:none;padding:.6rem 1.4rem;border-radius:8px;font-size:.88rem;font-weight:700;cursor:pointer">✓ Crear cupón</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -757,6 +900,7 @@ function switchTab(name) {
   var saved = hash || (function() { try { return localStorage.getItem('adminTab'); } catch(e) {} }());
   if (saved === 'pedidos') switchTab('pedidos');
   else if (saved === 'combos') switchTab('combos');
+  else if (saved === 'promos') switchTab('promos');
 })();
 
 // Filtrar tabla productos

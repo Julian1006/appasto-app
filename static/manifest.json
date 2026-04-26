@@ -1,0 +1,40 @@
+{
+  "name": "Appasto — Carnes a Pasto",
+  "short_name": "Appasto",
+  "description": "Carnes frescas a pasto, sin concentrados. Los mejores cortes de res, cerdo, pollo y pescado a domicilio.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#c0392b",
+  "orientation": "portrait-primary",
+  "lang": "es",
+  "icons": [
+    {
+      "src": "/static/images/appasto%20imagen.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/static/images/appasto%20imagen.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Catálogo",
+      "short_name": "Catálogo",
+      "url": "/catalogo",
+      "description": "Ver todos los productos"
+    },
+    {
+      "name": "Mi carrito",
+      "short_name": "Carrito",
+      "url": "/carrito",
+      "description": "Ver mi carrito de compras"
+    }
+  ]
+}

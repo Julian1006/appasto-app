@@ -1,5 +1,5 @@
 import json
-from datetime import datetime
+from datetime import datetime, date as _date
 from database import db
 
 
@@ -111,6 +111,41 @@ class Combo(db.Model):
 def get_combo_by_id(cid):
     c = Combo.query.get(cid)
     return c.to_dict() if c else None
+
+
+class Promo(db.Model):
+    __tablename__ = "promos"
+
+    id          = db.Column(db.Integer, primary_key=True)
+    codigo      = db.Column(db.String(50), nullable=False, unique=True)
+    tipo        = db.Column(db.String(20), nullable=False)   # 'porcentaje' | 'monto'
+    valor       = db.Column(db.Integer, nullable=False)       # % o COP
+    activo      = db.Column(db.Boolean, default=True, nullable=False)
+    max_usos    = db.Column(db.Integer, nullable=True)        # None = ilimitado
+    veces_usado = db.Column(db.Integer, default=0, nullable=False)
+    fecha_expira= db.Column(db.Date, nullable=True)
+
+    def calcular_descuento(self, total):
+        if self.tipo == "porcentaje":
+            return min(int(total * self.valor / 100), total)
+        return min(self.valor, total)
+
+    def is_valid(self):
+        if not self.activo:
+            return False, "El cupón está inactivo."
+        if self.max_usos is not None and self.veces_usado >= self.max_usos:
+            return False, "El cupón ya fue usado el máximo de veces."
+        if self.fecha_expira and self.fecha_expira < _date.today():
+            return False, "El cupón ha expirado."
+        return True, ""
+
+    def to_dict(self):
+        return {
+            "id": self.id, "codigo": self.codigo, "tipo": self.tipo,
+            "valor": self.valor, "activo": self.activo,
+            "max_usos": self.max_usos, "veces_usado": self.veces_usado,
+            "fecha_expira": self.fecha_expira.isoformat() if self.fecha_expira else None,
+        }
 
 
 # ── Seed data (se carga una sola vez si la tabla está vacía) ──────────────────

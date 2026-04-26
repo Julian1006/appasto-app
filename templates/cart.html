@@ -49,9 +49,33 @@
   </div>
 
   <div class="cart-summary">
-    <div class="cart-total">
-      Total estimado: <strong>${{ "{:,}".format(total) }}</strong>
+    <div class="cart-total-block">
+      {% if promo %}
+      <div class="cart-subtotal-row">
+        Subtotal: <span id="cart-subtotal-val">${{ "{:,}".format(total) }}</span>
+      </div>
+      <div class="cart-promo-row">
+        <span>🏷️ <strong>{{ promo.codigo }}</strong>
+          ({% if promo.tipo == 'porcentaje' %}{{ promo.valor }}% off{% else %}-${{ "{:,}".format(promo.valor) }}{% endif %})
+        </span>
+        <span id="cart-promo-desc" class="promo-saving">-${{ "{:,}".format(descuento) }}</span>
+        <form action="{{ url_for('cart.quitar_promo') }}" method="POST" style="display:inline;margin-left:.4rem">
+          <button type="submit" class="remove-promo-btn" title="Quitar cupón">✕</button>
+        </form>
+      </div>
+      {% endif %}
+      <div class="cart-total">
+        Total estimado: <strong id="cart-total-val">${{ "{:,}".format(total_final) }}</strong>
+      </div>
     </div>
+
+    <!-- Cupón de descuento -->
+    {% if not promo %}
+    <form action="{{ url_for('cart.aplicar_promo') }}" method="POST" class="promo-form">
+      <input type="text" name="codigo" placeholder="Código de descuento" class="promo-input" autocomplete="off" style="text-transform:uppercase">
+      <button type="submit" class="btn-promo">Aplicar</button>
+    </form>
+    {% endif %}
 
     <!-- Datos de entrega -->
     <div class="delivery-form">
@@ -140,6 +164,14 @@
   </div>
 
   <script>
+  // Datos del cupón activo (para recalcular total en AJAX)
+  var PROMO = {{ promo | tojson }};
+  function calcDescuento(subtotal) {
+    if (!PROMO) return 0;
+    if (PROMO.tipo === 'porcentaje') return Math.min(Math.floor(subtotal * PROMO.valor / 100), subtotal);
+    return Math.min(PROMO.valor, subtotal);
+  }
+
   // AJAX +/- y eliminar sin recargar página
   document.addEventListener('submit', function(e) {
     var form = e.target;
@@ -155,7 +187,6 @@
     .then(function(data) {
       if (data.ok === false && data.msg) {
         if (typeof showToast === 'function') showToast(data.msg, 'error');
-        // Aún así actualiza los valores que vienen en la respuesta
         var qtyEl = row.querySelector('.qty-num');
         var subEl = row.querySelector('.cart-subtotal');
         if (qtyEl && data.qty !== undefined) qtyEl.textContent = data.qty;
@@ -175,8 +206,15 @@
         if (qtyEl) qtyEl.textContent = data.qty;
         if (subEl) subEl.textContent = '$' + data.subtotal.toLocaleString('es-CO');
       }
-      var totalEl = document.querySelector('.cart-total strong');
-      if (totalEl && data.total !== undefined) totalEl.textContent = '$' + data.total.toLocaleString('es-CO');
+      if (data.total !== undefined) {
+        var desc = calcDescuento(data.total);
+        var subValEl = document.getElementById('cart-subtotal-val');
+        if (subValEl) subValEl.textContent = '$' + data.total.toLocaleString('es-CO');
+        var descEl = document.getElementById('cart-promo-desc');
+        if (descEl) descEl.textContent = '-$' + desc.toLocaleString('es-CO');
+        var totalEl = document.getElementById('cart-total-val');
+        if (totalEl) totalEl.textContent = '$' + (data.total - desc).toLocaleString('es-CO');
+      }
       var badge = document.querySelector('.cart-badge');
       if (data.count > 0) { if (badge) badge.textContent = data.count; }
       else if (badge) badge.remove();

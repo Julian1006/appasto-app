@@ -6,6 +6,12 @@
   <meta name="description" content="{{ business_name }} — Carnes frescas a pasto, sin concentrados. Los mejores cortes de res, cerdo, pollo y pescado a domicilio.">
   <title>{% block title %}{{ business_name }}{% endblock %}</title>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/appasto imagen.png') }}">
+  <link rel="manifest" href="/static/manifest.json">
+  <meta name="theme-color" content="#c0392b">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Appasto">
+  <link rel="apple-touch-icon" href="/static/images/appasto%20imagen.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -31,6 +37,7 @@
           {% endif %}
         </a>
       </li>
+      <li><button id="pwa-install-btn" title="Instalar app en tu celular">📲 Instalar app</button></li>
     </ul>
   </nav>
 
@@ -369,6 +376,37 @@
 
   <!-- Toast de stock / notificaciones -->
   <div id="toast-container" style="position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%);z-index:9999;display:flex;flex-direction:column;align-items:center;gap:.6rem;pointer-events:none"></div>
+
+  <script>
+  // ── PWA: Service Worker + Install prompt ────────────────────
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('/static/sw.js').catch(function() {});
+  }
+  var _pwaPrompt;
+  window.addEventListener('beforeinstallprompt', function(e) {
+    e.preventDefault();
+    _pwaPrompt = e;
+    var btn = document.getElementById('pwa-install-btn');
+    if (btn) btn.style.display = 'flex';
+  });
+  window.addEventListener('appinstalled', function() {
+    var btn = document.getElementById('pwa-install-btn');
+    if (btn) btn.style.display = 'none';
+    _pwaPrompt = null;
+  });
+  (function() {
+    var btn = document.getElementById('pwa-install-btn');
+    if (!btn) return;
+    btn.addEventListener('click', function() {
+      if (!_pwaPrompt) return;
+      _pwaPrompt.prompt();
+      _pwaPrompt.userChoice.then(function() {
+        _pwaPrompt = null;
+        btn.style.display = 'none';
+      });
+    });
+  })();
+  </script>
 
   <script>
   function showToast(msg, type) {
