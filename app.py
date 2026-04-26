@@ -155,10 +155,13 @@ with app.app_context():
             db.session.commit()
         _user_cols = [c["name"] for c in _inspect(db.engine).get_columns("users")]
         if "reward_200k_issued" not in _user_cols:
-            db.session.execute(text("ALTER TABLE users ADD COLUMN reward_200k_issued INTEGER NOT NULL DEFAULT 0"))
+            db.session.execute(text("ALTER TABLE users ADD COLUMN reward_500k_issued INTEGER NOT NULL DEFAULT 0"))
             db.session.commit()
         if "reward_200k_code" not in _user_cols:
-            db.session.execute(text("ALTER TABLE users ADD COLUMN reward_200k_code VARCHAR(50)"))
+            db.session.execute(text("ALTER TABLE users ADD COLUMN reward_500k_code VARCHAR(50)"))
+            db.session.commit()
+        if "ultimo_reward_at" not in _user_cols:
+            db.session.execute(text("ALTER TABLE users ADD COLUMN ultimo_reward_at DATETIME"))
             db.session.commit()
     except Exception:
         pass

@@ -11,7 +11,9 @@ from werkzeug.utils import secure_filename
 from config import ADMIN_PASSWORD
 from database import db
 from model import Product, Order, Combo, Promo
-from rewards import LOYALTY_DISCOUNT_PERCENT, LOYALTY_DAYS_VALID, maybe_generate_loyalty_coupon, remove_loyalty_coupon_for_order
+from rewards import (LOYALTY_DISCOUNT_PERCENT, LOYALTY_DAYS_VALID, LOYALTY_THRESHOLD,
+                     LOYALTY_REPEAT_COP, LOYALTY_REPEAT_ORDERS, LOYALTY_COOLDOWN_DAYS,
+                     maybe_generate_loyalty_coupon, remove_loyalty_coupon_for_order)
 
 _UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "images")
 _ALLOWED_EXT = {"png", "jpg", "jpeg", "webp"}
