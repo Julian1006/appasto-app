@@ -439,11 +439,14 @@ def checkout_tarjeta():
     items, total = get_cart_items()
     if not items:
         return redirect(url_for("cart.carrito"))
+    tel = request.form.get("tel", "")
+    dir_ = request.form.get("dir", "")
+    ciudad = request.form.get("ciudad", "")
     descuento, promo_cod = _aplicar_y_limpiar_promo(total)
     total_final = total - descuento
     referencia = f"APASTTO-{uuid.uuid4().hex[:8].upper()}"
     monto_centavos = total_final * 100
-    _save_order("Tarjeta", items, total_final, referencia=referencia)
+    _save_order("Tarjeta", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad, referencia=referencia)
     return render_template("checkout_tarjeta.html",
                            items=items, total=total_final,
                            referencia=referencia,

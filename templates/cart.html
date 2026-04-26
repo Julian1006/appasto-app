@@ -1,170 +1,237 @@
 {% extends "base.html" %}
 
-{% block title %}Carrito — {{ business_name }}{% endblock %}
+{% block title %}Checkout - {{ business_name }}{% endblock %}
 
 {% block content %}
-<div class="container cart-container">
-  <h1 class="page-title">Tu Carrito</h1>
-
+<div class="checkout-page">
   {% if items %}
-  <div class="cart-table-wrapper">
-    <table class="cart-table">
-      <thead>
-        <tr>
-          <th>Producto</th>
-          <th>Precio</th>
-          <th>Cantidad</th>
-          <th>Subtotal</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for item in items %}
-        <tr>
-          <td class="cart-product">
-            <span class="cart-emoji">{{ item.emoji }}</span>
-            <span>{{ item.nombre }}</span>
-          </td>
-          <td>${{ "{:,}".format(item.precio) }}{% if not item.is_combo %}/lb{% endif %}</td>
-          <td class="cart-qty">
-            <form action="{{ item.url_minus }}" method="POST" class="cart-ctrl-form" style="display:inline">
-              <button type="submit" class="qty-btn">−</button>
-            </form>
-            <span class="qty-num">{{ item.cantidad }}</span>
-            <form action="{{ item.url_plus }}" method="POST" class="cart-ctrl-form" style="display:inline">
-              <input type="hidden" name="cantidad" value="1">
-              <button type="submit" class="qty-btn">+</button>
-            </form>
-          </td>
-          <td class="cart-subtotal">${{ "{:,}".format(item.subtotal) }}</td>
-          <td>
-            <form action="{{ item.url_remove }}" method="POST" class="cart-ctrl-form">
-              <button type="submit" class="remove-btn" title="Eliminar">✕</button>
-            </form>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-  </div>
-
-  <div class="cart-summary">
-    <div class="cart-total-block">
-      {% if promo %}
-      <div class="cart-subtotal-row">
-        Subtotal: <span id="cart-subtotal-val">${{ "{:,}".format(total) }}</span>
+  <div class="checkout-layout">
+    <section class="checkout-panel">
+      <div class="checkout-return">
+        <a href="{{ url_for('main.catalogo') }}">Seguir comprando</a>
       </div>
-      <div class="cart-promo-row">
-        <span>🏷️ <strong>{{ promo.codigo }}</strong>
-          ({% if promo.tipo == 'porcentaje' %}{{ promo.valor }}% off{% else %}-${{ "{:,}".format(promo.valor) }}{% endif %})
-        </span>
-        <span id="cart-promo-desc" class="promo-saving">-${{ "{:,}".format(descuento) }}</span>
-        <form action="{{ url_for('cart.quitar_promo') }}" method="POST" style="display:inline;margin-left:.4rem">
-          <button type="submit" class="remove-promo-btn" title="Quitar cupón">✕</button>
+
+      <div class="checkout-express">
+        <p>Compra asistida Appasto</p>
+        <div class="checkout-express-grid">
+          <button type="button" class="express-btn express-wa" onclick="checkoutPago('whatsapp')">
+            Pedir por WhatsApp
+          </button>
+          <button type="button" class="express-btn express-card" onclick="checkoutTarjeta()">
+            Pagar seguro
+          </button>
+        </div>
+        <div class="checkout-divider"><span>O</span></div>
+      </div>
+
+      <section class="checkout-section">
+        <div class="checkout-heading-row">
+          <h1>Contacto</h1>
+          <span>Pedido seguro</span>
+        </div>
+        <div class="checkout-field">
+          <input type="email" id="cliente-email" placeholder="Correo electronico">
+        </div>
+        <label class="checkout-check">
+          <input type="checkbox" id="cliente-updates">
+          <span>Recibir novedades y ofertas de {{ business_name }}</span>
+        </label>
+      </section>
+
+      <section class="checkout-section">
+        <h2>Entrega</h2>
+        <div class="checkout-field checkout-select">
+          <select id="cliente-pais">
+            <option>Colombia</option>
+          </select>
+        </div>
+        <div class="checkout-field-grid">
+          <div class="checkout-field">
+            <input type="text" id="cliente-nombre" placeholder="Nombre">
+          </div>
+          <div class="checkout-field">
+            <input type="text" id="cliente-apellido" placeholder="Apellido">
+          </div>
+        </div>
+        <div class="checkout-field">
+          <input type="text" id="cliente-direccion" placeholder="Direccion de entrega *" required>
+        </div>
+        <div class="checkout-field">
+          <input type="text" id="cliente-apto" placeholder="Apartamento, torre, casa, referencia">
+        </div>
+        <div class="checkout-field-grid checkout-field-grid-3">
+          <div class="checkout-field">
+            <input type="text" id="cliente-ciudad" placeholder="Ciudad / Barrio">
+          </div>
+          <div class="checkout-field checkout-select">
+            <select id="cliente-zona">
+              <option>Bogota</option>
+              <option>Usaquen</option>
+              <option>Chapinero</option>
+              <option>Suba</option>
+              <option>Otra zona</option>
+            </select>
+          </div>
+          <div class="checkout-field">
+            <input type="text" id="cliente-postal" placeholder="Codigo postal">
+          </div>
+        </div>
+        <div class="checkout-field">
+          <input type="tel" id="cliente-tel" placeholder="Telefono *" required>
+        </div>
+        <label class="checkout-check">
+          <input type="checkbox" id="cliente-guardar">
+          <span>Guardar estos datos para el proximo pedido</span>
+        </label>
+      </section>
+
+      <section class="checkout-section">
+        <h2>Metodo de entrega</h2>
+        <div class="shipping-box">
+          <div>
+            <strong>Domicilio coordinado</strong>
+            <span>Te confirmamos disponibilidad y hora por WhatsApp.</span>
+          </div>
+          <strong>A confirmar</strong>
+        </div>
+      </section>
+
+      <section class="checkout-section">
+        <h2>Pago</h2>
+        <p class="checkout-muted">Elige como quieres cerrar tu pedido. Todos los metodos mantienen stock, cupones y resumen.</p>
+
+        <div class="payment-stack">
+          <button type="button" class="payment-row payment-row-selected" onclick="checkoutTarjeta()">
+            <span class="payment-radio"></span>
+            <span class="payment-copy">
+              <strong>Tarjeta / PSE con Wompi</strong>
+              <small>Pago protegido para pedidos Appasto</small>
+            </span>
+            <span class="payment-tags"><b>VISA</b><b>MC</b><b>PSE</b></span>
+          </button>
+
+          <button type="button" class="payment-row" onclick="checkoutPago('whatsapp')">
+            <span class="payment-radio"></span>
+            <span class="payment-copy">
+              <strong>WhatsApp</strong>
+              <small>Te confirmamos cortes, disponibilidad y entrega</small>
+            </span>
+            <span class="payment-brand">Asistido</span>
+          </button>
+
+          <button type="button" class="payment-row" onclick="checkoutPago('nequi')">
+            <span class="payment-radio"></span>
+            <span class="payment-copy">
+              <strong>Nequi</strong>
+              <small>Transferencia rapida despues de confirmar el pedido</small>
+            </span>
+            <span class="payment-brand">Nequi</span>
+          </button>
+
+          <button type="button" class="payment-row" onclick="checkoutPago('daviplata')">
+            <span class="payment-radio"></span>
+            <span class="payment-copy">
+              <strong>Daviplata</strong>
+              <small>Billetera digital para pago coordinado</small>
+            </span>
+            <span class="payment-brand">Davi</span>
+          </button>
+
+          <button type="button" class="payment-row" onclick="checkoutPago('efectivo')">
+            <span class="payment-radio"></span>
+            <span class="payment-copy">
+              <strong>Efectivo contra entrega</strong>
+              <small>Pagas cuando recibes tus productos</small>
+            </span>
+            <span class="payment-brand">COP</span>
+          </button>
+        </div>
+      </section>
+    </section>
+
+    <aside class="checkout-summary" aria-label="Resumen del pedido">
+      <div class="summary-inner">
+        <div class="summary-items">
+          {% for item in items %}
+          <div class="summary-item checkout-item">
+            <div class="summary-thumb">
+              <span>{{ item.emoji }}</span>
+              <strong>{{ item.cantidad }}</strong>
+            </div>
+            <div class="summary-info">
+              <strong>{{ item.nombre }}</strong>
+              <span>{% if item.is_combo %}Combo{% else %}${{ "{:,}".format(item.precio) }}/lb{% endif %}</span>
+              <div class="summary-qty">
+                <form action="{{ item.url_minus }}" method="POST" class="cart-ctrl-form">
+                  <button type="submit" class="summary-qty-btn" aria-label="Quitar una unidad">-</button>
+                </form>
+                <span class="qty-num">{{ item.cantidad }}</span>
+                <form action="{{ item.url_plus }}" method="POST" class="cart-ctrl-form">
+                  <input type="hidden" name="cantidad" value="1">
+                  <button type="submit" class="summary-qty-btn" aria-label="Agregar una unidad">+</button>
+                </form>
+                <form action="{{ item.url_remove }}" method="POST" class="cart-ctrl-form">
+                  <button type="submit" class="summary-remove" title="Eliminar">Eliminar</button>
+                </form>
+              </div>
+            </div>
+            <div class="summary-price cart-subtotal">${{ "{:,}".format(item.subtotal) }}</div>
+          </div>
+          {% endfor %}
+        </div>
+
+        {% if promo %}
+        <div class="summary-promo-active">
+          <span><strong>{{ promo.codigo }}</strong>
+            {% if promo.tipo == 'porcentaje' %}{{ promo.valor }}% off{% else %}-${{ "{:,}".format(promo.valor) }}{% endif %}
+          </span>
+          <span id="cart-promo-desc" class="promo-saving">-${{ "{:,}".format(descuento) }}</span>
+          <form action="{{ url_for('cart.quitar_promo') }}" method="POST">
+            <button type="submit" class="remove-promo-btn" title="Quitar cupon">x</button>
+          </form>
+        </div>
+        {% else %}
+        <form action="{{ url_for('cart.aplicar_promo') }}" method="POST" class="summary-discount">
+          <input type="text" name="codigo" placeholder="Codigo de descuento" autocomplete="off" style="text-transform:uppercase">
+          <button type="submit">Aplicar</button>
+        </form>
+        {% endif %}
+
+        <div class="summary-totals">
+          <div>
+            <span>Subtotal</span>
+            <strong id="cart-subtotal-val">${{ "{:,}".format(total) }}</strong>
+          </div>
+          {% if promo %}
+          <div>
+            <span>Descuento</span>
+            <strong>-${{ "{:,}".format(descuento) }}</strong>
+          </div>
+          {% endif %}
+          <div>
+            <span>Envio</span>
+            <strong>Se confirma por WhatsApp</strong>
+          </div>
+          <div class="summary-total">
+            <span>Total</span>
+            <strong id="cart-total-val">${{ "{:,}".format(total_final) }}</strong>
+          </div>
+        </div>
+
+        <form action="{{ url_for('cart.vaciar') }}" method="POST" class="summary-clear">
+          <button type="submit">Vaciar carrito</button>
         </form>
       </div>
-      {% endif %}
-      <div class="cart-total">
-        Total estimado: <strong id="cart-total-val">${{ "{:,}".format(total_final) }}</strong>
-      </div>
-    </div>
-
-    <!-- Cupón de descuento -->
-    {% if not promo %}
-    <form action="{{ url_for('cart.aplicar_promo') }}" method="POST" class="promo-form">
-      <input type="text" name="codigo" placeholder="Código de descuento" class="promo-input" autocomplete="off" style="text-transform:uppercase">
-      <button type="submit" class="btn-promo">Aplicar</button>
-    </form>
-    {% endif %}
-
-    <!-- Datos de entrega -->
-    <div class="delivery-form">
-      <h3>📦 Datos de entrega</h3>
-      <div class="delivery-fields">
-        <input type="text" id="cliente-tel" placeholder="Teléfono *" required>
-        <input type="text" id="cliente-direccion" placeholder="Dirección de entrega *" required>
-        <input type="text" id="cliente-ciudad" placeholder="Ciudad / Barrio" >
-      </div>
-    </div>
-
-    <!-- Métodos de pago -->
-    <div class="pay-section">
-      <h3 class="pay-title">Elige tu método de pago</h3>
-      <div class="pay-grid">
-
-        <button class="pay-card" onclick="checkoutPago('whatsapp')">
-          <span class="pay-icon">📲</span>
-          <div class="pay-info">
-            <strong>WhatsApp</strong>
-            <span>Pedido directo al negocio</span>
-          </div>
-          <div class="pay-logos-row">
-            <span class="plr-chip plr-wa">WhatsApp</span>
-          </div>
-        </button>
-
-        <button class="pay-card" onclick="checkoutPago('nequi')">
-          <span class="pay-icon">📱</span>
-          <div class="pay-info">
-            <strong>Nequi</strong>
-            <span>Transferencia digital rápida</span>
-          </div>
-          <div class="pay-logos-row">
-            <span class="plr-chip plr-nequi">Nequi</span>
-          </div>
-        </button>
-
-        <button class="pay-card" onclick="checkoutPago('daviplata')">
-          <span class="pay-icon">💜</span>
-          <div class="pay-info">
-            <strong>Daviplata</strong>
-            <span>Billetera Davivienda</span>
-          </div>
-          <div class="pay-logos-row">
-            <span class="plr-chip plr-davi">Daviplata</span>
-          </div>
-        </button>
-
-        <button class="pay-card" onclick="checkoutPago('efectivo')">
-          <span class="pay-icon">💵</span>
-          <div class="pay-info">
-            <strong>Efectivo</strong>
-            <span>Contra entrega a domicilio</span>
-          </div>
-          <div class="pay-logos-row">
-            <span class="plr-chip plr-cash">Efectivo</span>
-          </div>
-        </button>
-
-        <button class="pay-card pay-card-wide" onclick="checkoutTarjeta()">
-          <span class="pay-icon">💳</span>
-          <div class="pay-info">
-            <strong>Tarjeta / PSE</strong>
-            <span>Pago seguro en línea</span>
-          </div>
-          <div class="pay-logos-row">
-            <span class="plr-chip plr-visa">Visa</span>
-            <span class="plr-chip plr-mc">Mastercard</span>
-            <span class="plr-chip plr-pse">PSE</span>
-          </div>
-        </button>
-
-      </div>
-    </div>
-
-    <div class="cart-actions" style="margin-top:1rem">
-      <a href="{{ url_for('main.catalogo') }}" class="btn btn-outline">← Seguir comprando</a>
-    </div>
-    <form action="{{ url_for('cart.vaciar') }}" method="POST" class="clear-cart">
-      <button type="submit" class="clear-btn">Vaciar carrito</button>
-    </form>
-
-    <!-- Hidden form for tarjeta checkout (needs POST) -->
-    <form id="form-tarjeta" action="{{ url_for('cart.checkout_tarjeta') }}" method="POST" style="display:none"></form>
+    </aside>
   </div>
 
+  <form id="form-tarjeta" action="{{ url_for('cart.checkout_tarjeta') }}" method="POST" style="display:none">
+    <input type="hidden" name="tel" id="tarjeta-tel">
+    <input type="hidden" name="dir" id="tarjeta-dir">
+    <input type="hidden" name="ciudad" id="tarjeta-ciudad">
+  </form>
+
   <script>
-  // Datos del cupón activo (para recalcular total en AJAX)
   var PROMO = {{ promo | tojson }};
   function calcDescuento(subtotal) {
     if (!PROMO) return 0;
@@ -172,12 +239,11 @@
     return Math.min(PROMO.valor, subtotal);
   }
 
-  // AJAX +/- y eliminar sin recargar página
   document.addEventListener('submit', function(e) {
     var form = e.target;
     if (!form.classList.contains('cart-ctrl-form')) return;
     e.preventDefault();
-    var row = form.closest('tr');
+    var row = form.closest('.checkout-item') || form.closest('tr');
     fetch(form.action, {
       method: 'POST',
       body: new FormData(form),
@@ -188,8 +254,10 @@
       if (data.ok === false && data.msg) {
         if (typeof showToast === 'function') showToast(data.msg, 'error');
         var qtyEl = row.querySelector('.qty-num');
+        var badgeEl = row.querySelector('.summary-thumb strong');
         var subEl = row.querySelector('.cart-subtotal');
         if (qtyEl && data.qty !== undefined) qtyEl.textContent = data.qty;
+        if (badgeEl && data.qty !== undefined) badgeEl.textContent = data.qty;
         if (subEl && data.subtotal !== undefined) subEl.textContent = '$' + data.subtotal.toLocaleString('es-CO');
         return;
       }
@@ -198,12 +266,14 @@
         row.style.opacity = '0';
         setTimeout(function() {
           row.remove();
-          if (!document.querySelector('.cart-table tbody tr')) location.reload();
+          if (!document.querySelector('.checkout-item')) location.reload();
         }, 230);
       } else {
         var qtyEl = row.querySelector('.qty-num');
+        var badgeEl = row.querySelector('.summary-thumb strong');
         var subEl = row.querySelector('.cart-subtotal');
         if (qtyEl) qtyEl.textContent = data.qty;
+        if (badgeEl) badgeEl.textContent = data.qty;
         if (subEl) subEl.textContent = '$' + data.subtotal.toLocaleString('es-CO');
       }
       if (data.total !== undefined) {
@@ -223,24 +293,37 @@
   });
 
   function _getDelivery() {
+    var address = document.getElementById('cliente-direccion').value.trim();
+    var apto = document.getElementById('cliente-apto').value.trim();
+    var zona = document.getElementById('cliente-zona').value.trim();
+    var ciudad = document.getElementById('cliente-ciudad').value.trim();
+    var nombre = [document.getElementById('cliente-nombre').value.trim(), document.getElementById('cliente-apellido').value.trim()]
+      .filter(Boolean).join(' ');
     return {
-      tel:    document.getElementById('cliente-tel').value.trim(),
-      dir:    document.getElementById('cliente-direccion').value.trim(),
-      ciudad: document.getElementById('cliente-ciudad').value.trim(),
+      nombre: nombre,
+      tel: document.getElementById('cliente-tel').value.trim(),
+      dir: [address, apto].filter(Boolean).join(' - '),
+      ciudad: [ciudad, zona].filter(Boolean).join(' / '),
     };
   }
 
-  function checkoutPago(tipo) {
+  function _validateDelivery() {
     var d = _getDelivery();
     if (!d.tel || !d.dir) {
-      alert('Por favor completá teléfono y dirección de entrega.');
-      document.getElementById('cliente-tel').focus();
-      return;
+      alert('Por favor completa telefono y direccion de entrega.');
+      document.getElementById(!d.dir ? 'cliente-direccion' : 'cliente-tel').focus();
+      return null;
     }
+    return d;
+  }
+
+  function checkoutPago(tipo) {
+    var d = _validateDelivery();
+    if (!d) return;
     var base, url;
     if (tipo === 'whatsapp') {
       base = "{{ url_for('cart.checkout_whatsapp') }}";
-      url = base + '?tel=' + encodeURIComponent(d.tel) + '&dir=' + encodeURIComponent(d.dir) + '&ciudad=' + encodeURIComponent(d.ciudad);
+      url = base + '?nombre=' + encodeURIComponent(d.nombre) + '&tel=' + encodeURIComponent(d.tel) + '&dir=' + encodeURIComponent(d.dir) + '&ciudad=' + encodeURIComponent(d.ciudad);
     } else if (tipo === 'nequi') {
       base = "{{ url_for('cart.checkout_billetera') }}";
       url = base + '?metodo=Nequi&tel=' + encodeURIComponent(d.tel) + '&dir=' + encodeURIComponent(d.dir) + '&ciudad=' + encodeURIComponent(d.ciudad);
@@ -255,21 +338,22 @@
   }
 
   function checkoutTarjeta() {
-    var d = _getDelivery();
-    if (!d.tel || !d.dir) {
-      alert('Por favor completá teléfono y dirección de entrega.');
-      document.getElementById('cliente-tel').focus();
-      return;
-    }
+    var d = _validateDelivery();
+    if (!d) return;
+    document.getElementById('tarjeta-tel').value = d.tel;
+    document.getElementById('tarjeta-dir').value = d.dir;
+    document.getElementById('tarjeta-ciudad').value = d.ciudad;
     document.getElementById('form-tarjeta').submit();
   }
   </script>
 
   {% else %}
-  <div class="empty-cart">
-    <p class="empty-icon">🛒</p>
-    <p>Tu carrito está vacío.</p>
-    <a href="{{ url_for('main.catalogo') }}" class="btn btn-primary">Ver Catálogo</a>
+  <div class="container cart-container">
+    <div class="empty-cart">
+      <p class="empty-icon">Carrito</p>
+      <p>Tu carrito esta vacio.</p>
+      <a href="{{ url_for('main.catalogo') }}" class="btn btn-primary">Ver catalogo</a>
+    </div>
   </div>
   {% endif %}
 </div>
