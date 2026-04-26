@@ -65,12 +65,7 @@
       </section>
     </div>
 
-    {% if not session.get('admin') %}
-    <form method="POST" action="{{ url_for('admin.activar') }}" class="account-admin-form">
-      <input type="password" name="password" placeholder="Código administrador" autocomplete="off">
-      <button type="submit">Entrar</button>
-    </form>
-    {% else %}
+    {% if session.get('admin') %}
     <div style="text-align:center;margin-top:1rem">
       <a href="{{ url_for('admin.dashboard') }}" class="btn btn-primary" style="font-size:.85rem">⚙ Ir al panel admin</a>
     </div>
