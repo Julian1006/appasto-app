@@ -167,7 +167,8 @@ ul { list-style: none; }
 .product-price { font-size: 1.1rem; font-weight: 800; color: var(--red); }
 
 /* Selector cantidad en tarjeta */
-.add-form { display: flex; align-items: center; gap: .4rem; }
+.add-form { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+#modal-form.add-form { flex-direction: column; align-items: stretch; gap: .6rem; }
 .qty-input {
   width: 52px; padding: .35rem .4rem; border: 1px solid var(--gray);
   border-radius: 6px; font-size: .9rem; text-align: center; color: var(--text);
@@ -180,6 +181,29 @@ ul { list-style: none; }
 }
 .qty-select:focus { outline: none; border-color: var(--red); }
 .qty-select-lg { min-width: 110px; padding: .58rem .75rem; }
+
+/* Observaciones del corte — modal */
+.obs-input {
+  width: 100%; box-sizing: border-box;
+  border: 1.5px solid var(--gray); border-radius: 8px;
+  padding: .55rem .75rem; font-size: .88rem; color: var(--text);
+  resize: none; font-family: inherit; line-height: 1.4;
+  transition: border-color .18s;
+}
+.obs-input:focus { outline: none; border-color: var(--red); }
+.obs-input::placeholder { color: #aaa; }
+
+/* Nota del corte — carrito */
+.nota-item-form { margin: .25rem 0 .1rem; }
+.nota-item-input {
+  width: 100%; box-sizing: border-box;
+  border: 1px solid #e0e0e0; border-radius: 6px;
+  padding: .3rem .55rem; font-size: .82rem; color: var(--text);
+  font-family: inherit; background: #fafafa;
+  transition: border-color .18s;
+}
+.nota-item-input:focus { outline: none; border-color: var(--red); background: #fff; }
+.nota-item-input::placeholder { color: #bbb; font-style: italic; }
 
 /* Stepper +/- */
 .qty-stepper { display: flex; align-items: center; border: 1.5px solid var(--gray); border-radius: 8px; overflow: hidden; }

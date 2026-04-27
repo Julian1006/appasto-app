@@ -143,6 +143,9 @@
               <option value="2">1 kg</option>
               <option value="3">1.5 kg</option>
             </select>
+            <textarea name="observacion" id="modal-obs" class="obs-input"
+              placeholder="Indicaciones del corte (opcional)&#10;Ej: grueso, sin grasa, en trozos..."
+              maxlength="200" rows="2"></textarea>
             <button type="submit" class="btn btn-whatsapp">+ Agregar al carrito</button>
           </form>
         </div>
@@ -312,6 +315,8 @@
     _modalUnitPrice = parseInt(precio) || 0;
     var qtyInput = document.getElementById('modal-qty');
     if (qtyInput) { qtyInput.value = 1; _actualizarSubtotal(1); }
+    var obsInput = document.getElementById('modal-obs');
+    if (obsInput) obsInput.value = '';
     document.getElementById('modal-name').textContent  = nombre;
     document.getElementById('modal-cat').textContent   = categoria;
     document.getElementById('modal-desc').textContent  = descripcion;

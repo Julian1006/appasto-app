@@ -86,6 +86,7 @@ def _cart_total(cart):
 
 def get_cart_items():
     cart = session.get("cart", {})
+    cart_notes = session.get("cart_notes", {})
     items = []
     total = 0
     for key, qty in cart.items():
@@ -95,7 +96,7 @@ def get_cart_items():
             if combo and combo["activo"] and combo.get("vigente", True):
                 subtotal = combo["precio"] * qty
                 items.append({**combo, "cantidad": qty, "subtotal": subtotal,
-                               "is_combo": True, "cart_key": key,
+                               "is_combo": True, "cart_key": key, "nota": "",
                                "url_minus":  url_for("cart.quitar_combo",  combo_id=cid),
                                "url_plus":   url_for("cart.agregar_combo", combo_id=cid),
                                "url_remove": url_for("cart.eliminar_combo", combo_id=cid)})
@@ -107,9 +108,11 @@ def get_cart_items():
                 subtotal = product["precio"] * qty
                 items.append({**product, "cantidad": qty, "subtotal": subtotal,
                                "is_combo": False, "cart_key": key,
+                               "nota": cart_notes.get(key, ""),
                                "url_minus":  url_for("cart.quitar",   product_id=pid),
                                "url_plus":   url_for("cart.agregar",  product_id=pid),
-                               "url_remove": url_for("cart.eliminar", product_id=pid)})
+                               "url_remove": url_for("cart.eliminar", product_id=pid),
+                               "url_nota":   url_for("cart.actualizar_nota", product_id=pid)})
                 total += subtotal
     return items, total
 
@@ -241,6 +244,11 @@ def agregar(product_id):
 
     cart[key] = current_in_cart + qty
     session["cart"] = cart
+    observacion = _clean_text(request.form.get("observacion", ""), 200)
+    if observacion:
+        cart_notes = session.get("cart_notes", {})
+        cart_notes[key] = observacion
+        session["cart_notes"] = cart_notes
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         product = get_product_by_id(product_id)
         new_qty = cart.get(key, 0)
@@ -281,9 +289,27 @@ def eliminar(product_id):
     return redirect(url_for("cart.carrito"))
 
 
+@cart_bp.route("/nota/<int:product_id>", methods=["POST"])
+def actualizar_nota(product_id):
+    key = str(product_id)
+    if key not in session.get("cart", {}):
+        return redirect(url_for("cart.carrito"))
+    observacion = _clean_text(request.form.get("observacion", ""), 200)
+    cart_notes = session.get("cart_notes", {})
+    if observacion:
+        cart_notes[key] = observacion
+    else:
+        cart_notes.pop(key, None)
+    session["cart_notes"] = cart_notes
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"ok": True})
+    return redirect(url_for("cart.carrito"))
+
+
 @cart_bp.route("/vaciar", methods=["POST"])
 def vaciar():
     session.pop("cart", None)
+    session.pop("cart_notes", None)
     return redirect(url_for("cart.carrito"))
 
 
@@ -302,6 +328,8 @@ def checkout_billetera():
     lineas = [f"¡Hola {BUSINESS_NAME}! Quiero pagar con *{metodo}*:\n"]
     for item in items:
         lineas.append(f"• {item['nombre']} x{item['cantidad']} x 500 gr — ${item['subtotal']:,}")
+        if item.get("nota"):
+            lineas.append(f"   ↳ Indicaciones: {item['nota']}")
     if descuento:
         lineas.append(f"\n🏷️ Cupón {promo_cod}: -${descuento:,}")
         lineas.append(f"*Total: ${total_final:,}*")
@@ -316,7 +344,7 @@ def checkout_billetera():
     _save_order(metodo, items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
     session.pop("cart", None)
     wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
-    return render_template("pedido_confirmado.html", metodo=metodo, total=total_final, wa_url=wa_url)
+    return redirect(wa_url)
 
 
 @cart_bp.route("/checkout-efectivo", methods=["POST"])
@@ -332,6 +360,8 @@ def checkout_efectivo():
     lineas = [f"¡Hola {BUSINESS_NAME}! Quiero pagar en *efectivo contra entrega*:\n"]
     for item in items:
         lineas.append(f"• {item['nombre']} x{item['cantidad']} x 500 gr — ${item['subtotal']:,}")
+        if item.get("nota"):
+            lineas.append(f"   ↳ Indicaciones: {item['nota']}")
     if descuento:
         lineas.append(f"\n🏷️ Cupón {promo_cod}: -${descuento:,}")
         lineas.append(f"*Total a pagar: ${total_final:,}*")
@@ -346,7 +376,7 @@ def checkout_efectivo():
     _save_order("Efectivo", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
     session.pop("cart", None)
     wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
-    return render_template("pedido_confirmado.html", metodo="Efectivo contra entrega", total=total_final, wa_url=wa_url)
+    return redirect(wa_url)
 
 
 @cart_bp.route("/checkout-whatsapp", methods=["POST"])
@@ -365,6 +395,8 @@ def checkout_whatsapp():
     lineas = [f"¡Hola {BUSINESS_NAME}! Quiero hacer el siguiente pedido:\n"]
     for item in items:
         lineas.append(f"• {item['nombre']} x{item['cantidad']} x 500 gr — ${item['subtotal']:,}")
+        if item.get("nota"):
+            lineas.append(f"   ↳ Indicaciones: {item['nota']}")
     if descuento:
         lineas.append(f"\n🏷️ Cupón {promo_cod}: -${descuento:,}")
         lineas.append(f"*Total estimado: ${total_final:,}*")
@@ -381,7 +413,7 @@ def checkout_whatsapp():
     session.pop("cart", None)
     mensaje = "\n".join(lineas)
     wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(mensaje)}"
-    return render_template("pedido_confirmado.html", metodo="WhatsApp", total=total_final, wa_url=wa_url)
+    return redirect(wa_url)
 
 
 @cart_bp.route("/agregar-combo/<int:combo_id>", methods=["POST"])
