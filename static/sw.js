@@ -1,4 +1,4 @@
-const CACHE = 'appasto-v2';
+const CACHE = 'apastto-v3';
 const PRECACHE = [
   '/',
   '/catalogo',

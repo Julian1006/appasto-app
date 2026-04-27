@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="{{ business_name }} — Carnes frescas a pasto, sin concentrados. Los mejores cortes de res, cerdo, pollo y pescado a domicilio.">
-  <title>{% block title %}{{ business_name }}{% endblock %}</title>
+  <meta name="description" content="Apastto — Carnes frescas a pasto, sin concentrados. Los mejores cortes de res, cerdo, pollo y pescado a domicilio.">
+  <title>{% block title %}Apastto{% endblock %}</title>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/appasto imagen.png') }}">
   <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#7f2118">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
-  <meta name="apple-mobile-web-app-title" content="Appasto">
+  <meta name="apple-mobile-web-app-title" content="Apastto">
   <link rel="apple-touch-icon" href="/static/images/appasto%20imagen.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,8 +21,8 @@
 
   <nav class="navbar">
     <a href="{{ url_for('main.index') }}" class="nav-logo">
-      <img src="{{ url_for('static', filename='images/appasto imagen.png') }}" alt="{{ business_name }}" class="nav-logo-img">
-      {{ business_name }}
+      <img src="{{ url_for('static', filename='images/appasto imagen.png') }}" alt="Apastto" class="nav-logo-img">
+      Apastto
     </a>
     <!-- Carrito siempre visible a la derecha -->
     <a href="{{ url_for('cart.carrito') }}" class="cart-link navbar-cart-fixed" aria-label="Ver carrito">
@@ -54,8 +54,8 @@
     <div class="footer-inner">
       <div class="footer-col">
         <span class="footer-logo">
-          <img src="{{ url_for('static', filename='images/appasto imagen.png') }}" alt="{{ business_name }}" class="footer-logo-img">
-          {{ business_name }}
+          <img src="{{ url_for('static', filename='images/appasto imagen.png') }}" alt="Apastto" class="footer-logo-img">
+          Apastto
         </span>
         <p>Carnes a pasto, naturales y sin concentrados.<br>Directo del campo a tu mesa.</p>
       </div>
@@ -80,7 +80,7 @@
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© 2026 <strong>{{ business_name }}</strong> — Todos los derechos reservados</p>
+      <p>© 2026 <strong>Apastto</strong> — Todos los derechos reservados</p>
     </div>
   </footer>
 
@@ -138,7 +138,11 @@
           <form id="modal-form" method="POST" class="add-form">
             {{ csrf_field() }}
             <input type="hidden" name="next" id="modal-next">
-            <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-input qty-input-lg" id="modal-qty">
+            <select name="cantidad" class="qty-select qty-select-lg" id="modal-qty" aria-label="Cantidad">
+              <option value="1">500 gr</option>
+              <option value="2">1 kg</option>
+              <option value="3">1.5 kg</option>
+            </select>
             <button type="submit" class="btn btn-whatsapp">+ Agregar al carrito</button>
           </form>
         </div>
@@ -275,11 +279,15 @@
   // ── Modal de producto (compartido) ───────────────────────────
   var _modalName = '', _modalUrl = '', _modalUnitPrice = 0;
 
+  function _pesoLabel(qty) {
+    var gr = qty * 500;
+    return gr >= 1000 ? (gr / 1000) + ' kg' : gr + ' gr';
+  }
   function _actualizarSubtotal(qty) {
     var sub = document.getElementById('modal-subtotal');
     if (!sub) return;
     if (qty > 1 && _modalUnitPrice) {
-      sub.textContent = '× ' + qty + ' und = $' + (_modalUnitPrice * qty).toLocaleString('es-CO');
+      sub.textContent = '× ' + _pesoLabel(qty) + ' = $' + (_modalUnitPrice * qty).toLocaleString('es-CO');
       sub.style.display = 'inline';
     } else {
       sub.style.display = 'none';
@@ -368,7 +376,7 @@
   function compartirProducto() {
     var title = _modalName, url = _modalUrl;
     if (navigator.share) {
-      navigator.share({ title: title, text: 'Mirá este producto de Appasto: '+title, url: url }).catch(function(){});
+      navigator.share({ title: title, text: 'Mirá este producto de Apastto: '+title, url: url }).catch(function(){});
     } else {
       navigator.clipboard.writeText(url).then(function(){
         var btn = document.querySelector('.modal-share-btn');

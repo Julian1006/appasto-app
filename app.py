@@ -1,5 +1,5 @@
 # =============================================================================
-# app.py — Punto de entrada principal de la aplicación Flask "Appasto"
+# app.py — Punto de entrada principal de la aplicación Flask "Apastto"
 #
 # ARQUITECTURA:
 #   - Flask + SQLAlchemy (ORM) con SQLite en local y PostgreSQL en producción
@@ -72,7 +72,7 @@ app.config.update(
     MAX_CONTENT_LENGTH             = 8 * 1024 * 1024,  # 8 MB máx por imagen subida
 )
 app.config.update(
-    SESSION_COOKIE_NAME          = "__Host-appasto-session" if IS_PRODUCTION else "appasto_session",
+    SESSION_COOKIE_NAME          = "__Host-apastto-session" if IS_PRODUCTION else "apastto_session",
     SESSION_COOKIE_PATH          = "/",
     SESSION_REFRESH_EACH_REQUEST = True,
 )
@@ -111,7 +111,7 @@ def inject_globals():
         current_user = User.query.get(session["user_id"])
     return {
         "cart_count":      sum(cart.values()),   # Número total de items en carrito (para badge navbar)
-        "business_name":   BUSINESS_NAME,
+        "business_name":   "Apastto",
         "whatsapp_number": WHATSAPP_NUMBER,
         "wompi_key":       WOMPI_PUBLIC_KEY,
         "current_user":    current_user,
@@ -193,4 +193,4 @@ with app.app_context():
 
 
 if __name__ == "__main__":
-    app.run(debug=DEBUG)
+    app.run(debug=True, use_reloader=False)

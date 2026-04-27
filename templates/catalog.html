@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Catálogo — {{ business_name }}{% endblock %}
+{% block title %}Catálogo — Apastto{% endblock %}
 
 {% block content %}
 <div class="container catalog-container">
@@ -89,11 +89,11 @@
           <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST" class="add-form" onclick="event.stopPropagation()">
             {{ csrf_field() }}
             <input type="hidden" name="next" value="{{ url_for('main.catalogo', filtro=filtro_activo) }}">
-            <div class="qty-stepper">
-              <button type="button" class="qty-btn qty-minus">−</button>
-              <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-num">
-              <button type="button" class="qty-btn qty-plus">+</button>
-            </div>
+            <select name="cantidad" class="qty-select" aria-label="Cantidad">
+              <option value="1">500 gr</option>
+              <option value="2">1 kg</option>
+              <option value="3">1.5 kg</option>
+            </select>
             <button type="submit" class="btn btn-add">Agregar</button>
           </form>
         </div>
@@ -160,22 +160,6 @@ function setView(v) {
     if (saved === 'list') setView('list');
   } catch(e) {}
 })();
-
-// Botones +/- cantidad (listeners directos para evitar conflicto con stopPropagation del form)
-document.querySelectorAll('.qty-minus').forEach(function(btn) {
-  btn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    var inp = this.closest('.qty-stepper').querySelector('.qty-num');
-    inp.value = Math.max(1, parseInt(inp.value || 1) - 1);
-  });
-});
-document.querySelectorAll('.qty-plus').forEach(function(btn) {
-  btn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    var inp = this.closest('.qty-stepper').querySelector('.qty-num');
-    inp.value = Math.min(50, parseInt(inp.value || 1) + 1);
-  });
-});
 
 // Cart button feedback
 document.querySelectorAll('.add-form').forEach(form => {
