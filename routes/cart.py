@@ -208,13 +208,15 @@ def agregar(product_id):
     key = str(product_id)
     try:
         qty = int(request.form.get("cantidad", 1))
-        qty = max(1, min(qty, 50))
+        qty = max(1, min(qty, 3))
     except (ValueError, TypeError):
         qty = 1
 
-    # Limitar al stock disponible
+    # Limitar a las 3 presentaciones permitidas y al stock disponible
     current_in_cart = cart.get(key, 0)
+    max_compra = 3
     p = _Product.query.get(product_id)
+    qty = min(qty, max(0, max_compra - current_in_cart))
     if p and p.stock is not None:
         qty = min(qty, max(0, p.stock - current_in_cart))
 
@@ -222,7 +224,9 @@ def agregar(product_id):
         product = get_product_by_id(product_id)
         nombre = product["nombre"] if product else "Este producto"
         disponible = p.stock - current_in_cart if p and p.stock is not None else 0
-        if disponible <= 0:
+        if current_in_cart >= max_compra:
+            msg = f"⚠️ {nombre}: solo puedes comprar hasta 1.5 kg por pedido."
+        elif disponible <= 0:
             msg = f"⚠️ {nombre}: stock agotado en el carrito."
         else:
             msg = f"⚠️ {nombre}: solo quedan {disponible} unidades (500 gr) disponibles."
@@ -297,7 +301,7 @@ def checkout_billetera():
     total_final = total - descuento
     lineas = [f"¡Hola {BUSINESS_NAME}! Quiero pagar con *{metodo}*:\n"]
     for item in items:
-        lineas.append(f"• {item['nombre']} x{item['cantidad']}lb — ${item['subtotal']:,}")
+        lineas.append(f"• {item['nombre']} x{item['cantidad']} x 500 gr — ${item['subtotal']:,}")
     if descuento:
         lineas.append(f"\n🏷️ Cupón {promo_cod}: -${descuento:,}")
         lineas.append(f"*Total: ${total_final:,}*")
@@ -311,8 +315,8 @@ def checkout_billetera():
     lineas.append(f"\nPor favor indicarme el número {metodo} para realizar el pago y confirmar disponibilidad. ¡Gracias!")
     _save_order(metodo, items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
     session.pop("cart", None)
-    url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
-    return redirect(url)
+    wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
+    return render_template("pedido_confirmado.html", metodo=metodo, total=total_final, wa_url=wa_url)
 
 
 @cart_bp.route("/checkout-efectivo", methods=["POST"])
@@ -327,7 +331,7 @@ def checkout_efectivo():
     total_final = total - descuento
     lineas = [f"¡Hola {BUSINESS_NAME}! Quiero pagar en *efectivo contra entrega*:\n"]
     for item in items:
-        lineas.append(f"• {item['nombre']} x{item['cantidad']}lb — ${item['subtotal']:,}")
+        lineas.append(f"• {item['nombre']} x{item['cantidad']} x 500 gr — ${item['subtotal']:,}")
     if descuento:
         lineas.append(f"\n🏷️ Cupón {promo_cod}: -${descuento:,}")
         lineas.append(f"*Total a pagar: ${total_final:,}*")
@@ -341,8 +345,8 @@ def checkout_efectivo():
     lineas.append("\nPor favor confirmar disponibilidad y coordinar la entrega. ¡Gracias!")
     _save_order("Efectivo", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
     session.pop("cart", None)
-    url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
-    return redirect(url)
+    wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
+    return render_template("pedido_confirmado.html", metodo="Efectivo contra entrega", total=total_final, wa_url=wa_url)
 
 
 @cart_bp.route("/checkout-whatsapp", methods=["POST"])
@@ -360,7 +364,7 @@ def checkout_whatsapp():
     total_final = total - descuento
     lineas = [f"¡Hola {BUSINESS_NAME}! Quiero hacer el siguiente pedido:\n"]
     for item in items:
-        lineas.append(f"• {item['nombre']} x{item['cantidad']}lb — ${item['subtotal']:,}")
+        lineas.append(f"• {item['nombre']} x{item['cantidad']} x 500 gr — ${item['subtotal']:,}")
     if descuento:
         lineas.append(f"\n🏷️ Cupón {promo_cod}: -${descuento:,}")
         lineas.append(f"*Total estimado: ${total_final:,}*")
@@ -376,8 +380,8 @@ def checkout_whatsapp():
     _save_order("WhatsApp", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
     session.pop("cart", None)
     mensaje = "\n".join(lineas)
-    url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(mensaje)}"
-    return redirect(url)
+    wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(mensaje)}"
+    return render_template("pedido_confirmado.html", metodo="WhatsApp", total=total_final, wa_url=wa_url)
 
 
 @cart_bp.route("/agregar-combo/<int:combo_id>", methods=["POST"])

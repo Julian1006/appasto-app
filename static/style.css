@@ -173,6 +173,13 @@ ul { list-style: none; }
   border-radius: 6px; font-size: .9rem; text-align: center; color: var(--text);
 }
 .qty-input:focus { outline: none; border-color: var(--red); }
+.qty-select {
+  min-width: 92px; padding: .5rem .7rem; border: 1px solid var(--gray);
+  border-radius: 8px; font-size: .88rem; font-weight: 700; color: var(--text);
+  background: #fff; cursor: pointer;
+}
+.qty-select:focus { outline: none; border-color: var(--red); }
+.qty-select-lg { min-width: 110px; padding: .58rem .75rem; }
 
 /* Stepper +/- */
 .qty-stepper { display: flex; align-items: center; border: 1.5px solid var(--gray); border-radius: 8px; overflow: hidden; }
@@ -1565,6 +1572,36 @@ ul { list-style: none; }
   border-radius: 50%;
   background: var(--red);
 }
+/* ===== Pedido confirmado ===== */
+.confirmado-page {
+  min-height: calc(100vh - 64px);
+  display: flex; align-items: center; justify-content: center;
+  padding: 2rem 1rem; background: var(--cream);
+}
+.confirmado-card {
+  background: var(--white); border-radius: 16px;
+  box-shadow: var(--shadow); padding: 2.5rem 2rem;
+  max-width: 480px; width: 100%; text-align: center;
+}
+.confirmado-icon { font-size: 3.5rem; margin-bottom: .8rem; }
+.confirmado-card h1 { font-size: 2rem; color: var(--text); margin-bottom: .5rem; }
+.confirmado-sub { color: var(--text-light); margin-bottom: 1rem; }
+.confirmado-total { font-size: 1.3rem; font-weight: 700; color: var(--red); margin-bottom: 1rem; }
+.confirmado-msg { color: var(--text-light); font-size: .95rem; margin-bottom: 1.5rem; }
+.btn-wa-confirmar {
+  display: inline-flex; align-items: center; gap: .6rem;
+  background: var(--green-wa); color: var(--white);
+  padding: .85rem 2rem; border-radius: 8px;
+  font-size: 1.05rem; font-weight: 700;
+  transition: background .2s; margin-bottom: 1.2rem;
+}
+.btn-wa-confirmar:hover { background: #1da851; }
+.confirmado-seguir {
+  display: block; color: var(--text-light); font-size: .9rem;
+  margin-top: .5rem; transition: color .2s;
+}
+.confirmado-seguir:hover { color: var(--red); }
+
 .btn-confirmar-pago {
   display: block; width: 100%; margin-top: 1.2rem;
   padding: .9rem 1.5rem; border: none; border-radius: 8px;
