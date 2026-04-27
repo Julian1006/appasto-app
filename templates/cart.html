@@ -121,14 +121,17 @@
               <span>{% if item.is_combo %}Combo{% else %}${{ "{:,}".format(item.precio) }}/lb{% endif %}</span>
               <div class="summary-qty">
                 <form action="{{ item.url_minus }}" method="POST" class="cart-ctrl-form">
+                  {{ csrf_field() }}
                   <button type="submit" class="summary-qty-btn" aria-label="Quitar una unidad">-</button>
                 </form>
                 <span class="qty-num">{{ item.cantidad }}</span>
                 <form action="{{ item.url_plus }}" method="POST" class="cart-ctrl-form">
+                  {{ csrf_field() }}
                   <input type="hidden" name="cantidad" value="1">
                   <button type="submit" class="summary-qty-btn" aria-label="Agregar una unidad">+</button>
                 </form>
                 <form action="{{ item.url_remove }}" method="POST" class="cart-ctrl-form">
+                  {{ csrf_field() }}
                   <button type="submit" class="summary-remove" title="Eliminar">Eliminar</button>
                 </form>
               </div>
@@ -145,11 +148,13 @@
           </span>
           <span id="cart-promo-desc" class="promo-saving">-${{ "{:,}".format(descuento) }}</span>
           <form action="{{ url_for('cart.quitar_promo') }}" method="POST">
+            {{ csrf_field() }}
             <button type="submit" class="remove-promo-btn" title="Quitar cupon">x</button>
           </form>
         </div>
         {% else %}
         <form action="{{ url_for('cart.aplicar_promo') }}" method="POST" class="summary-discount">
+          {{ csrf_field() }}
           <input type="text" name="codigo" placeholder="Codigo de descuento" autocomplete="off" style="text-transform:uppercase">
           <button type="submit">Aplicar</button>
         </form>
@@ -177,6 +182,7 @@
         </div>
 
         <form action="{{ url_for('cart.vaciar') }}" method="POST" class="summary-clear">
+          {{ csrf_field() }}
           <button type="submit">Vaciar carrito</button>
         </form>
       </div>
@@ -184,9 +190,18 @@
   </div>
 
   <form id="form-tarjeta" action="{{ url_for('cart.checkout_tarjeta') }}" method="POST" style="display:none">
+    {{ csrf_field() }}
     <input type="hidden" name="tel" id="tarjeta-tel">
     <input type="hidden" name="dir" id="tarjeta-dir">
     <input type="hidden" name="ciudad" id="tarjeta-ciudad">
+  </form>
+  <form id="form-checkout-directo" method="POST" style="display:none">
+    {{ csrf_field() }}
+    <input type="hidden" name="nombre" id="directo-nombre">
+    <input type="hidden" name="tel" id="directo-tel">
+    <input type="hidden" name="dir" id="directo-dir">
+    <input type="hidden" name="ciudad" id="directo-ciudad">
+    <input type="hidden" name="metodo" id="directo-metodo">
   </form>
 
   <script>
@@ -277,21 +292,24 @@
   function checkoutPago(tipo) {
     var d = _validateDelivery();
     if (!d) return;
-    var base, url;
+    var form = document.getElementById('form-checkout-directo');
+    document.getElementById('directo-nombre').value = d.nombre;
+    document.getElementById('directo-tel').value = d.tel;
+    document.getElementById('directo-dir').value = d.dir;
+    document.getElementById('directo-ciudad').value = d.ciudad;
+    document.getElementById('directo-metodo').value = '';
     if (tipo === 'whatsapp') {
-      base = "{{ url_for('cart.checkout_whatsapp') }}";
-      url = base + '?nombre=' + encodeURIComponent(d.nombre) + '&tel=' + encodeURIComponent(d.tel) + '&dir=' + encodeURIComponent(d.dir) + '&ciudad=' + encodeURIComponent(d.ciudad);
+      form.action = "{{ url_for('cart.checkout_whatsapp') }}";
     } else if (tipo === 'nequi') {
-      base = "{{ url_for('cart.checkout_billetera') }}";
-      url = base + '?metodo=Nequi&tel=' + encodeURIComponent(d.tel) + '&dir=' + encodeURIComponent(d.dir) + '&ciudad=' + encodeURIComponent(d.ciudad);
+      form.action = "{{ url_for('cart.checkout_billetera') }}";
+      document.getElementById('directo-metodo').value = 'Nequi';
     } else if (tipo === 'daviplata') {
-      base = "{{ url_for('cart.checkout_billetera') }}";
-      url = base + '?metodo=Daviplata&tel=' + encodeURIComponent(d.tel) + '&dir=' + encodeURIComponent(d.dir) + '&ciudad=' + encodeURIComponent(d.ciudad);
+      form.action = "{{ url_for('cart.checkout_billetera') }}";
+      document.getElementById('directo-metodo').value = 'Daviplata';
     } else if (tipo === 'efectivo') {
-      base = "{{ url_for('cart.checkout_efectivo') }}";
-      url = base + '?tel=' + encodeURIComponent(d.tel) + '&dir=' + encodeURIComponent(d.dir) + '&ciudad=' + encodeURIComponent(d.ciudad);
+      form.action = "{{ url_for('cart.checkout_efectivo') }}";
     }
-    window.location.href = url;
+    form.submit();
   }
 
   function checkoutTarjeta() {

@@ -4,8 +4,11 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from database import db
 from sqlalchemy import func
 from model import User, Order, Promo
+from security import MemoryRateLimiter, rotate_csrf_token, safe_next
 
 auth_bp = Blueprint("auth", __name__)
+_login_limiter = MemoryRateLimiter(max_attempts=8, window_seconds=900)
+_register_limiter = MemoryRateLimiter(max_attempts=12, window_seconds=900)
 
 
 def login_required(f):
@@ -18,28 +21,45 @@ def login_required(f):
     return decorated
 
 
-def _next_url():
-    nxt = request.args.get("next") or request.form.get("next")
-    if nxt and nxt.startswith("/"):
-        return nxt
-    return url_for("auth.account")
+def _ip():
+    return request.headers.get("X-Forwarded-For", request.remote_addr or "").split(",")[0].strip()
+
+
+def _start_user_session(user):
+    cart = session.get("cart")
+    promo = session.get("promo")
+    session.clear()
+    if cart:
+        session["cart"] = cart
+    if promo:
+        session["promo"] = promo
+    session.permanent = True
+    session["user_id"] = user.id
+    rotate_csrf_token()
 
 
 @auth_bp.route("/registro", methods=["GET", "POST"])
 def register():
     error = None
+    ip = _ip()
     if request.method == "POST":
-        nombre = request.form.get("nombre", "").strip()
-        email = request.form.get("email", "").strip().lower()
+        if _register_limiter.is_locked(ip):
+            error = "Demasiados intentos. Espera 15 minutos antes de crear una cuenta."
+            return render_template("login.html", mode="register", error=error, next_url=request.args.get("next", ""))
+
+        nombre = request.form.get("nombre", "").strip()[:120]
+        email = request.form.get("email", "").strip().lower()[:180]
         password = request.form.get("password", "")
-        telefono = request.form.get("telefono", "").strip()
-        direccion = request.form.get("direccion", "").strip()
-        ciudad = request.form.get("ciudad", "").strip()
+        telefono = request.form.get("telefono", "").strip()[:30]
+        direccion = request.form.get("direccion", "").strip()[:300]
+        ciudad = request.form.get("ciudad", "").strip()[:100]
 
         if not nombre or not email or not password:
             error = "Completa nombre, correo y contrasena."
-        elif len(password) < 8:
-            error = "La contrasena debe tener minimo 8 caracteres."
+        elif len(password) < 8 or len(password) > 256:
+            error = "La contrasena debe tener entre 8 y 256 caracteres."
+        elif "@" not in email or "." not in email.rsplit("@", 1)[-1]:
+            error = "Ingresa un correo valido."
         elif User.query.filter_by(email=email).first():
             error = "Ese correo ya esta registrado. Inicia sesion."
         else:
@@ -53,10 +73,12 @@ def register():
             )
             db.session.add(user)
             db.session.commit()
-            session.permanent = True
-            session["user_id"] = user.id
+            _start_user_session(user)
+            _register_limiter.reset(ip)
             flash("Cuenta creada. Ya puedes comprar mas rapido.", "success")
-            return redirect(_next_url())
+            return redirect(safe_next("auth.account"))
+
+        _register_limiter.record_failure(ip)
 
     return render_template("login.html", mode="register", error=error, next_url=request.args.get("next", ""))
 
@@ -64,18 +86,26 @@ def register():
 @auth_bp.route("/login", methods=["GET", "POST"])
 def login():
     error = None
+    ip = _ip()
     if request.method == "POST":
-        email = request.form.get("email", "").strip().lower()
+        email = request.form.get("email", "").strip().lower()[:180]
         password = request.form.get("password", "")
+        key = f"{ip}:{email}"
+
+        if _login_limiter.is_locked(key):
+            error = "Demasiados intentos fallidos. Espera 15 minutos."
+            return render_template("login.html", mode="login", error=error, next_url=request.args.get("next", ""))
+
         user = User.query.filter_by(email=email).first()
 
         if not user or not check_password_hash(user.password_hash, password):
             error = "Correo o contrasena incorrectos."
+            _login_limiter.record_failure(key)
         else:
-            session.permanent = True
-            session["user_id"] = user.id
+            _start_user_session(user)
+            _login_limiter.reset(key)
             flash("Sesion iniciada.", "success")
-            return redirect(_next_url())
+            return redirect(safe_next("auth.account"))
 
     return render_template("login.html", mode="login", error=error, next_url=request.args.get("next", ""))
 
@@ -83,6 +113,8 @@ def login():
 @auth_bp.route("/logout")
 def logout():
     session.pop("user_id", None)
+    session.pop("admin", None)
+    rotate_csrf_token()
     flash("Sesion cerrada.", "info")
     return redirect(url_for("main.index"))
 

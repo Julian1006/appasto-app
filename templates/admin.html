@@ -232,9 +232,11 @@
           <td>
             <div class="{{ 'price-override' if p.precio_modificado else '' }}" style="font-weight:700;font-size:.88rem;margin-bottom:.3rem">${{ "{:,}".format(p.precio) }}</div>
             <form class="inline-form" method="POST" action="{{ url_for('admin.update_precio', pid=p.id) }}">
+              {{ csrf_field() }}
               <input type="number" name="precio" class="num-input" value="{{ p.precio }}" min="1" max="999999" step="100" style="width:80px">
               <button type="submit" class="btn-save">✓</button>
               <form method="POST" action="{{ url_for('admin.reset_precio', pid=p.id) }}" style="display:inline">
+                {{ csrf_field() }}
                 <button type="submit" class="btn-reset" title="Restablecer">↺</button>
               </form>
             </form>
@@ -249,6 +251,7 @@
               {% else %}<span class="stock-ok">✓ {{ p.stock }} lb</span>{% endif %}
             </div>
             <form class="inline-form" method="POST" action="{{ url_for('admin.update_stock', pid=p.id) }}">
+              {{ csrf_field() }}
               <input type="number" name="stock" class="num-input" value="{{ p.stock if p.stock is not none else '' }}" min="0" max="9999" placeholder="∞" style="width:68px">
               <button type="submit" class="btn-save">✓</button>
             </form>
@@ -257,6 +260,7 @@
           <!-- Destacado -->
           <td style="text-align:center">
             <form method="POST" action="{{ url_for('admin.toggle_destacado', pid=p.id) }}">
+              {{ csrf_field() }}
               <button type="submit"
                 {% if lleno %}disabled title="Límite de {{ max_dest }} alcanzado"{% else %}title="{{ 'Quitar de destacados' if p.destacado else 'Agregar a destacados' }}"{% endif %}
                 style="background:none;border:none;font-size:1.5rem;line-height:1;
@@ -269,6 +273,7 @@
           <!-- Habilitado -->
           <td style="text-align:center">
             <form method="POST" action="{{ url_for('admin.toggle_producto', pid=p.id) }}">
+              {{ csrf_field() }}
               <label class="switch">
                 <input type="checkbox" {{ 'checked' if p.activo else '' }} onchange="this.form.submit()">
                 <span class="slider"></span>
@@ -285,6 +290,7 @@
                 style="background:none;border:1px solid #ddd;color:#555;padding:.3rem .5rem;border-radius:7px;cursor:pointer;font-size:.82rem">✏️</button>
               <form method="POST" action="{{ url_for('admin.delete_producto', pid=p.id) }}"
                 onsubmit="return confirm('¿Eliminar {{ p.nombre }}? Esta acción no se puede deshacer.')">
+                {{ csrf_field() }}
                 <button type="submit" title="Eliminar"
                   style="background:none;border:1px solid #ddd;color:#c0392b;padding:.3rem .5rem;border-radius:7px;cursor:pointer;font-size:.82rem">🗑</button>
               </form>
@@ -308,6 +314,7 @@
       {% for p in dest | sort(attribute='orden_destacado') %}
       <form method="POST" action="{{ url_for('admin.destacado_config', pid=p.id) }}"
             style="background:#f9f9f9;border:1px solid #e5e5e5;border-radius:10px;padding:.85rem 1rem;display:flex;align-items:center;gap:.75rem">
+        {{ csrf_field() }}
         <span style="font-size:1.3rem">{{ p.emoji }}</span>
         <div style="flex:1;min-width:0">
           <div style="font-size:.82rem;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.nombre }}</div>
@@ -405,6 +412,7 @@
           <td>
             <span class="badge-estado estado-{{ o.estado }}">{{ o.estado | capitalize }}</span>
             <form class="estado-form" method="POST" action="{{ url_for('admin.update_estado', oid=o.id) }}">
+              {{ csrf_field() }}
               <select name="estado">
                 <option value="pendiente"  {{ 'selected' if o.estado=='pendiente' }}>⏳ Pendiente</option>
                 <option value="completado" {{ 'selected' if o.estado=='completado' }}>✅ Completado</option>
@@ -414,6 +422,7 @@
             </form>
             {% if o.estado == 'pendiente' %}
             <form method="POST" action="{{ url_for('admin.update_estado', oid=o.id) }}" style="margin-top:.35rem">
+              {{ csrf_field() }}
               <input type="hidden" name="estado" value="completado">
               <button type="submit" class="btn-confirm">✅ Confirmar</button>
             </form>
@@ -421,6 +430,7 @@
             {% if o.id in deletable_ids %}
             <form method="POST" action="{{ url_for('admin.delete_pedido', oid=o.id) }}" style="margin-top:.35rem"
               onsubmit="return confirm('¿Borrar el pedido #{{ o.id }}? Esta acción no se puede deshacer.')">
+              {{ csrf_field() }}
               <button type="submit" class="btn-delete-order">🗑 Borrar</button>
             </form>
             {% endif %}
@@ -492,6 +502,7 @@
           <td>
             <div style="font-weight:800;color:#c0392b;font-size:.95rem;margin-bottom:.3rem">${{ "{:,}".format(c.precio) }}</div>
             <form class="inline-form" method="POST" action="{{ url_for('admin.update_combo_precio', cid=c.id) }}">
+              {{ csrf_field() }}
               <input type="number" name="precio" class="num-input" value="{{ c.precio }}" min="1" step="100" style="width:80px">
               <button type="submit" class="btn-save">✓</button>
             </form>
@@ -509,6 +520,7 @@
               {% endif %}
             </div>
             <form class="inline-form" method="POST" action="{{ url_for('admin.update_combo_vigencia', cid=c.id) }}">
+              {{ csrf_field() }}
               <input type="date" name="fecha_inicio" value="{{ c.fecha_inicio.isoformat() if c.fecha_inicio else '' }}" class="num-input" style="width:135px">
               <input type="date" name="fecha_fin" value="{{ c.fecha_fin.isoformat() if c.fecha_fin else '' }}" class="num-input" style="width:135px">
               <button type="submit" class="btn-save">Guardar</button>
@@ -516,6 +528,7 @@
           </td>
           <td style="text-align:center">
             <form method="POST" action="{{ url_for('admin.toggle_combo', cid=c.id) }}">
+              {{ csrf_field() }}
               <label class="switch">
                 <input type="checkbox" {{ 'checked' if c.activo else '' }} onchange="this.form.submit()">
                 <span class="slider"></span>
@@ -525,6 +538,7 @@
           <td style="text-align:center">
             <form method="POST" action="{{ url_for('admin.delete_combo', cid=c.id) }}"
               onsubmit="return confirm('¿Eliminar el combo {{ c.nombre }}?')">
+              {{ csrf_field() }}
               <button type="submit"
                 style="background:none;border:1px solid #ddd;color:#c0392b;padding:.3rem .55rem;border-radius:7px;cursor:pointer;font-size:.82rem">
                 🗑
@@ -595,6 +609,7 @@
             {{ p.veces_usado }}{% if p.max_usos %} / {{ p.max_usos }}{% else %} / ∞{% endif %}
             {% if p.veces_usado > 0 %}
             <form method="POST" action="{{ url_for('admin.reset_promo', pid=p.id) }}" style="display:inline;margin-left:.4rem">
+              {{ csrf_field() }}
               <button type="submit" class="btn-reset" title="Resetear contador">↺</button>
             </form>
             {% endif %}
@@ -602,6 +617,7 @@
           <td>{{ p.fecha_expira.strftime('%d/%m/%Y') if p.fecha_expira else '—' }}</td>
           <td style="text-align:center">
             <form method="POST" action="{{ url_for('admin.toggle_promo_visible', pid=p.id) }}">
+              {{ csrf_field() }}
               <label class="switch">
                 <input type="checkbox" {{ 'checked' if p.visible_cliente else '' }} onchange="this.form.submit()">
                 <span class="slider"></span>
@@ -610,6 +626,7 @@
           </td>
           <td style="text-align:center">
             <form method="POST" action="{{ url_for('admin.toggle_promo', pid=p.id) }}">
+              {{ csrf_field() }}
               <label class="switch">
                 <input type="checkbox" {{ 'checked' if p.activo else '' }} onchange="this.form.submit()">
                 <span class="slider"></span>
@@ -619,6 +636,7 @@
           <td style="text-align:center">
             <form method="POST" action="{{ url_for('admin.delete_promo', pid=p.id) }}"
               onsubmit="return confirm('¿Eliminar el cupón {{ p.codigo }}?')">
+              {{ csrf_field() }}
               <button type="submit"
                 style="background:none;border:1px solid #ddd;color:#c0392b;padding:.3rem .55rem;border-radius:7px;cursor:pointer;font-size:.82rem">
                 🗑
@@ -645,6 +663,7 @@
     </div>
     <form method="POST" action="{{ url_for('admin.crear_promo') }}"
           style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem">
+      {{ csrf_field() }}
 
       <div>
         <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Código * <span style="color:#aaa;font-weight:400">(se guarda en mayúsculas)</span></label>
@@ -707,6 +726,7 @@
     </div>
     <form id="edit-form" method="POST" enctype="multipart/form-data"
           style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem">
+      {{ csrf_field() }}
 
       <!-- Nombre + Emoji -->
       <div style="display:grid;grid-template-columns:1fr 70px;gap:.75rem;align-items:end">
@@ -809,6 +829,7 @@
     </div>
     <form method="POST" action="{{ url_for('admin.crear_producto') }}"
           enctype="multipart/form-data" style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem">
+      {{ csrf_field() }}
 
       <!-- Nombre + Emoji -->
       <div style="display:grid;grid-template-columns:1fr 70px;gap:.75rem;align-items:end">
@@ -913,6 +934,7 @@
     </div>
     <!-- Form -->
     <form method="POST" action="{{ url_for('admin.crear_combo') }}" style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem">
+      {{ csrf_field() }}
       <!-- Fila 1: nombre + emoji -->
       <div style="display:grid;grid-template-columns:1fr auto;gap:.75rem;align-items:end">
         <div>

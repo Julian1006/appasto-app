@@ -54,7 +54,7 @@
     <div class="product-card"
          data-nombre="{{ producto.nombre | lower }}"
          data-precio="{{ producto.precio }}"
-         onclick="abrirModal('{{ producto.nombre }}', '{{ producto.tipo }} · {{ producto.categoria }}', '{{ producto.descripcion }}', '{{ producto.precio }}', '{{ producto.emoji }}', '{% if producto.imagen %}{{ url_for('static', filename=producto.imagen) }}{% endif %}', '{{ producto.id }}', '{{ url_for('main.catalogo', filtro=filtro_activo) }}', '{{ producto.tipo }}', {{ 'true' if low_stock and producto.id in low_stock else 'false' }})">
+         onclick='abrirModal({{ producto.nombre|tojson }}, {{ (producto.tipo ~ " - " ~ producto.categoria)|tojson }}, {{ producto.descripcion|tojson }}, {{ producto.precio|tojson }}, {{ producto.emoji|tojson }}, {{ (url_for("static", filename=producto.imagen) if producto.imagen else "")|tojson }}, {{ producto.id|tojson }}, {{ url_for("main.catalogo", filtro=filtro_activo)|tojson }}, {{ producto.tipo|tojson }}, {{ (low_stock and producto.id in low_stock)|tojson }})'>
       <div class="card-img-wrap">
         {% if producto.badge %}
         <span class="badge badge-{{ producto.badge | lower }}">{{ producto.badge }}</span>
@@ -87,6 +87,7 @@
         <div class="product-footer">
           <span class="product-price">${{ "{:,}".format(producto.precio) }}/lb</span>
           <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST" class="add-form" onclick="event.stopPropagation()">
+            {{ csrf_field() }}
             <input type="hidden" name="next" value="{{ url_for('main.catalogo', filtro=filtro_activo) }}">
             <div class="qty-stepper">
               <button type="button" class="qty-btn qty-minus">−</button>

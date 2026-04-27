@@ -5,8 +5,18 @@ from model import get_product_by_id, get_combo_by_id, Order, Promo
 from database import db
 from config import WHATSAPP_NUMBER, BUSINESS_NAME, WOMPI_PUBLIC_KEY
 from rewards import LOYALTY_DISCOUNT_PERCENT, LOYALTY_DAYS_VALID, maybe_generate_loyalty_coupon
+from security import safe_redirect_target
 
 cart_bp = Blueprint("cart", __name__)
+
+
+def _clean_text(value, limit=120):
+    return (value or "").strip()[:limit]
+
+
+def _redirect_back(default_endpoint="main.index"):
+    target = request.form.get("next") or request.referrer
+    return redirect(safe_redirect_target(target, default_endpoint))
 
 def _save_order(metodo, items, total, tel="", dir_="", ciudad="", referencia="", issue_reward=False):
     try:
@@ -223,7 +233,7 @@ def agregar(product_id):
                             "qty": new_qty, "subtotal": subtotal,
                             "total": _cart_total(cart), "msg": msg})
         flash(msg, "error")
-        return redirect(request.form.get("next") or request.referrer or url_for("main.index"))
+        return _redirect_back("main.index")
 
     cart[key] = current_in_cart + qty
     session["cart"] = cart
@@ -233,8 +243,7 @@ def agregar(product_id):
         subtotal = product["precio"] * new_qty if product else 0
         return jsonify({"ok": True, "count": sum(cart.values()),
                         "qty": new_qty, "subtotal": subtotal, "total": _cart_total(cart)})
-    next_url = request.form.get("next") or request.referrer or url_for("main.index")
-    return redirect(next_url)
+    return _redirect_back("main.index")
 
 
 @cart_bp.route("/quitar/<int:product_id>", methods=["POST"])
@@ -274,15 +283,16 @@ def vaciar():
     return redirect(url_for("cart.carrito"))
 
 
-@cart_bp.route("/checkout-billetera")
+@cart_bp.route("/checkout-billetera", methods=["POST"])
 def checkout_billetera():
     items, total = get_cart_items()
     if not items:
         return redirect(url_for("cart.carrito"))
-    metodo = request.args.get("metodo", "Nequi").capitalize()
-    tel   = request.args.get("tel", "")
-    dir_  = request.args.get("dir", "")
-    ciudad = request.args.get("ciudad", "")
+    metodo_raw = _clean_text(request.form.get("metodo", "Nequi"), 20).lower()
+    metodo = "Daviplata" if metodo_raw == "daviplata" else "Nequi"
+    tel   = _clean_text(request.form.get("tel", ""), 30)
+    dir_  = _clean_text(request.form.get("dir", ""), 300)
+    ciudad = _clean_text(request.form.get("ciudad", ""), 100)
     descuento, promo_cod = _aplicar_y_limpiar_promo(total)
     total_final = total - descuento
     lineas = [f"¡Hola {BUSINESS_NAME}! Quiero pagar con *{metodo}*:\n"]
@@ -305,14 +315,14 @@ def checkout_billetera():
     return redirect(url)
 
 
-@cart_bp.route("/checkout-efectivo")
+@cart_bp.route("/checkout-efectivo", methods=["POST"])
 def checkout_efectivo():
     items, total = get_cart_items()
     if not items:
         return redirect(url_for("cart.carrito"))
-    tel   = request.args.get("tel", "")
-    dir_  = request.args.get("dir", "")
-    ciudad = request.args.get("ciudad", "")
+    tel   = _clean_text(request.form.get("tel", ""), 30)
+    dir_  = _clean_text(request.form.get("dir", ""), 300)
+    ciudad = _clean_text(request.form.get("ciudad", ""), 100)
     descuento, promo_cod = _aplicar_y_limpiar_promo(total)
     total_final = total - descuento
     lineas = [f"¡Hola {BUSINESS_NAME}! Quiero pagar en *efectivo contra entrega*:\n"]
@@ -335,16 +345,16 @@ def checkout_efectivo():
     return redirect(url)
 
 
-@cart_bp.route("/checkout-whatsapp")
+@cart_bp.route("/checkout-whatsapp", methods=["POST"])
 def checkout_whatsapp():
     items, total = get_cart_items()
     if not items:
         return redirect(url_for("cart.carrito"))
 
-    nombre = request.args.get("nombre", "")
-    tel = request.args.get("tel", "")
-    dir_ = request.args.get("dir", "")
-    ciudad = request.args.get("ciudad", "")
+    nombre = _clean_text(request.form.get("nombre", ""), 120)
+    tel = _clean_text(request.form.get("tel", ""), 30)
+    dir_ = _clean_text(request.form.get("dir", ""), 300)
+    ciudad = _clean_text(request.form.get("ciudad", ""), 100)
 
     descuento, promo_cod = _aplicar_y_limpiar_promo(total)
     total_final = total - descuento
@@ -399,7 +409,7 @@ def agregar_combo(combo_id):
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return jsonify({"ok": False, "msg": msg})
         flash(msg, "error")
-        return redirect(request.referrer or url_for("main.index"))
+        return _redirect_back("main.index")
 
     cart[key] = nuevo_total
     session["cart"] = cart
@@ -409,8 +419,7 @@ def agregar_combo(combo_id):
         _, total = get_cart_items()
         return jsonify({"ok": True, "count": sum(cart.values()),
                         "qty": new_qty, "subtotal": subtotal, "total": total})
-    next_url = request.form.get("next") or request.referrer or url_for("main.index")
-    return redirect(next_url)
+    return _redirect_back("main.index")
 
 
 @cart_bp.route("/quitar-combo/<int:combo_id>", methods=["POST"])
@@ -449,9 +458,9 @@ def checkout_tarjeta():
     items, total = get_cart_items()
     if not items:
         return redirect(url_for("cart.carrito"))
-    tel = request.form.get("tel", "")
-    dir_ = request.form.get("dir", "")
-    ciudad = request.form.get("ciudad", "")
+    tel = _clean_text(request.form.get("tel", ""), 30)
+    dir_ = _clean_text(request.form.get("dir", ""), 300)
+    ciudad = _clean_text(request.form.get("ciudad", ""), 100)
     descuento, promo_cod = _aplicar_y_limpiar_promo(total)
     total_final = total - descuento
     referencia = f"APASTTO-{uuid.uuid4().hex[:8].upper()}"

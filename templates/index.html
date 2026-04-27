@@ -30,7 +30,7 @@
     <div class="pedidos-grid">
       {% for producto in productos[:4] %}
       <div class="pedido-card"
-           onclick="abrirModal('{{ producto.nombre }}','{{ producto.tipo }} · {{ producto.categoria }}','{{ producto.descripcion }}','{{ producto.precio }}','{{ producto.emoji }}','{% if producto.imagen %}{{ url_for('static', filename=producto.imagen) }}{% endif %}','{{ producto.id }}','{{ url_for('main.index') }}','{{ producto.tipo }}',{{ 'true' if low_stock and producto.id in low_stock else 'false' }})">
+           onclick='abrirModal({{ producto.nombre|tojson }}, {{ (producto.tipo ~ " - " ~ producto.categoria)|tojson }}, {{ producto.descripcion|tojson }}, {{ producto.precio|tojson }}, {{ producto.emoji|tojson }}, {{ (url_for("static", filename=producto.imagen) if producto.imagen else "")|tojson }}, {{ producto.id|tojson }}, {{ url_for("main.index")|tojson }}, {{ producto.tipo|tojson }}, {{ (low_stock and producto.id in low_stock)|tojson }})'>
         <div class="pedido-img-wrap">
           {% if producto.badge %}
           <span class="badge badge-{{ producto.badge | lower }}">{{ producto.badge }}</span>
@@ -54,6 +54,7 @@
             </div>
             <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST"
                   class="add-form pedido-form" onclick="event.stopPropagation()">
+              {{ csrf_field() }}
               <input type="hidden" name="cantidad" value="1">
               <input type="hidden" name="next" value="{{ url_for('main.index') }}">
               <button type="submit" class="btn btn-add">+ Agregar</button>
@@ -97,6 +98,7 @@
         <div class="combo-footer">
           <span class="combo-price">${{ "{:,}".format(combo.precio) }}</span>
           <form action="{{ url_for('cart.agregar_combo', combo_id=combo.id) }}" method="POST" onclick="event.stopPropagation()">
+            {{ csrf_field() }}
             <input type="hidden" name="next" value="{{ url_for('main.index') }}">
             <button type="submit" class="btn btn-add">🎁 Pedir combo</button>
           </form>

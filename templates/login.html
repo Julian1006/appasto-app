@@ -15,6 +15,7 @@
     {% endif %}
 
     <form method="POST" class="auth-form">
+      {{ csrf_field() }}
       <input type="hidden" name="next" value="{{ next_url }}">
       {% if is_register %}
       <label>

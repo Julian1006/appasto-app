@@ -4,25 +4,43 @@ import uuid
 from datetime import date, datetime, timedelta
 from functools import wraps
 from hmac import compare_digest
-from time import time
-from collections import defaultdict
-from flask import Blueprint, render_template, request, redirect, url_for, session, abort
-from werkzeug.utils import secure_filename
-from config import ADMIN_PASSWORD
+from flask import Blueprint, render_template, request, redirect, url_for, session, abort, flash
+from werkzeug.security import check_password_hash
+from config import ADMIN_PASSWORD, ADMIN_PASSWORD_HASH
 from database import db
 from model import Product, Order, Combo, Promo
 from rewards import (LOYALTY_DISCOUNT_PERCENT, LOYALTY_DAYS_VALID, LOYALTY_THRESHOLD,
                      LOYALTY_REPEAT_COP, LOYALTY_REPEAT_ORDERS, LOYALTY_COOLDOWN_DAYS,
                      maybe_generate_loyalty_coupon, remove_loyalty_coupon_for_order)
+from security import MemoryRateLimiter, rotate_csrf_token, safe_redirect_target
 
 _UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.dirname(__file__)), "static", "images")
 _ALLOWED_EXT = {"png", "jpg", "jpeg", "webp"}
+_IMAGE_MAGIC = {
+    "png": lambda h: h.startswith(b"\x89PNG\r\n\x1a\n"),
+    "jpg": lambda h: h.startswith(b"\xff\xd8\xff"),
+    "jpeg": lambda h: h.startswith(b"\xff\xd8\xff"),
+    "webp": lambda h: h.startswith(b"RIFF") and h[8:12] == b"WEBP",
+}
+
+
+def _image_magic_is_valid(file, ext):
+    try:
+        pos = file.stream.tell()
+        head = file.stream.read(32)
+        file.stream.seek(pos)
+    except Exception:
+        return False
+    checker = _IMAGE_MAGIC.get(ext)
+    return bool(checker and checker(head))
 
 def _save_image(file):
     if not file or not file.filename:
         return ""
     ext = file.filename.rsplit(".", 1)[-1].lower()
     if ext not in _ALLOWED_EXT:
+        return ""
+    if not _image_magic_is_valid(file, ext):
         return ""
     os.makedirs(_UPLOAD_FOLDER, exist_ok=True)
     filename = f"prod_{uuid.uuid4().hex[:10]}.{ext}"
@@ -32,9 +50,9 @@ def _save_image(file):
 admin_bp = Blueprint("admin", __name__, url_prefix="/admin")
 
 # Rate limiting en memoria: máx 5 intentos fallidos por IP, bloqueo 15 min
-_failed = defaultdict(list)
 _MAX_ATTEMPTS = 5
 _LOCKOUT_SECS = 900
+_login_limiter = MemoryRateLimiter(max_attempts=_MAX_ATTEMPTS, window_seconds=_LOCKOUT_SECS)
 
 
 def _parse_date_field(value):
@@ -52,13 +70,40 @@ def _ip():
 
 
 def _is_locked(ip):
-    now = time()
-    _failed[ip] = [t for t in _failed[ip] if now - t < _LOCKOUT_SECS]
-    return len(_failed[ip]) >= _MAX_ATTEMPTS
+    return _login_limiter.is_locked(ip)
 
 
 def _record_fail(ip):
-    _failed[ip].append(time())
+    _login_limiter.record_failure(ip)
+
+
+def _remaining(ip):
+    return _login_limiter.remaining(ip)
+
+
+def _admin_password_ok(password):
+    if ADMIN_PASSWORD_HASH:
+        try:
+            return check_password_hash(ADMIN_PASSWORD_HASH, password)
+        except ValueError:
+            return False
+    return bool(ADMIN_PASSWORD) and compare_digest(password, ADMIN_PASSWORD)
+
+
+def _start_admin_session():
+    user_id = session.get("user_id")
+    cart = session.get("cart")
+    promo = session.get("promo")
+    session.clear()
+    if user_id:
+        session["user_id"] = user_id
+    if cart:
+        session["cart"] = cart
+    if promo:
+        session["promo"] = promo
+    session.permanent = True
+    session["admin"] = True
+    rotate_csrf_token()
 
 
 def admin_required(f):
@@ -76,16 +121,15 @@ def activar():
     ip = _ip()
     if _is_locked(ip):
         flash("Demasiados intentos fallidos. Espera 15 minutos.", "error")
-        return redirect(request.referrer or url_for("auth.account"))
+        return redirect(safe_redirect_target(request.referrer, "auth.account"))
     pwd = request.form.get("password", "")
-    if compare_digest(pwd, ADMIN_PASSWORD):
-        session.permanent = True
-        session["admin"] = True
-        _failed.pop(ip, None)
+    if _admin_password_ok(pwd):
+        _start_admin_session()
+        _login_limiter.reset(ip)
         return redirect(url_for("admin.dashboard"))
     _record_fail(ip)
     flash("Código incorrecto.", "error")
-    return redirect(request.referrer or url_for("auth.account"))
+    return redirect(safe_redirect_target(request.referrer, "auth.account"))
 
 
 @admin_bp.route("/login", methods=["GET", "POST"])
@@ -99,13 +143,12 @@ def login():
             error = "Demasiados intentos fallidos. Espera 15 minutos."
         else:
             pwd = request.form.get("password", "")
-            if compare_digest(pwd, ADMIN_PASSWORD):
-                session.permanent = True
-                session["admin"] = True
-                _failed.pop(ip, None)
+            if _admin_password_ok(pwd):
+                _start_admin_session()
+                _login_limiter.reset(ip)
                 return redirect(url_for("admin.dashboard"))
             _record_fail(ip)
-            remaining = _MAX_ATTEMPTS - len(_failed[ip])
+            remaining = _remaining(ip)
             error = f"Contraseña incorrecta. Intentos restantes: {max(0, remaining)}."
 
     return render_template("admin_login.html", error=error, locked=locked)
@@ -113,7 +156,8 @@ def login():
 
 @admin_bp.route("/logout")
 def logout():
-    session.clear()
+    session.pop("admin", None)
+    rotate_csrf_token()
     return redirect(url_for("admin.login"))
 
 

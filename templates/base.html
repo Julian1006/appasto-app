@@ -36,9 +36,6 @@
       <li><a href="{{ url_for('main.index') }}">Inicio</a></li>
       <li><a href="{{ url_for('main.catalogo') }}">Catálogo</a></li>
       <li><a href="{{ url_for('main.nosotros') }}">Nosotros</a></li>
-      {% if session.get('admin') %}
-      <li><a href="{{ url_for('admin.dashboard') }}" class="nav-admin-link">⚙ Admin</a></li>
-      {% endif %}
       {% if current_user %}
       <li><a href="{{ url_for('auth.discounts') }}">Descuentos</a></li>
       <li><a href="{{ url_for('auth.account') }}">Hola, {{ current_user.nombre.split()[0] }}</a></li>
@@ -139,6 +136,7 @@
             <span id="modal-subtotal" class="modal-subtotal"></span>
           </div>
           <form id="modal-form" method="POST" class="add-form">
+            {{ csrf_field() }}
             <input type="hidden" name="next" id="modal-next">
             <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-input qty-input-lg" id="modal-qty">
             <button type="submit" class="btn btn-whatsapp">+ Agregar al carrito</button>
@@ -175,6 +173,12 @@
   }, { threshold: 0.1 });
   document.querySelectorAll('.reveal').forEach(function(el) { _revObs.observe(el); });
 
+  function escapeHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch];
+    });
+  }
+
 
   // ── Mini carrito ────────────────────────────────────────────
   function openMiniCart() {
@@ -196,8 +200,8 @@
       fEl.innerHTML = '';
     } else {
       el.innerHTML = data.items.map(function(it) {
-        return '<div class="mc-item"><span class="mc-emoji">'+it.emoji+'</span>'
-          +'<div class="mc-info"><strong>'+it.nombre+'</strong>'
+        return '<div class="mc-item"><span class="mc-emoji">'+escapeHtml(it.emoji)+'</span>'
+          +'<div class="mc-info"><strong>'+escapeHtml(it.nombre)+'</strong>'
           +'<span>'+it.qty+' lb &times; $'+it.precio.toLocaleString('es-CO')+'/lb</span></div>'
           +'<span class="mc-sub">$'+it.subtotal.toLocaleString('es-CO')+'</span></div>';
       }).join('');
@@ -337,8 +341,8 @@
             var card = document.createElement('div');
             card.className = 'related-card';
             card.innerHTML = '<div class="rc-img">'
-              + (it.imagen ? '<img src="/static/'+it.imagen+'" alt="'+it.nombre+'">' : '<span>'+it.emoji+'</span>')
-              + '</div><div class="rc-info"><strong>'+it.nombre+'</strong>'
+              + (it.imagen ? '<img src="'+escapeHtml('/static/'+it.imagen)+'" alt="'+escapeHtml(it.nombre)+'">' : '<span>'+escapeHtml(it.emoji)+'</span>')
+              + '</div><div class="rc-info"><strong>'+escapeHtml(it.nombre)+'</strong>'
               + '<span>$'+it.precio.toLocaleString('es-CO')+'/lb</span></div>';
             card.addEventListener('click', function(){
               cerrarModal();

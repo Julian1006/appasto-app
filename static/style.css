@@ -2079,44 +2079,6 @@ ul { list-style: none; }
 .order-status-completado { background: #d1e7dd; color: #0f5132; }
 .order-status-cancelado { background: #f8d7da; color: #842029; }
 
-.account-admin-form {
-  display: flex;
-  gap: .5rem;
-  margin-top: 1.5rem;
-  padding-top: 1rem;
-  border-top: 1px solid var(--bone);
-}
-.account-admin-form input {
-  flex: 1;
-  padding: .5rem .75rem;
-  border: 1.5px solid #ddd;
-  border-radius: 8px;
-  font-size: .85rem;
-  outline: none;
-  color: #555;
-}
-.account-admin-form input:focus { border-color: #1a1a1a; }
-.account-admin-form button {
-  padding: .5rem 1rem;
-  background: #1a1a1a;
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-size: .85rem;
-  font-weight: 700;
-  cursor: pointer;
-}
-.account-admin-form button:hover { background: #333; }
-
-.nav-admin-link {
-  background: #1a1a1a !important;
-  color: #fff !important;
-  border-radius: 6px;
-  padding: .25rem .7rem !important;
-  font-weight: 700 !important;
-  font-size: .82rem !important;
-}
-
 @media (max-width: 720px) {
   .auth-grid,
   .account-grid {

@@ -47,27 +47,38 @@
 
 from datetime import timedelta
 from flask import Flask, session
-from config import SECRET_KEY, DEBUG, BUSINESS_NAME, DATABASE_URL, WHATSAPP_NUMBER, WOMPI_PUBLIC_KEY
+from werkzeug.middleware.proxy_fix import ProxyFix
+from config import SECRET_KEY, DEBUG, IS_PRODUCTION, BUSINESS_NAME, DATABASE_URL, WHATSAPP_NUMBER, WOMPI_PUBLIC_KEY
 from database import db
 from routes.main import main_bp
 from routes.cart import cart_bp
 from routes.admin import admin_bp
 from routes.auth import auth_bp
+from security import apply_security_headers, csrf_field, csrf_token, register_security
 
 app = Flask(__name__, static_folder="static")
+if IS_PRODUCTION:
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1, x_host=1)
 
 app.secret_key = SECRET_KEY
 app.config.update(
     SQLALCHEMY_DATABASE_URI        = DATABASE_URL,
     SQLALCHEMY_TRACK_MODIFICATIONS = False,
+    PREFERRED_URL_SCHEME           = "https" if IS_PRODUCTION else "http",
     SESSION_COOKIE_HTTPONLY        = True,
     SESSION_COOKIE_SAMESITE        = "Lax",
-    SESSION_COOKIE_SECURE          = not DEBUG,   # Solo HTTPS en producción
+    SESSION_COOKIE_SECURE          = IS_PRODUCTION,
     PERMANENT_SESSION_LIFETIME     = timedelta(hours=8),
     MAX_CONTENT_LENGTH             = 8 * 1024 * 1024,  # 8 MB máx por imagen subida
 )
+app.config.update(
+    SESSION_COOKIE_NAME          = "__Host-appasto-session" if IS_PRODUCTION else "appasto_session",
+    SESSION_COOKIE_PATH          = "/",
+    SESSION_REFRESH_EACH_REQUEST = True,
+)
 
 db.init_app(app)
+register_security(app)
 
 app.register_blueprint(main_bp)
 app.register_blueprint(cart_bp)
@@ -78,11 +89,16 @@ app.register_blueprint(auth_bp)
 @app.after_request
 def security_headers(response):
     # Headers de seguridad básicos para producción
-    response.headers["X-Frame-Options"]        = "SAMEORIGIN"
-    response.headers["X-Content-Type-Options"] = "nosniff"
-    response.headers["Referrer-Policy"]        = "strict-origin-when-cross-origin"
-    response.headers["Permissions-Policy"]     = "geolocation=(), microphone=(), camera=()"
+    response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+    response.headers.setdefault("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
     return response
+
+
+@app.after_request
+def advanced_security_headers(response):
+    return apply_security_headers(response, is_production=IS_PRODUCTION)
 
 
 @app.context_processor
@@ -99,6 +115,8 @@ def inject_globals():
         "whatsapp_number": WHATSAPP_NUMBER,
         "wompi_key":       WOMPI_PUBLIC_KEY,
         "current_user":    current_user,
+        "csrf_token":      csrf_token,
+        "csrf_field":      csrf_field,
     }
 
 
