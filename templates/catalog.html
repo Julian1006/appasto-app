@@ -16,10 +16,10 @@
     <div class="filter-left">
       <select id="priceFilter" onchange="aplicarFiltros()" class="filter-select">
         <option value="">💰 Todos los precios</option>
-        <option value="0-10000">Menos de $10.000/lb</option>
-        <option value="10000-20000">$10.000 – $20.000/lb</option>
-        <option value="20000-30000">$20.000 – $30.000/lb</option>
-        <option value="30000-99999">Más de $30.000/lb</option>
+        <option value="0-10000">Menos de $10.000/500 gr</option>
+        <option value="10000-20000">$10.000 – $20.000/500 gr</option>
+        <option value="20000-30000">$20.000 – $30.000/500 gr</option>
+        <option value="30000-99999">Más de $30.000/500 gr</option>
       </select>
       <select id="sortSelect" onchange="aplicarFiltros()" class="filter-select">
         <option value="">↕ Ordenar</option>
@@ -85,7 +85,7 @@
         </div>
         <p class="product-desc">{{ producto.descripcion }}</p>
         <div class="product-footer">
-          <span class="product-price">${{ "{:,}".format(producto.precio) }}/lb</span>
+          <span class="product-price">${{ "{:,}".format(producto.precio) }}/500 gr</span>
           <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST" class="add-form" onclick="event.stopPropagation()">
             {{ csrf_field() }}
             <input type="hidden" name="next" value="{{ url_for('main.catalogo', filtro=filtro_activo) }}">

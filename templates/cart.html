@@ -118,7 +118,7 @@
             </div>
             <div class="summary-info">
               <strong>{{ item.nombre }}</strong>
-              <span>{% if item.is_combo %}Combo{% else %}${{ "{:,}".format(item.precio) }}/lb{% endif %}</span>
+              <span>{% if item.is_combo %}Combo{% else %}${{ "{:,}".format(item.precio) }}/500 gr{% endif %}</span>
               <div class="summary-qty">
                 <form action="{{ item.url_minus }}" method="POST" class="cart-ctrl-form">
                   {{ csrf_field() }}

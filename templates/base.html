@@ -202,7 +202,7 @@
       el.innerHTML = data.items.map(function(it) {
         return '<div class="mc-item"><span class="mc-emoji">'+escapeHtml(it.emoji)+'</span>'
           +'<div class="mc-info"><strong>'+escapeHtml(it.nombre)+'</strong>'
-          +'<span>'+it.qty+' lb &times; $'+it.precio.toLocaleString('es-CO')+'/lb</span></div>'
+          +'<span>'+it.qty+' und &times; $'+it.precio.toLocaleString('es-CO')+'/500 gr</span></div>'
           +'<span class="mc-sub">$'+it.subtotal.toLocaleString('es-CO')+'</span></div>';
       }).join('');
       fEl.innerHTML = '<div class="mc-total">Total estimado <strong>$'+data.total.toLocaleString('es-CO')+'</strong></div>'
@@ -279,7 +279,7 @@
     var sub = document.getElementById('modal-subtotal');
     if (!sub) return;
     if (qty > 1 && _modalUnitPrice) {
-      sub.textContent = '× ' + qty + ' lb = $' + (_modalUnitPrice * qty).toLocaleString('es-CO');
+      sub.textContent = '× ' + qty + ' und = $' + (_modalUnitPrice * qty).toLocaleString('es-CO');
       sub.style.display = 'inline';
     } else {
       sub.style.display = 'none';
@@ -307,7 +307,7 @@
     document.getElementById('modal-name').textContent  = nombre;
     document.getElementById('modal-cat').textContent   = categoria;
     document.getElementById('modal-desc').textContent  = descripcion;
-    document.getElementById('modal-price').textContent = '$' + parseInt(precio).toLocaleString('es-CO') + '/lb';
+    document.getElementById('modal-price').textContent = '$' + parseInt(precio).toLocaleString('es-CO') + '/500 gr';
     document.getElementById('modal-form').action       = '/agregar/' + pid;
     document.getElementById('modal-next').value        = next;
     var img = document.getElementById('modal-img');
@@ -343,7 +343,7 @@
             card.innerHTML = '<div class="rc-img">'
               + (it.imagen ? '<img src="'+escapeHtml('/static/'+it.imagen)+'" alt="'+escapeHtml(it.nombre)+'">' : '<span>'+escapeHtml(it.emoji)+'</span>')
               + '</div><div class="rc-info"><strong>'+escapeHtml(it.nombre)+'</strong>'
-              + '<span>$'+it.precio.toLocaleString('es-CO')+'/lb</span></div>';
+              + '<span>$'+it.precio.toLocaleString('es-CO')+'/500 gr</span></div>';
             card.addEventListener('click', function(){
               cerrarModal();
               setTimeout(function(){

@@ -225,7 +225,7 @@ def agregar(product_id):
         if disponible <= 0:
             msg = f"⚠️ {nombre}: stock agotado en el carrito."
         else:
-            msg = f"⚠️ {nombre}: solo quedan {disponible} lb disponibles."
+            msg = f"⚠️ {nombre}: solo quedan {disponible} unidades (500 gr) disponibles."
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             new_qty = current_in_cart
             subtotal = product["precio"] * new_qty if product else 0
