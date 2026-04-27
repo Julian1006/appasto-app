@@ -1832,14 +1832,6 @@ ul { list-style: none; }
 }
 #pwa-install-btn:hover { background: var(--red-dark); }
 
-/* ===== Admin link footer ===== */
-.footer-bottom { display: flex; flex-direction: column; align-items: center; gap: .4rem; }
-.admin-link {
-  font-size: .72rem; color: rgba(255,255,255,.18);
-  text-decoration: none; letter-spacing: .04em;
-  transition: color .25s;
-}
-.admin-link:hover { color: rgba(255,255,255,.55); }
 
 /* ===== Cliente: login, registro y cuenta ===== */
 .auth-page,
