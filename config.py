@@ -1,11 +1,11 @@
 import os
 import secrets as _secrets
 
-BUSINESS_NAME   = "Appasto"
+BUSINESS_NAME   = "Apastto"
 WHATSAPP_NUMBER = "573202055525"
 WOMPI_PUBLIC_KEY = os.environ.get("WOMPI_PUBLIC_KEY", "pub_test_XXXXXXXX")
 
-_db_url = os.environ.get("DATABASE_URL", "sqlite:///appasto.db")
+_db_url = os.environ.get("DATABASE_URL", "sqlite:///apastto.db")
 DATABASE_URL = _db_url.replace("postgres://", "postgresql://", 1) if _db_url.startswith("postgres://") else _db_url
 
 DEBUG = os.environ.get("FLASK_DEBUG", "0") == "1"
@@ -28,6 +28,6 @@ ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "").strip()
 if IS_PRODUCTION and not (ADMIN_PASSWORD_HASH or ADMIN_PASSWORD):
     raise RuntimeError("ADMIN_PASSWORD_HASH o ADMIN_PASSWORD es obligatorio en produccion.")
 if not (ADMIN_PASSWORD_HASH or ADMIN_PASSWORD):
-    ADMIN_PASSWORD = "Appasto@2024"
-if IS_PRODUCTION and ADMIN_PASSWORD == "Appasto@2024":
+    ADMIN_PASSWORD = "Apastto@2024"
+if IS_PRODUCTION and ADMIN_PASSWORD == "Apastto@2024":
     raise RuntimeError("Cambia ADMIN_PASSWORD antes de desplegar en produccion.")

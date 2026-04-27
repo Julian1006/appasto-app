@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
-{% block title %}Mis descuentos - {{ business_name }}{% endblock %}
+{% block title %}Mis descuentos - Apastto{% endblock %}
 
 {% block content %}
 <section class="discounts-page">
   <div class="discounts-shell">
     <div class="discounts-hero">
-      <span class="auth-kicker">Beneficios Appasto</span>
+      <span class="auth-kicker">Beneficios Apastto</span>
       <h1>Tus descuentos</h1>
       <p>Cupones disponibles para tu cuenta y promociones activas para clientes registrados.</p>
     </div>
@@ -23,7 +23,7 @@
 
       {% for promo in promos %}
       <article class="discount-card">
-        <span class="discount-label">Promo Appasto</span>
+        <span class="discount-label">Promo Apastto</span>
         <h2>{{ promo.codigo }}</h2>
         {% if promo.tipo == 'porcentaje' %}
         <p>{{ promo.valor }}% off en tu pedido.</p>

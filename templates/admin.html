@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Admin — Appasto</title>
+  <title>Admin — Apastto</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
@@ -136,7 +136,7 @@
   <div class="topbar-left">
     <span class="topbar-logo">🥩</span>
     <div>
-      <div class="topbar-title">Appasto Admin</div>
+      <div class="topbar-title">Apastto Admin</div>
       <div class="topbar-sub">Panel de gestión</div>
     </div>
   </div>
@@ -205,7 +205,7 @@
         <tr>
           <th style="width:2rem">#</th>
           <th>Producto</th>
-          <th style="width:7rem">Precio/lb</th>
+          <th style="width:7rem">Precio/500 gr</th>
           <th style="width:9rem">Stock</th>
           <th style="width:5rem;text-align:center">⭐</th>
           <th style="width:5rem;text-align:center">Activo</th>
@@ -247,8 +247,8 @@
             <div style="margin-bottom:.3rem;font-size:.82rem">
               {% if p.stock is none %}<span class="stock-inf">∞ libre</span>
               {% elif p.stock == 0 %}<span class="stock-out">⚠ Agotado</span>
-              {% elif p.stock <= 5 %}<span class="stock-low">⚡ {{ p.stock }} lb</span>
-              {% else %}<span class="stock-ok">✓ {{ p.stock }} lb</span>{% endif %}
+              {% elif p.stock <= 5 %}<span class="stock-low">⚡ {{ p.stock }} und</span>
+              {% else %}<span class="stock-ok">✓ {{ p.stock }} und</span>{% endif %}
             </div>
             <form class="inline-form" method="POST" action="{{ url_for('admin.update_stock', pid=p.id) }}">
               {{ csrf_field() }}
@@ -398,7 +398,7 @@
           <td>
             <div class="items-list">
               {% for item in o.items %}
-              <span>• {{ item.nombre }} × <strong>{{ item.cantidad }}lb</strong> — ${{ "{:,}".format(item.subtotal) }}</span>
+              <span>• {{ item.nombre }} × <strong>{{ item.cantidad }} x 500 gr</strong> — ${{ "{:,}".format(item.subtotal) }}</span>
               {% endfor %}
             </div>
           </td>
@@ -774,7 +774,7 @@
       <!-- Precio + Stock -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
         <div>
-          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Precio por lb ($)</label>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Precio por 500 gr ($)</label>
           <input type="number" id="edit-precio" name="precio" min="1" step="100"
             style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none">
         </div>
@@ -878,7 +878,7 @@
       <!-- Precio + Stock -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
         <div>
-          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Precio por lb * ($)</label>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Precio por 500 gr * ($)</label>
           <input type="number" name="precio" required min="1" step="100" placeholder="0"
             style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.9rem;outline:none">
         </div>
@@ -995,10 +995,10 @@
               <span class="badge-tipo tipo-{{ p.tipo }}" style="font-size:.6rem">{{ p.tipo }}</span>
             </div>
             <div style="display:flex;align-items:center;gap:.4rem;flex-shrink:0">
-              <span style="font-size:.75rem;color:#aaa">${{ "{:,}".format(p.precio) }}/lb</span>
+              <span style="font-size:.75rem;color:#aaa">${{ "{:,}".format(p.precio) }}/500 gr</span>
               <input type="number" name="item_{{ p.id }}" value="0" min="0" max="99" class="combo-qty"
                 style="width:54px;padding:.25rem .4rem;border:1.5px solid #ddd;border-radius:6px;font-size:.82rem;text-align:center;outline:none">
-              <span style="font-size:.72rem;color:#aaa">lb</span>
+              <span style="font-size:.72rem;color:#aaa">und</span>
             </div>
           </div>
           {% endfor %}

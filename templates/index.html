@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ business_name }} — Carne Premium a Domicilio en Bogotá{% endblock %}
+{% block title %}Apastto — Carne Premium a Domicilio en Bogotá{% endblock %}
 
 {% block content %}
 
@@ -50,7 +50,7 @@
             <div class="pedido-price-block">
               <span class="pedido-desde">desde</span>
               <strong class="pedido-price">${{ "{:,}".format(producto.precio) }}</strong>
-              <span class="pedido-unit">/ lb</span>
+              <span class="pedido-unit">/ 500 gr</span>
             </div>
             <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST"
                   class="add-form pedido-form" onclick="event.stopPropagation()">

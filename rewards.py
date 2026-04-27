@@ -16,7 +16,7 @@ LOYALTY_THRESHOLD = LOYALTY_REPEAT_COP
 
 def _generate_loyalty_code():
     while True:
-        code = f"APPASTO{uuid.uuid4().hex[:6].upper()}"
+        code = f"APASTTO{uuid.uuid4().hex[:6].upper()}"
         if not Promo.query.filter_by(codigo=code).first():
             return code
 

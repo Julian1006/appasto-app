@@ -1,12 +1,12 @@
 {% extends "base.html" %}
 
 {% set is_register = mode == "register" %}
-{% block title %}{{ 'Crear cuenta' if is_register else 'Iniciar sesion' }} - {{ business_name }}{% endblock %}
+{% block title %}{{ 'Crear cuenta' if is_register else 'Iniciar sesion' }} - Apastto{% endblock %}
 
 {% block content %}
 <section class="auth-page">
   <div class="auth-card">
-    <span class="auth-kicker">Cuenta Appasto</span>
+    <span class="auth-kicker">Cuenta Apastto</span>
     <h1>{{ 'Crear cuenta' if is_register else 'Iniciar sesion' }}</h1>
     <p>{{ 'Guarda tus datos y revisa tus pedidos mas rapido.' if is_register else 'Entra para comprar mas rapido y ver tus pedidos.' }}</p>
 
@@ -58,7 +58,7 @@
       {% if is_register %}
       Ya tienes cuenta? <a href="{{ url_for('auth.login', next=next_url) }}">Inicia sesion</a>
       {% else %}
-      Nuevo en Appasto? <a href="{{ url_for('auth.register', next=next_url) }}">Crea tu cuenta</a>
+      Nuevo en Apastto? <a href="{{ url_for('auth.register', next=next_url) }}">Crea tu cuenta</a>
       {% endif %}
     </div>
   </div>
