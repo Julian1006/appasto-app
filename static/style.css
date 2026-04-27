@@ -1565,6 +1565,15 @@ ul { list-style: none; }
   border-radius: 50%;
   background: var(--red);
 }
+.btn-confirmar-pago {
+  display: block; width: 100%; margin-top: 1.2rem;
+  padding: .9rem 1.5rem; border: none; border-radius: 8px;
+  background: var(--red); color: var(--white);
+  font-size: 1.05rem; font-weight: 700; cursor: pointer;
+  transition: background .2s, transform .1s;
+}
+.btn-confirmar-pago:hover { background: var(--red-dark); }
+.btn-confirmar-pago:active { transform: scale(.98); }
 .payment-copy {
   display: flex;
   flex-direction: column;
