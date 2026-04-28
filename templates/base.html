@@ -378,6 +378,47 @@
     document.body.style.overflow = '';
   }
 
+  // AJAX submit del modal — agrega sin recargar ni abrir carrito
+  document.getElementById('modal-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    var form = this;
+    var btn = form.querySelector('button[type="submit"]');
+    if (btn) { btn.disabled = true; btn.textContent = 'Agregando...'; }
+    fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      cerrarModal();
+      var badge = document.querySelector('.cart-badge');
+      if (data.count > 0) {
+        if (badge) {
+          badge.textContent = data.count;
+        } else {
+          var cl = document.querySelector('.cart-link');
+          if (cl) {
+            badge = document.createElement('span');
+            badge.className = 'cart-badge';
+            badge.textContent = data.count;
+            cl.appendChild(badge);
+          }
+        }
+        if (badge) { badge.style.animation='none'; void badge.offsetWidth; badge.style.animation=''; }
+      }
+      if (data.ok === false && data.msg) {
+        if (typeof showToast === 'function') showToast(data.msg, 'error');
+      } else {
+        if (typeof showToast === 'function') showToast('✓ Agregado al carrito', 'success');
+      }
+    })
+    .catch(function() { form.submit(); })
+    .finally(function() {
+      if (btn) { btn.disabled = false; btn.textContent = '+ Agregar al carrito'; }
+    });
+  });
+
   function compartirProducto() {
     var title = _modalName, url = _modalUrl;
     if (navigator.share) {
