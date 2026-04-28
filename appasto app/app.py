@@ -16,9 +16,9 @@ def inject_globals():
     cart = session.get("cart", {})
     cart_count = sum(cart.values())
     from config import WHATSAPP_NUMBER, WOMPI_PUBLIC_KEY
-    return {"cart_count": cart_count, "business_name": BUSINESS_NAME,
+    return {"cart_count": cart_count, "business_name": "Apastto",
             "whatsapp_number": WHATSAPP_NUMBER, "wompi_key": WOMPI_PUBLIC_KEY}
 
 
 if __name__ == "__main__":
-    app.run(debug=DEBUG)
+    app.run(debug=DEBUG, use_reloader=False)

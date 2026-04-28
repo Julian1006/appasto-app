@@ -3,14 +3,14 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="{{ business_name }} — Carnes frescas a pasto, sin concentrados. Los mejores cortes de res, cerdo, pollo y pescado a domicilio.">
-  <title>{% block title %}{{ business_name }}{% endblock %}</title>
+  <meta name="description" content="Apastto — Carnes frescas a pasto, sin concentrados. Los mejores cortes de res, cerdo, pollo y pescado a domicilio.">
+  <title>{% block title %}Apastto{% endblock %}</title>
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
 <body>
 
   <nav class="navbar">
-    <a href="{{ url_for('main.index') }}" class="nav-logo">🥩 {{ business_name }}</a>
+    <a href="{{ url_for('main.index') }}" class="nav-logo">🥩 Apastto</a>
     <button class="nav-toggle" id="navToggle" aria-label="Menú">&#9776;</button>
     <ul class="nav-links" id="navLinks">
       <li><a href="{{ url_for('main.index') }}">Inicio</a></li>
@@ -34,7 +34,7 @@
   <footer class="footer">
     <div class="footer-inner">
       <div class="footer-col">
-        <span class="footer-logo">🥩 {{ business_name }}</span>
+        <span class="footer-logo">🥩 Apastto</span>
         <p>Carnes a pasto, naturales y sin concentrados.<br>Directo del campo a tu mesa.</p>
       </div>
       <div class="footer-col">
@@ -50,12 +50,12 @@
         <strong>Contacto</strong>
         <ul>
           <li><a href="https://wa.me/{{ whatsapp_number }}" target="_blank">📲 WhatsApp</a></li>
-          <li><a href="https://www.instagram.com/appasto_/" target="_blank">📸 Instagram</a></li>
+          <li><a href="https://www.instagram.com/apastto.carnes/" target="_blank">📸 Instagram</a></li>
         </ul>
       </div>
     </div>
     <div class="footer-bottom">
-      <p>© 2026 <strong>{{ business_name }}</strong> — Todos los derechos reservados</p>
+      <p>© 2026 <strong>Apastto</strong> — Todos los derechos reservados</p>
     </div>
   </footer>
 

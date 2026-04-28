@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}{{ business_name }} — Carnes Premium a Pasto{% endblock %}
+{% block title %}Apastto — Carnes Premium a Pasto{% endblock %}
 
 {% block content %}
 <section class="hero">
@@ -63,10 +63,14 @@
           <h3 class="product-name">{{ producto.nombre }}</h3>
           <p class="product-desc">{{ producto.descripcion }}</p>
           <div class="product-footer">
-            <span class="product-price">${{ "{:,}".format(producto.precio) }}/kg</span>
+            <span class="product-price">${{ "{:,}".format(producto.precio) }}/500 gr</span>
             <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST" class="add-form">
               <input type="hidden" name="next" value="{{ url_for('main.index') }}">
-              <input type="number" name="cantidad" value="1" min="1" max="50" class="qty-input">
+              <select name="cantidad" class="qty-input" aria-label="Cantidad">
+                <option value="1">500 gr</option>
+                <option value="2">1 kg</option>
+                <option value="3">1.5 kg</option>
+              </select>
               <button type="submit" class="btn btn-add">+ Agregar</button>
             </form>
           </div>

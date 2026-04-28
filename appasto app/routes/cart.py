@@ -32,10 +32,10 @@ def agregar(product_id):
     key = str(product_id)
     try:
         qty = int(request.form.get("cantidad", 1))
-        qty = max(1, min(qty, 50))
+        qty = max(1, min(qty, 3))
     except (ValueError, TypeError):
         qty = 1
-    cart[key] = cart.get(key, 0) + qty
+    cart[key] = min(3, cart.get(key, 0) + qty)
     session["cart"] = cart
     next_url = request.form.get("next") or request.referrer or url_for("main.index")
     return redirect(next_url)

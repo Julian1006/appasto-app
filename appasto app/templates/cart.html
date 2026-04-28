@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 
-{% block title %}Carrito — {{ business_name }}{% endblock %}
+{% block title %}Carrito — Apastto{% endblock %}
 
 {% block content %}
 <div class="container cart-container">
@@ -12,8 +12,8 @@
       <thead>
         <tr>
           <th>Producto</th>
-          <th>Precio/kg</th>
-          <th>Cantidad (kg)</th>
+          <th>Precio/500 gr</th>
+          <th>Cantidad</th>
           <th>Subtotal</th>
           <th></th>
         </tr>
@@ -30,7 +30,7 @@
             <form action="{{ url_for('cart.quitar', product_id=item.id) }}" method="POST" style="display:inline">
               <button type="submit" class="qty-btn">−</button>
             </form>
-            <span class="qty-num">{{ item.cantidad }}</span>
+            <span class="qty-num">{% if item.cantidad == 1 %}500 gr{% elif item.cantidad == 2 %}1 kg{% else %}1.5 kg{% endif %}</span>
             <form action="{{ url_for('cart.agregar', product_id=item.id) }}" method="POST" style="display:inline">
               <button type="submit" class="qty-btn">+</button>
             </form>
