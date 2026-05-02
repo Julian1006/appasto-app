@@ -206,23 +206,41 @@ ul { list-style: none; }
 .nota-item-input::placeholder { color: #bbb; font-style: italic; }
 
 /* Stepper +/- */
-.qty-stepper { display: flex; align-items: center; border: 1.5px solid var(--gray); border-radius: 8px; overflow: hidden; }
-.qty-btn {
-  background: #f4f4f5; border: none; width: 30px; height: 34px;
-  font-size: 1.1rem; font-weight: 700; cursor: pointer; color: var(--text);
+.qty-control {
+  display: inline-flex; align-items: center; gap: .45rem;
+  flex: 0 0 auto;
+}
+.qty-stepper {
+  display: inline-flex; align-items: center; height: 38px;
+  border: 1.5px solid var(--gray); border-radius: 8px;
+  overflow: hidden; background: var(--white);
+}
+.qty-stepper .qty-btn {
+  background: var(--white); border: none; width: 32px; height: 100%;
+  font-size: 1.05rem; font-weight: 800; cursor: pointer; color: var(--red);
   transition: background .15s; display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; line-height: 1;
 }
-.qty-btn:hover { background: #e5e5e5; }
-.qty-btn:active { background: #d4d4d4; }
-.qty-num {
-  width: 34px; border: none; border-left: 1.5px solid var(--gray); border-right: 1.5px solid var(--gray);
-  padding: .3rem 0; font-size: .88rem; text-align: center; color: var(--text);
+.qty-stepper .qty-btn:hover { background: var(--gray-light); }
+.qty-stepper .qty-btn:active { background: var(--red-light); }
+.qty-stepper .qty-btn:focus-visible { outline: 2px solid rgba(158,47,36,.25); outline-offset: -2px; }
+.qty-stepper .qty-num {
+  width: 36px; height: 100%; border: none;
+  border-left: 1.5px solid var(--gray); border-right: 1.5px solid var(--gray);
+  padding: 0; font-size: .9rem; font-weight: 800; text-align: center; color: var(--text);
   background: #fff; -moz-appearance: textfield;
 }
-.qty-num:focus { outline: none; }
-.qty-num::-webkit-outer-spin-button,
-.qty-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.qty-stepper .qty-num:focus { outline: none; }
+.qty-stepper .qty-num::-webkit-outer-spin-button,
+.qty-stepper .qty-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.qty-weight {
+  min-width: 46px; color: var(--text-light);
+  font-size: .82rem; font-weight: 700; white-space: nowrap;
+}
+.qty-control-lg .qty-stepper { height: 42px; }
+.qty-control-lg .qty-stepper .qty-btn { width: 38px; }
+.qty-control-lg .qty-stepper .qty-num { width: 42px; font-size: .98rem; }
+.qty-control-lg .qty-weight { color: var(--text); font-size: .9rem; }
 
 /* Card hover overlay */
 .card-img-wrap { position: relative; overflow: hidden; }
