@@ -237,6 +237,39 @@ class Promo(db.Model):
         }
 
 
+class Categoria(db.Model):
+    __tablename__ = "categorias"
+
+    id      = db.Column(db.Integer, primary_key=True)
+    nombre  = db.Column(db.String(50), nullable=False, unique=True)
+    nivel   = db.Column(db.String(20), nullable=False)   # 'tipo' | 'subcategoria'
+    emoji   = db.Column(db.String(10), default="")
+    color   = db.Column(db.String(20), default="")
+    activo  = db.Column(db.Boolean, default=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id, "nombre": self.nombre, "nivel": self.nivel,
+            "emoji": self.emoji or "", "color": self.color or "", "activo": self.activo,
+        }
+
+
+SEED_CATEGORIAS = [
+    {"nombre": "Res",         "nivel": "tipo",         "emoji": "🥩", "color": "#c0392b"},
+    {"nombre": "Cerdo",       "nivel": "tipo",         "emoji": "🐷", "color": "#e67e22"},
+    {"nombre": "Pollo",       "nivel": "tipo",         "emoji": "🍗", "color": "#f39c12"},
+    {"nombre": "Pescado",     "nivel": "tipo",         "emoji": "🐟", "color": "#2980b9"},
+    {"nombre": "Charcutería", "nivel": "tipo",         "emoji": "🌭", "color": "#8e44ad"},
+    {"nombre": "Lácteos",     "nivel": "tipo",         "emoji": "🥛", "color": "#16a085"},
+    {"nombre": "Despensa",    "nivel": "tipo",         "emoji": "🫙", "color": "#27ae60"},
+    {"nombre": "Premium",     "nivel": "subcategoria", "emoji": "⭐", "color": "#f39c12"},
+    {"nombre": "Especiales",  "nivel": "subcategoria", "emoji": "✨", "color": "#9b59b6"},
+    {"nombre": "Económicos",  "nivel": "subcategoria", "emoji": "💰", "color": "#27ae60"},
+    {"nombre": "Huesos",      "nivel": "subcategoria", "emoji": "🦴", "color": "#95a5a6"},
+    {"nombre": "Molidas",     "nivel": "subcategoria", "emoji": "🥩", "color": "#7f8c8d"},
+]
+
+
 # ── Seed data (se carga una sola vez si la tabla está vacía) ──────────────────
 # Para agregar más productos permanentes, añadirlos aquí y borrar la DB para re-seedear.
 # En producción (Render) se puede agregar desde el admin sin tocar este archivo.
@@ -344,4 +377,28 @@ SEED_PRODUCTS = [
     {"id": 87, "nombre": "Ghee Fubafala 400g",          "tipo": "Despensa","categoria": "Premium",    "precio": 55000, "descripcion": "Mantequilla clarificada Ghee 100% pura Fubafala 400g.", "emoji": "🫙", "imagen": "images/despensa/Ghee-fubafala-400g.webp"},
     {"id": 88, "nombre": "Ghee Fubafala 200g",          "tipo": "Despensa","categoria": "Premium",    "precio": 28500, "descripcion": "Mantequilla clarificada Ghee 100% pura Fubafala 200g.", "emoji": "🫙", "imagen": "images/despensa/Ghee-fubafala-200g.webp"},
     {"id": 89, "nombre": "Ghee vaca A2 200g",           "tipo": "Despensa","categoria": "Premium",    "precio": 28000, "descripcion": "Mantequilla clarificada Ghee premium de vaca A2 200g.", "emoji": "🫙", "imagen": "images/despensa/Ghee-vaca-A2-200g.webp"},
+    # ===== RES - Molidas =====
+    {"id": 90, "nombre": "Molida especial 500g",        "tipo": "Res",    "categoria": "Económicos",  "precio": 15900, "descripcion": "Selección balanceada de carne magra.",                   "emoji": "🥩", "imagen": "images/carne/Molida-especial.webp"},
+    {"id": 91, "nombre": "Molida Apastto 90/10",        "tipo": "Res",    "categoria": "Económicos",  "precio": 15900, "descripcion": "Alta en proteína y baja en grasa.",                      "emoji": "🥩", "imagen": "images/carne/Molida-apastto.webp"},
+    {"id": 92, "nombre": "Molida 80/20 500g",           "tipo": "Res",    "categoria": "Económicos",  "precio": 15900, "descripcion": "Mayor jugosidad y sabor intenso.",                       "emoji": "🥩", "imagen": "images/carne/Molida-80-20.webp"},
+    # ===== CERDO - Nuevos cortes =====
+    {"id": 93, "nombre": "Milanesa de cerdo 500g",      "tipo": "Cerdo",  "categoria": "Especiales",  "precio": 14900, "descripcion": "Corte tradicional y rendidor.",                          "emoji": "🐷", "imagen": "images/cerdo/Milanesa-de-cerdo.webp"},
+    {"id": 94, "nombre": "Goulash de cerdo 500g",       "tipo": "Cerdo",  "categoria": "Especiales",  "precio": 14900, "descripcion": "Corte versátil de cerdo para el día a día.",             "emoji": "🐷", "imagen": "images/cerdo/Goulash-de-cerdo.webp"},
+    {"id": 95, "nombre": "Osobuco de cerdo 500g",       "tipo": "Cerdo",  "categoria": "Huesos",      "precio": 14900, "descripcion": "Corte con hueso y piel, ideal para guisos.",             "emoji": "🐷", "imagen": "images/cerdo/Osobuco-de-cerdo.webp"},
+    {"id": 96, "nombre": "Huesitos de marrano 500g",    "tipo": "Cerdo",  "categoria": "Huesos",      "precio": 14900, "descripcion": "Corte tradicional de cerdo para caldos.",                "emoji": "🐷", "imagen": "images/cerdo/Huesitos-de-marrano.webp"},
+    {"id": 97, "nombre": "Chuleta mariposa 500g",       "tipo": "Cerdo",  "categoria": "Especiales",  "precio": 14900, "descripcion": "Corte jugoso listo para cocinar.",                       "emoji": "🐷", "imagen": "images/cerdo/Chuleta-mariposa.webp"},
+    {"id": 98, "nombre": "Chuleta de brazo 500g",       "tipo": "Cerdo",  "categoria": "Huesos",      "precio": 14900, "descripcion": "Corte con hueso jugoso listo para cocinar.",             "emoji": "🐷", "imagen": "images/cerdo/Chuleta-de-brazo.webp"},
+    # ===== LÁCTEOS - Nuevos =====
+    {"id": 99, "nombre": "Mantequilla sin sal Alpina",  "tipo": "Lácteos","categoria": "Especiales",  "precio": 11500, "descripcion": "Mantequilla sin sal Alpina 125g.",                       "emoji": "🧈", "imagen": "images/lacteos/Mantequilla-sin-sal-alpina-125gr.webp"},
+    {"id":100, "nombre": "Queso holandés Alpina 250g",  "tipo": "Lácteos","categoria": "Premium",     "precio": 24900, "descripcion": "Queso holandés Alpina 250g.",                            "emoji": "🧀", "imagen": "images/lacteos/Queso-holandes-alpina-250gr.webp"},
+    {"id":101, "nombre": "Queso parmesano Alpina 40g",  "tipo": "Lácteos","categoria": "Económicos",  "precio":  6900, "descripcion": "Queso parmesano rallado Alpina 40g.",                    "emoji": "🧀", "imagen": "images/lacteos/Queso-parmesano-alpina-40gr.webp"},
+    {"id":102, "nombre": "Leche Pomar deslact. 1.1L",   "tipo": "Lácteos","categoria": "Económicos",  "precio":  6900, "descripcion": "Leche deslactosada Pomar 1100ml.",                       "emoji": "🥛", "imagen": "images/lacteos/Leche-pomar-deslactosada.webp"},
+    # ===== CHARCUTERÍA - Nuevo tamaño =====
+    {"id":103, "nombre": "Chorizo fazenda 120g",        "tipo": "Charcutería","categoria": "Económicos","precio": 6900, "descripcion": "Por 2 unidades, chorizo artesanal Fazenda.",           "emoji": "🌭", "imagen": "images/charcuteria/Chorizo-fazenda-120g.webp"},
+    # ===== DESPENSA - Experiencia parrillera =====
+    {"id":104, "nombre": "Carbón Santa Fuego 2.5kg",    "tipo": "Despensa","categoria": "Premium",    "precio": 28500, "descripcion": "Calor intenso y larga duración.",                        "emoji": "🔥", "imagen": "images/despensa/Carbon-premium.webp"},
+    {"id":105, "nombre": "Barril parrillero pequeño",   "tipo": "Despensa","categoria": "Premium",    "precio": 390000,"descripcion": "15 a 20 lb. Incluye carbonera y termómetro interior.",  "emoji": "🍖", "imagen": "images/despensa/Barril-pequeno.webp"},
+    {"id":106, "nombre": "Combo parrillero Apastto",    "tipo": "Despensa","categoria": "Premium",    "precio": 499000,"descripcion": "Incluye barril parrillero 15 a 20 lb.",                 "emoji": "🍖", "imagen": "images/despensa/Combo-parrillero.webp"},
+    {"id":107, "nombre": "Barril parrillero mediano",   "tipo": "Despensa","categoria": "Premium",    "precio": 890000,"descripcion": "30 a 35 lb. Incluye parrilla abatible y carbonera.",    "emoji": "🍖", "imagen": "images/despensa/Barril-mediano.webp"},
+    {"id":108, "nombre": "Barril parrillero premium",   "tipo": "Despensa","categoria": "Premium",    "precio":1590000,"descripcion": "70 lb. Alta capacidad para grandes reuniones.",          "emoji": "🍖", "imagen": "images/despensa/Barril-premium.webp"},
 ]

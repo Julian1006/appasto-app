@@ -4,13 +4,34 @@ from model import get_all_products
 
 main_bp = Blueprint("main", __name__)
 
-TABS = ["Todos", "Res", "Cerdo", "Pollo", "Pescado", "Charcutería", "Lácteos", "Despensa", "Premium", "Especiales", "Económicos", "Huesos"]
-TIPOS = ["Res", "Cerdo", "Pollo", "Pescado", "Charcutería", "Lácteos", "Despensa"]
-CATEGORIAS = ["Premium", "Especiales", "Económicos", "Huesos"]
+_TIPOS_DEFAULT = ["Res", "Cerdo", "Pollo", "Pescado", "Charcutería", "Lácteos", "Despensa"]
+_CATS_DEFAULT  = ["Premium", "Especiales", "Económicos", "Huesos", "Molidas"]
 
 DESTACADOS_IDS = [4, 5, 6, 1, 3, 29, 31, 49, 60, 73, 87, 8]  # fallback solo si DB vacía
 
 LOW_STOCK = {2, 5, 14, 29, 49, 60}
+
+
+def _get_tipos():
+    try:
+        from model import Categoria
+        rows = Categoria.query.filter_by(nivel="tipo", activo=True).order_by(Categoria.id).all()
+        if rows:
+            return [r.nombre for r in rows]
+    except Exception:
+        pass
+    return _TIPOS_DEFAULT
+
+
+def _get_subcats():
+    try:
+        from model import Categoria
+        rows = Categoria.query.filter_by(nivel="subcategoria", activo=True).order_by(Categoria.id).all()
+        if rows:
+            return [r.nombre for r in rows]
+    except Exception:
+        pass
+    return _CATS_DEFAULT
 
 
 @main_bp.route("/")
@@ -47,16 +68,19 @@ def nosotros():
 def catalogo():
     filtro = request.args.get("filtro", "Todos")
     todos = [p for p in get_all_products() if p.get("activo", True)]
+    tipos   = _get_tipos()
+    subcats = _get_subcats()
+    tabs    = ["Todos"] + tipos + subcats
 
-    if filtro in TIPOS:
+    if filtro in tipos:
         productos = [p for p in todos if p["tipo"] == filtro]
-    elif filtro in CATEGORIAS:
+    elif filtro in subcats:
         productos = [p for p in todos if p["categoria"] == filtro]
     else:
         productos = todos
 
     return render_template("catalog.html", productos=productos,
-                           tabs=TABS, filtro_activo=filtro, low_stock=LOW_STOCK)
+                           tabs=tabs, filtro_activo=filtro, low_stock=LOW_STOCK)
 
 
 @main_bp.route("/api/related/<tipo>/<int:product_id>")

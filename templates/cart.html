@@ -1,6 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Checkout - Apastto{% endblock %}
+{% block body_class %}checkout-body{% endblock %}
 
 {% block content %}
 <div class="checkout-page">
@@ -59,16 +60,7 @@
         <p class="checkout-muted">Elige como quieres cerrar tu pedido. Todos los metodos mantienen stock, cupones y resumen.</p>
 
         <div class="payment-stack">
-          <button type="button" class="payment-row payment-row-selected" data-metodo="tarjeta" onclick="seleccionarPago(this)">
-            <span class="payment-radio"></span>
-            <span class="payment-copy">
-              <strong>Tarjeta / PSE con Wompi</strong>
-              <small>Pago protegido para pedidos Apastto</small>
-            </span>
-            <span class="payment-tags"><b>VISA</b><b>MC</b><b>PSE</b></span>
-          </button>
-
-          <button type="button" class="payment-row" data-metodo="whatsapp" onclick="seleccionarPago(this)">
+          <button type="button" class="payment-row payment-row-selected" data-metodo="whatsapp" onclick="seleccionarPago(this)">
             <span class="payment-radio"></span>
             <span class="payment-copy">
               <strong>WhatsApp</strong>
@@ -103,6 +95,16 @@
             </span>
             <span class="payment-brand">COP</span>
           </button>
+
+          <button type="button" class="payment-row" data-metodo="tarjeta" onclick="seleccionarPago(this)">
+            <span class="payment-radio"></span>
+            <span class="payment-copy">
+              <strong>Tarjeta / PSE con Wompi</strong>
+              <small>Pago protegido para pedidos Apastto</small>
+            </span>
+            <span class="payment-tags"><b>VISA</b><b>MC</b><b>PSE</b></span>
+          </button>
+
         </div>
 
         <button type="button" class="btn-confirmar-pago" id="btn-confirmar" onclick="confirmarPago()">
@@ -117,7 +119,11 @@
           {% for item in items %}
           <div class="summary-item checkout-item">
             <div class="summary-thumb">
-              <span>{{ item.emoji }}</span>
+              {% if item.imagen %}
+              <img src="{{ url_for('static', filename=item.imagen) }}" alt="{{ item.nombre }}" class="summary-thumb-img">
+              {% else %}
+              <span class="summary-thumb-emoji">{{ item.emoji }}</span>
+              {% endif %}
               <strong>{{ item.cantidad }}</strong>
             </div>
             <div class="summary-info">
@@ -127,7 +133,7 @@
               <form action="{{ item.url_nota }}" method="POST" class="nota-item-form" data-product-id="{{ item.id }}">
                 {{ csrf_field() }}
                 <input type="text" name="observacion" value="{{ item.nota }}"
-                  placeholder="Indicaciones del corte (Ej: grueso, sin grasa...)"
+                  placeholder="Corte: mariposa, grueso, delgado, sin grasa..."
                   maxlength="200" class="nota-item-input">
               </form>
               {% endif %}
@@ -289,13 +295,8 @@
   function _validateDelivery() {
     var d = _getDelivery();
     if (!d.tel) {
-      if (typeof showToast === 'function') showToast('Por favor ingresa tu número de teléfono.', 'error');
+      alert('Por favor ingresa tu número de teléfono.');
       document.getElementById('cliente-tel').focus();
-      return null;
-    }
-    if (!d.dir) {
-      if (typeof showToast === 'function') showToast('Por favor ingresa tu dirección de entrega.', 'error');
-      document.getElementById('cliente-direccion').focus();
       return null;
     }
     return d;
@@ -319,7 +320,7 @@
     });
   });
 
-  var _metodoSeleccionado = 'tarjeta';
+  var _metodoSeleccionado = 'whatsapp';
 
   function seleccionarPagoRapido(metodo) {
     var btn = document.querySelector('[data-metodo="'+metodo+'"]');
@@ -335,35 +336,135 @@
     _metodoSeleccionado = btn.dataset.metodo;
   }
 
+  function _adjuntarNotas(form) {
+    // Eliminar notas previas por si se llama más de una vez
+    form.querySelectorAll('input[data-nota]').forEach(function(el) { el.remove(); });
+    document.querySelectorAll('.nota-item-form').forEach(function(nf) {
+      var pid = nf.dataset.productId;
+      var val = (nf.querySelector('.nota-item-input') || {}).value || '';
+      val = val.trim();
+      var hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.name = 'nota_' + pid;
+      hidden.value = val;
+      hidden.dataset.nota = '1';
+      form.appendChild(hidden);
+    });
+  }
+
+  var WA_NUMBER = "{{ whatsapp_number }}";
+
+  function _buildWAMessage(tipo) {
+    var d = _getDelivery();
+    var metodoTexto = {
+      whatsapp: 'WhatsApp',
+      nequi: 'Nequi',
+      daviplata: 'Daviplata',
+      efectivo: 'efectivo contra entrega'
+    }[tipo] || 'WhatsApp';
+
+    var lineas = [];
+    if (tipo === 'efectivo') {
+      lineas.push('¡Hola Apastto! Quiero pagar en *efectivo contra entrega*:\n');
+    } else if (tipo === 'whatsapp') {
+      lineas.push('¡Hola Apastto! Quiero hacer el siguiente pedido:\n');
+    } else {
+      lineas.push('¡Hola Apastto! Quiero pagar con *' + metodoTexto + '*:\n');
+    }
+
+    document.querySelectorAll('.checkout-item').forEach(function(row) {
+      var nombre = (row.querySelector('.summary-info > strong') || {}).textContent || '';
+      var qty = (row.querySelector('.qty-num') || {}).textContent || '1';
+      var subtotal = (row.querySelector('.cart-subtotal') || {}).textContent || '';
+      var nota = (row.querySelector('.nota-item-input') || {}).value || '';
+      var esCombo = !(row.querySelector('.nota-item-input'));
+      if (esCombo) {
+        lineas.push('• ' + nombre.trim() + ' x' + qty.trim() + ' — ' + subtotal.trim());
+      } else {
+        lineas.push('• ' + nombre.trim() + ' x' + qty.trim() + ' x 500 gr — ' + subtotal.trim());
+        if (nota.trim()) lineas.push('   ↳ Indicaciones: ' + nota.trim());
+      }
+    });
+
+    var promoDesc = document.getElementById('cart-promo-desc');
+    if (promoDesc) {
+      lineas.push('\n🏷️ Descuento: ' + promoDesc.textContent.trim());
+    }
+    var totalEl = document.getElementById('cart-total-val');
+    var totalTexto = totalEl ? totalEl.textContent.trim() : '';
+    if (tipo === 'efectivo') {
+      lineas.push('\n*Total a pagar: ' + totalTexto + '*');
+    } else if (tipo === 'whatsapp') {
+      lineas.push('\n*Total estimado: ' + totalTexto + '*');
+    } else {
+      lineas.push('\n*Total: ' + totalTexto + '*');
+    }
+
+    if (d.tel || d.dir) {
+      lineas.push('\n📦 *Datos de entrega:*');
+      if (d.tel) lineas.push('Teléfono: ' + d.tel);
+      if (d.dir) lineas.push('Dirección: ' + d.dir);
+    }
+
+    if (tipo === 'nequi' || tipo === 'daviplata') {
+      lineas.push('\nPor favor indicarme el número ' + metodoTexto + ' para realizar el pago y confirmar disponibilidad. ¡Gracias!');
+    } else if (tipo === 'efectivo') {
+      lineas.push('\nPor favor confirmar disponibilidad y coordinar la entrega. ¡Gracias!');
+    } else {
+      lineas.push('\nPor favor confirmar disponibilidad y precio final. ¡Gracias!');
+    }
+
+    return lineas.join('\n');
+  }
+
   function confirmarPago() {
-    var d = _validateDelivery();
-    if (!d) return;
     var tipo = _metodoSeleccionado;
+
     if (tipo === 'tarjeta') {
+      var d = _validateDelivery();
+      if (!d) return;
+      var fTarjeta = document.getElementById('form-tarjeta');
       document.getElementById('tarjeta-tel').value = d.tel;
       document.getElementById('tarjeta-dir').value = d.dir;
       document.getElementById('tarjeta-ciudad').value = d.ciudad;
-      document.getElementById('form-tarjeta').submit();
-    } else {
-      var form = document.getElementById('form-checkout-directo');
-      document.getElementById('directo-nombre').value = d.nombre;
-      document.getElementById('directo-tel').value = d.tel;
-      document.getElementById('directo-dir').value = d.dir;
-      document.getElementById('directo-ciudad').value = d.ciudad;
-      document.getElementById('directo-metodo').value = '';
-      if (tipo === 'whatsapp') {
-        form.action = "{{ url_for('cart.checkout_whatsapp') }}";
-      } else if (tipo === 'nequi') {
-        form.action = "{{ url_for('cart.checkout_billetera') }}";
-        document.getElementById('directo-metodo').value = 'Nequi';
-      } else if (tipo === 'daviplata') {
-        form.action = "{{ url_for('cart.checkout_billetera') }}";
-        document.getElementById('directo-metodo').value = 'Daviplata';
-      } else if (tipo === 'efectivo') {
-        form.action = "{{ url_for('cart.checkout_efectivo') }}";
-      }
-      form.submit();
+      _adjuntarNotas(fTarjeta);
+      fTarjeta.submit();
+      return;
     }
+
+    // Para los 4 métodos WhatsApp: construir URL y abrir WhatsApp directamente
+    var mensaje = _buildWAMessage(tipo);
+    var waUrl = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(mensaje);
+
+    // Guardar pedido en la base de datos en paralelo (fire-and-forget)
+    var d = _getDelivery();
+    var form = document.getElementById('form-checkout-directo');
+    document.getElementById('directo-nombre').value = d.nombre;
+    document.getElementById('directo-tel').value = d.tel;
+    document.getElementById('directo-dir').value = d.dir;
+    document.getElementById('directo-ciudad').value = d.ciudad;
+    document.getElementById('directo-metodo').value = '';
+    if (tipo === 'nequi') {
+      form.action = "{{ url_for('cart.checkout_billetera') }}";
+      document.getElementById('directo-metodo').value = 'Nequi';
+    } else if (tipo === 'daviplata') {
+      form.action = "{{ url_for('cart.checkout_billetera') }}";
+      document.getElementById('directo-metodo').value = 'Daviplata';
+    } else if (tipo === 'efectivo') {
+      form.action = "{{ url_for('cart.checkout_efectivo') }}";
+    } else {
+      form.action = "{{ url_for('cart.checkout_whatsapp') }}";
+    }
+    _adjuntarNotas(form);
+    fetch(form.action, {
+      method: 'POST',
+      body: new FormData(form),
+      headers: { 'X-Requested-With': 'XMLHttpRequest' },
+      keepalive: true
+    }).catch(function() {});
+
+    // Abrir WhatsApp inmediatamente
+    window.location.href = waUrl;
   }
   </script>
 

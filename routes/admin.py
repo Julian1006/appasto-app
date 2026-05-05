@@ -4,11 +4,11 @@ import uuid
 from datetime import date, datetime, timedelta
 from functools import wraps
 from hmac import compare_digest
-from flask import Blueprint, render_template, request, redirect, url_for, session, abort, flash
+from flask import Blueprint, render_template, request, redirect, url_for, session, abort, flash, jsonify
 from werkzeug.security import check_password_hash
 from config import ADMIN_PASSWORD, ADMIN_PASSWORD_HASH
 from database import db
-from model import Product, Order, Combo, Promo
+from model import Product, Order, Combo, Promo, Categoria
 from rewards import (LOYALTY_DISCOUNT_PERCENT, LOYALTY_DAYS_VALID, LOYALTY_THRESHOLD,
                      LOYALTY_REPEAT_COP, LOYALTY_REPEAT_ORDERS, LOYALTY_COOLDOWN_DAYS,
                      maybe_generate_loyalty_coupon, remove_loyalty_coupon_for_order)
@@ -191,6 +191,7 @@ def dashboard():
                 combos_sin_stock.add(c.id)
                 break
 
+    categorias = Categoria.query.order_by(Categoria.nivel, Categoria.id).all()
     return render_template("admin.html", productos=productos, pedidos=pedidos,
                            combos=combos, combos_sin_stock=combos_sin_stock,
                            promos=promos, n_dest=n_dest, max_dest=MAX_DESTACADOS,
@@ -198,6 +199,7 @@ def dashboard():
                            combos_programados=combos_programados,
                            combos_vencidos=combos_vencidos,
                            deletable_ids=deletable_ids,
+                           categorias=categorias,
                            loyalty_percent=LOYALTY_DISCOUNT_PERCENT,
                            loyalty_days=LOYALTY_DAYS_VALID,
                            loyalty_repeat_cop=LOYALTY_REPEAT_COP,
@@ -314,8 +316,30 @@ def reset_precio(pid):
 
 MAX_DESTACADOS = 12
 
-TIPOS_VALIDOS = ["Res", "Cerdo", "Pollo", "Pescado", "Charcutería", "Lácteos", "Despensa"]
-CATS_VALIDAS  = ["Premium", "Especiales", "Económicos", "Huesos"]
+_TIPOS_FALLBACK = ["Res", "Cerdo", "Pollo", "Pescado", "Charcutería", "Lácteos", "Despensa"]
+_CATS_FALLBACK  = ["Premium", "Especiales", "Económicos", "Huesos", "Molidas"]
+
+
+def _get_tipos_validos():
+    try:
+        from model import Categoria
+        rows = Categoria.query.filter_by(nivel="tipo", activo=True).order_by(Categoria.id).all()
+        if rows:
+            return [r.nombre for r in rows]
+    except Exception:
+        pass
+    return _TIPOS_FALLBACK
+
+
+def _get_cats_validas():
+    try:
+        from model import Categoria
+        rows = Categoria.query.filter_by(nivel="subcategoria", activo=True).order_by(Categoria.id).all()
+        if rows:
+            return [r.nombre for r in rows]
+    except Exception:
+        pass
+    return _CATS_FALLBACK
 
 @admin_bp.route("/producto/<int:pid>/delete", methods=["POST"])
 @admin_required
@@ -337,11 +361,13 @@ def editar_producto(pid):
     desc   = request.form.get("descripcion", "").strip()
     emoji  = request.form.get("emoji", "").strip() or p.emoji
 
+    tipos_validos = _get_tipos_validos()
+    cats_validas  = _get_cats_validas()
     if nombre:
         p.nombre = nombre
-    if tipo in TIPOS_VALIDOS:
+    if tipo in tipos_validos:
         p.tipo = tipo
-    p.categoria = cat if cat in CATS_VALIDAS else p.tipo
+    p.categoria = cat if cat in cats_validas else p.tipo
     p.descripcion = desc
     p.emoji = emoji
 
@@ -378,7 +404,9 @@ def crear_producto():
     desc   = request.form.get("descripcion", "").strip()
     emoji  = request.form.get("emoji", "🥩").strip() or "🥩"
 
-    if not nombre or tipo not in TIPOS_VALIDOS:
+    tipos_validos = _get_tipos_validos()
+    cats_validas  = _get_cats_validas()
+    if not nombre or tipo not in tipos_validos:
         return redirect(url_for("admin.dashboard"))
 
     try:
@@ -395,7 +423,7 @@ def crear_producto():
 
     p = Product(
         nombre=nombre, tipo=tipo,
-        categoria=cat if cat in CATS_VALIDAS else tipo,
+        categoria=cat if cat in cats_validas else tipo,
         precio=precio, precio_orig=precio,
         descripcion=desc, emoji=emoji,
         imagen=imagen, stock=stock, activo=True, destacado=False,
@@ -610,3 +638,44 @@ def reset_promo(pid):
     p.veces_usado = 0
     db.session.commit()
     return redirect(url_for("admin.dashboard") + "#tab-promos")
+
+
+# ── Categorías ────────────────────────────────────────────────────────────────
+
+@admin_bp.route("/api/categorias")
+@admin_required
+def api_categorias():
+    tipos  = [c.to_dict() for c in Categoria.query.filter_by(nivel="tipo").order_by(Categoria.id).all()]
+    subcats= [c.to_dict() for c in Categoria.query.filter_by(nivel="subcategoria").order_by(Categoria.id).all()]
+    return jsonify({"tipos": tipos, "subcategorias": subcats})
+
+
+@admin_bp.route("/categoria/crear", methods=["POST"])
+@admin_required
+def crear_categoria():
+    nombre = request.form.get("nombre", "").strip()
+    nivel  = request.form.get("nivel", "").strip()
+    emoji  = request.form.get("emoji", "").strip()
+    color  = request.form.get("color", "").strip()
+
+    if not nombre or nivel not in ("tipo", "subcategoria"):
+        return redirect(url_for("admin.dashboard") + "#tab-categorias")
+
+    if not Categoria.query.filter_by(nombre=nombre).first():
+        db.session.add(Categoria(nombre=nombre, nivel=nivel, emoji=emoji, color=color or "#888888"))
+        db.session.commit()
+
+    return redirect(url_for("admin.dashboard") + "#tab-categorias")
+
+
+@admin_bp.route("/categoria/<int:cid>/eliminar", methods=["POST"])
+@admin_required
+def eliminar_categoria(cid):
+    cat = Categoria.query.get_or_404(cid)
+    en_uso = Product.query.filter(
+        (Product.tipo == cat.nombre) | (Product.categoria == cat.nombre)
+    ).count()
+    if en_uso == 0:
+        db.session.delete(cat)
+        db.session.commit()
+    return redirect(url_for("admin.dashboard") + "#tab-categorias")

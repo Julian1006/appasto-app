@@ -138,6 +138,14 @@ def _seed_db():
         db.session.commit()
 
 
+def _seed_categorias():
+    from model import Categoria, SEED_CATEGORIAS
+    if Categoria.query.count() == 0:
+        for d in SEED_CATEGORIAS:
+            db.session.add(Categoria(**d))
+        db.session.commit()
+
+
 with app.app_context():
     db.create_all()  # Crea todas las tablas definidas en model.py si no existen
     try:
@@ -190,6 +198,7 @@ with app.app_context():
     except Exception:
         pass
     _seed_db()
+    _seed_categorias()
 
 
 if __name__ == "__main__":

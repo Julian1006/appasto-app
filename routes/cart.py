@@ -313,8 +313,18 @@ def vaciar():
     return redirect(url_for("cart.carrito"))
 
 
+def _merge_notas_from_form():
+    """Lee notas del formulario y las guarda en sesión antes de get_cart_items()."""
+    notas_form = {k[5:]: _clean_text(v, 200) for k, v in request.form.items() if k.startswith("nota_") and v.strip()}
+    if notas_form:
+        cn = session.get("cart_notes", {})
+        cn.update(notas_form)
+        session["cart_notes"] = cn
+
+
 @cart_bp.route("/checkout-billetera", methods=["POST"])
 def checkout_billetera():
+    _merge_notas_from_form()
     items, total = get_cart_items()
     if not items:
         return redirect(url_for("cart.carrito"))
@@ -342,13 +352,15 @@ def checkout_billetera():
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
     lineas.append(f"\nPor favor indicarme el número {metodo} para realizar el pago y confirmar disponibilidad. ¡Gracias!")
     _save_order(metodo, items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
-    session.pop("cart", None)
     wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"ok": True})
     return redirect(wa_url)
 
 
 @cart_bp.route("/checkout-efectivo", methods=["POST"])
 def checkout_efectivo():
+    _merge_notas_from_form()
     items, total = get_cart_items()
     if not items:
         return redirect(url_for("cart.carrito"))
@@ -374,13 +386,15 @@ def checkout_efectivo():
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
     lineas.append("\nPor favor confirmar disponibilidad y coordinar la entrega. ¡Gracias!")
     _save_order("Efectivo", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
-    session.pop("cart", None)
     wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"ok": True})
     return redirect(wa_url)
 
 
 @cart_bp.route("/checkout-whatsapp", methods=["POST"])
 def checkout_whatsapp():
+    _merge_notas_from_form()
     items, total = get_cart_items()
     if not items:
         return redirect(url_for("cart.carrito"))
@@ -410,9 +424,10 @@ def checkout_whatsapp():
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
     lineas.append("\nPor favor confirmar disponibilidad y precio final. ¡Gracias!")
     _save_order("WhatsApp", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
-    session.pop("cart", None)
     mensaje = "\n".join(lineas)
     wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(mensaje)}"
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"ok": True})
     return redirect(wa_url)
 
 
@@ -491,6 +506,7 @@ def eliminar_combo(combo_id):
 
 @cart_bp.route("/checkout-tarjeta", methods=["POST"])
 def checkout_tarjeta():
+    _merge_notas_from_form()
     items, total = get_cart_items()
     if not items:
         return redirect(url_for("cart.carrito"))

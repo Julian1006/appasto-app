@@ -7,26 +7,29 @@
   <title>{% block title %}Apastto{% endblock %}</title>
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/appasto imagen.png') }}">
   <link rel="manifest" href="/static/manifest.json">
-  <meta name="theme-color" content="#7f2118">
+  <meta name="theme-color" content="#961519">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Apastto">
   <link rel="apple-touch-icon" href="/static/images/appasto%20imagen.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@600;700&family=Source+Sans+3:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
 </head>
-<body>
+<body class="{% block body_class %}{% endblock %}">
 
   <nav class="navbar">
     <a href="{{ url_for('main.index') }}" class="nav-logo">
       <img src="{{ url_for('static', filename='images/appasto imagen.png') }}" alt="Apastto" class="nav-logo-img">
       Apastto
     </a>
-    <!-- Carrito siempre visible a la derecha -->
-    <a href="{{ url_for('cart.carrito') }}" class="cart-link navbar-cart-fixed" aria-label="Ver carrito">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+    <!-- Carrito siempre visible -->
+    <a href="{{ url_for('cart.carrito') }}" class="cart-link navbar-cart-fixed" aria-label="Ver carrito de compras">
+      <span class="cart-icon" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
+      </span>
+      <span class="cart-label">Carrito</span>
       {% if cart_count > 0 %}
         <span class="cart-badge">{{ cart_count }}</span>
       {% endif %}
@@ -57,7 +60,7 @@
           <img src="{{ url_for('static', filename='images/appasto imagen.png') }}" alt="Apastto" class="footer-logo-img">
           Apastto
         </span>
-        <p>Carnes a pasto, naturales y sin concentrados.<br>Directo del campo a tu mesa.</p>
+        <p>Carnes saludables.<br>Naturales, a pasto y sin concentrados.<br>Directo del campo a tu mesa.</p>
       </div>
       <div class="footer-col">
         <strong>Navegación</strong>
@@ -512,7 +515,7 @@
 
   <script>
   function showToast(msg, type) {
-    var colors = { error: '#c0392b', warning: '#e67e22', success: '#27ae60', info: '#2980b9' };
+    var colors = { error: '#961519', warning: '#e67e22', success: '#27ae60', info: '#2980b9' };
     var bg = colors[type] || colors.error;
     var el = document.createElement('div');
     el.textContent = msg;

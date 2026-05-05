@@ -170,6 +170,10 @@
     <span style="color:#aaa;font-weight:400">({{ promos|length }})</span>
     {% endif %}
   </button>
+  <button class="tab-btn" id="btn-tab-categorias" onclick="switchTab('categorias')">
+    🗂️ Categorías
+    <span style="color:#aaa;font-weight:400">({{ categorias|length }})</span>
+  </button>
 </div>
 
 {% if request.args.get('reward') %}
@@ -653,6 +657,171 @@
   </div>
 </div>
 
+<!-- ══════════════════ TAB: CATEGORÍAS ══════════════════ -->
+<div class="tab-content" id="tab-categorias">
+  <div class="stats-bar">
+    <div class="stat-pill">Tipos de producto: <strong>{{ categorias|selectattr('nivel','equalto','tipo')|list|length }}</strong></div>
+    <div class="stat-pill">Subcategorías: <strong>{{ categorias|selectattr('nivel','equalto','subcategoria')|list|length }}</strong></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;padding:1.5rem 2rem">
+
+    <!-- ── Tipos de producto ── -->
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.06);overflow:hidden">
+      <div style="background:#1a1a1a;color:#fff;padding:.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between">
+        <strong style="font-size:.9rem">🏷️ Tipos de producto</strong>
+        <span style="font-size:.75rem;color:#aaa">Aparecen como tabs en el catálogo</span>
+      </div>
+
+      {% set tipos_lista = categorias|selectattr('nivel','equalto','tipo')|list %}
+      {% if tipos_lista %}
+      <table style="width:100%;border-collapse:collapse">
+        <thead style="background:#f4f4f5">
+          <tr>
+            <th style="padding:.6rem 1rem;text-align:left;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#555">Nombre</th>
+            <th style="padding:.6rem .5rem;text-align:center;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#555">Color</th>
+            <th style="padding:.6rem 1rem;text-align:center;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#555">Productos</th>
+            <th style="padding:.6rem .5rem"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cat in tipos_lista %}
+          {% set n_prods = productos|selectattr('tipo','equalto',cat.nombre)|list|length %}
+          <tr style="border-bottom:1px solid #f0f0f0">
+            <td style="padding:.75rem 1rem">
+              <span style="display:inline-flex;align-items:center;gap:.4rem">
+                {% if cat.emoji %}<span>{{ cat.emoji }}</span>{% endif %}
+                <span style="font-weight:600;font-size:.88rem">{{ cat.nombre }}</span>
+                <span class="badge-tipo" style="background:{{ cat.color or '#888' }}">{{ cat.nombre }}</span>
+              </span>
+            </td>
+            <td style="padding:.75rem .5rem;text-align:center">
+              <span style="display:inline-block;width:22px;height:22px;border-radius:6px;background:{{ cat.color or '#888' }};border:1.5px solid #ddd"></span>
+            </td>
+            <td style="padding:.75rem 1rem;text-align:center;font-size:.85rem;color:#555">{{ n_prods }}</td>
+            <td style="padding:.75rem .5rem;text-align:right">
+              {% if n_prods == 0 %}
+              <form method="POST" action="{{ url_for('admin.eliminar_categoria', cid=cat.id) }}" style="display:inline"
+                    onsubmit="return confirm('¿Eliminar tipo «{{ cat.nombre }}»?')">
+                {{ csrf_field() }}
+                <button type="submit" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:.8rem;font-weight:600;padding:.3rem .6rem;border-radius:6px">✕ Eliminar</button>
+              </form>
+              {% else %}
+              <span style="font-size:.75rem;color:#aaa">en uso</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+
+      <!-- Formulario agregar tipo -->
+      <form method="POST" action="{{ url_for('admin.crear_categoria') }}"
+            style="padding:1rem;border-top:1.5px dashed #e5e5e5;display:flex;flex-wrap:wrap;gap:.5rem;align-items:flex-end">
+        {{ csrf_field() }}
+        <input type="hidden" name="nivel" value="tipo">
+        <div style="flex:1;min-width:120px">
+          <label style="font-size:.72rem;font-weight:600;color:#555;display:block;margin-bottom:.25rem">Nombre *</label>
+          <input type="text" name="nombre" required placeholder="ej: Vegetal"
+            style="width:100%;padding:.45rem .7rem;border:1.5px solid #ddd;border-radius:8px;font-size:.85rem;outline:none">
+        </div>
+        <div style="width:60px">
+          <label style="font-size:.72rem;font-weight:600;color:#555;display:block;margin-bottom:.25rem">Emoji</label>
+          <input type="text" name="emoji" maxlength="4" placeholder="🌿"
+            style="width:100%;padding:.45rem .4rem;border:1.5px solid #ddd;border-radius:8px;font-size:1rem;text-align:center;outline:none">
+        </div>
+        <div style="width:60px">
+          <label style="font-size:.72rem;font-weight:600;color:#555;display:block;margin-bottom:.25rem">Color</label>
+          <input type="color" name="color" value="#888888"
+            style="width:100%;height:34px;padding:.1rem;border:1.5px solid #ddd;border-radius:8px;cursor:pointer;outline:none">
+        </div>
+        <button type="submit"
+          style="background:#1a1a1a;color:#fff;border:none;padding:.48rem 1rem;border-radius:8px;font-size:.83rem;font-weight:700;cursor:pointer;white-space:nowrap">
+          + Agregar tipo
+        </button>
+      </form>
+    </div>
+
+    <!-- ── Subcategorías ── -->
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.06);overflow:hidden">
+      <div style="background:#1a1a1a;color:#fff;padding:.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between">
+        <strong style="font-size:.9rem">📂 Subcategorías</strong>
+        <span style="font-size:.75rem;color:#aaa">Filtros adicionales: Premium, Económicos…</span>
+      </div>
+
+      {% set subcats_lista = categorias|selectattr('nivel','equalto','subcategoria')|list %}
+      {% if subcats_lista %}
+      <table style="width:100%;border-collapse:collapse">
+        <thead style="background:#f4f4f5">
+          <tr>
+            <th style="padding:.6rem 1rem;text-align:left;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#555">Nombre</th>
+            <th style="padding:.6rem .5rem;text-align:center;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#555">Color</th>
+            <th style="padding:.6rem 1rem;text-align:center;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.04em;color:#555">Productos</th>
+            <th style="padding:.6rem .5rem"></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for cat in subcats_lista %}
+          {% set n_prods = productos|selectattr('categoria','equalto',cat.nombre)|list|length %}
+          <tr style="border-bottom:1px solid #f0f0f0">
+            <td style="padding:.75rem 1rem">
+              <span style="display:inline-flex;align-items:center;gap:.4rem">
+                {% if cat.emoji %}<span>{{ cat.emoji }}</span>{% endif %}
+                <span style="font-weight:600;font-size:.88rem">{{ cat.nombre }}</span>
+              </span>
+            </td>
+            <td style="padding:.75rem .5rem;text-align:center">
+              <span style="display:inline-block;width:22px;height:22px;border-radius:6px;background:{{ cat.color or '#888' }};border:1.5px solid #ddd"></span>
+            </td>
+            <td style="padding:.75rem 1rem;text-align:center;font-size:.85rem;color:#555">{{ n_prods }}</td>
+            <td style="padding:.75rem .5rem;text-align:right">
+              {% if n_prods == 0 %}
+              <form method="POST" action="{{ url_for('admin.eliminar_categoria', cid=cat.id) }}" style="display:inline"
+                    onsubmit="return confirm('¿Eliminar subcategoría «{{ cat.nombre }}»?')">
+                {{ csrf_field() }}
+                <button type="submit" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:.8rem;font-weight:600;padding:.3rem .6rem;border-radius:6px">✕ Eliminar</button>
+              </form>
+              {% else %}
+              <span style="font-size:.75rem;color:#aaa">en uso</span>
+              {% endif %}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+      {% endif %}
+
+      <!-- Formulario agregar subcategoría -->
+      <form method="POST" action="{{ url_for('admin.crear_categoria') }}"
+            style="padding:1rem;border-top:1.5px dashed #e5e5e5;display:flex;flex-wrap:wrap;gap:.5rem;align-items:flex-end">
+        {{ csrf_field() }}
+        <input type="hidden" name="nivel" value="subcategoria">
+        <div style="flex:1;min-width:120px">
+          <label style="font-size:.72rem;font-weight:600;color:#555;display:block;margin-bottom:.25rem">Nombre *</label>
+          <input type="text" name="nombre" required placeholder="ej: Orgánico"
+            style="width:100%;padding:.45rem .7rem;border:1.5px solid #ddd;border-radius:8px;font-size:.85rem;outline:none">
+        </div>
+        <div style="width:60px">
+          <label style="font-size:.72rem;font-weight:600;color:#555;display:block;margin-bottom:.25rem">Emoji</label>
+          <input type="text" name="emoji" maxlength="4" placeholder="🌱"
+            style="width:100%;padding:.45rem .4rem;border:1.5px solid #ddd;border-radius:8px;font-size:1rem;text-align:center;outline:none">
+        </div>
+        <div style="width:60px">
+          <label style="font-size:.72rem;font-weight:600;color:#555;display:block;margin-bottom:.25rem">Color</label>
+          <input type="color" name="color" value="#888888"
+            style="width:100%;height:34px;padding:.1rem;border:1.5px solid #ddd;border-radius:8px;cursor:pointer;outline:none">
+        </div>
+        <button type="submit"
+          style="background:#1a1a1a;color:#fff;border:none;padding:.48rem 1rem;border-radius:8px;font-size:.83rem;font-weight:700;cursor:pointer;white-space:nowrap">
+          + Agregar
+        </button>
+      </form>
+    </div>
+
+  </div>
+</div>
+
 <!-- ══════════════════ MODAL CREAR PROMO ══════════════════ -->
 <div id="modal-promo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:center;justify-content:center;padding:2rem 1rem">
   <div style="background:#fff;width:100%;max-width:480px;border-radius:16px;overflow:hidden">
@@ -748,18 +917,12 @@
           <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Tipo *</label>
           <select id="edit-tipo" name="tipo" required
             style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.88rem;outline:none;background:#fff">
-            <option>Res</option><option>Cerdo</option><option>Pollo</option>
-            <option>Pescado</option><option>Charcutería</option>
-            <option>Lácteos</option><option>Despensa</option>
           </select>
         </div>
         <div>
           <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Categoría <span style="color:#aaa;font-weight:400">(opcional)</span></label>
           <select id="edit-categoria" name="categoria"
             style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.88rem;outline:none;background:#fff">
-            <option value="">— Ninguna —</option>
-            <option>Premium</option><option>Especiales</option>
-            <option>Económicos</option><option>Huesos</option>
           </select>
         </div>
       </div>
@@ -849,21 +1012,14 @@
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem">
         <div>
           <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Tipo *</label>
-          <select name="tipo" required
+          <select id="crear-tipo" name="tipo" required
             style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.88rem;outline:none;background:#fff">
-            <option value="">— Selecciona —</option>
-            <option>Res</option><option>Cerdo</option><option>Pollo</option>
-            <option>Pescado</option><option>Charcutería</option>
-            <option>Lácteos</option><option>Despensa</option>
           </select>
         </div>
         <div>
           <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Categoría <span style="color:#aaa;font-weight:400">(opcional)</span></label>
-          <select name="categoria"
+          <select id="crear-categoria" name="categoria"
             style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.88rem;outline:none;background:#fff">
-            <option value="">— Ninguna —</option>
-            <option>Premium</option><option>Especiales</option>
-            <option>Económicos</option><option>Huesos</option>
           </select>
         </div>
       </div>
@@ -1024,6 +1180,60 @@ function switchTab(name) {
   try { localStorage.setItem('adminTab', name); } catch(e) {}
 }
 
+// Cargar tipos/subcategorías dinámicamente en los selects de crear y editar producto
+(function() {
+  function poblarSelects(datos) {
+    var tipos   = datos.tipos   || [];
+    var subcats = datos.subcategorias || [];
+
+    // Select tipo — crear
+    var crearTipo = document.getElementById('crear-tipo');
+    if (crearTipo) {
+      crearTipo.innerHTML = '<option value="">— Selecciona —</option>';
+      tipos.forEach(function(t) {
+        crearTipo.innerHTML += '<option value="' + t.nombre + '">' + (t.emoji ? t.emoji + ' ' : '') + t.nombre + '</option>';
+      });
+    }
+    // Select categoría — crear
+    var crearCat = document.getElementById('crear-categoria');
+    if (crearCat) {
+      crearCat.innerHTML = '<option value="">— Ninguna —</option>';
+      subcats.forEach(function(c) {
+        crearCat.innerHTML += '<option value="' + c.nombre + '">' + (c.emoji ? c.emoji + ' ' : '') + c.nombre + '</option>';
+      });
+    }
+    // Select tipo — editar
+    var editTipo = document.getElementById('edit-tipo');
+    if (editTipo) {
+      var selTipo = editTipo.getAttribute('data-selected') || '';
+      editTipo.innerHTML = '';
+      tipos.forEach(function(t) {
+        var opt = document.createElement('option');
+        opt.value = t.nombre; opt.textContent = (t.emoji ? t.emoji + ' ' : '') + t.nombre;
+        if (t.nombre === selTipo) opt.selected = true;
+        editTipo.appendChild(opt);
+      });
+    }
+    // Select categoría — editar
+    var editCat = document.getElementById('edit-categoria');
+    if (editCat) {
+      var selCat = editCat.getAttribute('data-selected') || '';
+      editCat.innerHTML = '<option value="">— Ninguna —</option>';
+      subcats.forEach(function(c) {
+        var opt = document.createElement('option');
+        opt.value = c.nombre; opt.textContent = (c.emoji ? c.emoji + ' ' : '') + c.nombre;
+        if (c.nombre === selCat) opt.selected = true;
+        editCat.appendChild(opt);
+      });
+    }
+  }
+
+  fetch('{{ url_for("admin.api_categorias") }}')
+    .then(function(r) { return r.json(); })
+    .then(poblarSelects)
+    .catch(function() {});  // Si falla, los selects quedan vacíos; el usuario puede recargar
+})();
+
 // Restaurar tab guardado o desde hash
 (function() {
   var hash = location.hash.replace('#tab-', '');
@@ -1031,6 +1241,7 @@ function switchTab(name) {
   if (saved === 'pedidos') switchTab('pedidos');
   else if (saved === 'combos') switchTab('combos');
   else if (saved === 'promos') switchTab('promos');
+  else if (saved === 'categorias') switchTab('categorias');
 })();
 
 // Filtrar tabla productos
@@ -1086,10 +1297,12 @@ function abrirEditProd(data) {
   document.getElementById('edit-desc').value    = data.descripcion || '';
 
   var tipoSel = document.getElementById('edit-tipo');
+  tipoSel.setAttribute('data-selected', data.tipo || '');
   for (var i = 0; i < tipoSel.options.length; i++) {
     tipoSel.options[i].selected = tipoSel.options[i].value === data.tipo;
   }
   var catSel = document.getElementById('edit-categoria');
+  catSel.setAttribute('data-selected', data.categoria || '');
   for (var i = 0; i < catSel.options.length; i++) {
     catSel.options[i].selected = catSel.options[i].value === data.categoria;
   }
