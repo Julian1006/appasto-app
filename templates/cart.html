@@ -228,9 +228,6 @@
     <input type="hidden" name="tel" id="tarjeta-tel">
     <input type="hidden" name="dir" id="tarjeta-dir">
     <input type="hidden" name="ciudad" id="tarjeta-ciudad">
-    <input type="hidden" name="lat" id="tarjeta-lat">
-    <input type="hidden" name="lng" id="tarjeta-lng">
-    <input type="hidden" name="distancia_km" id="tarjeta-distancia">
   </form>
   <form id="form-checkout-directo" method="POST" style="display:none">
     {{ csrf_field() }}
@@ -239,88 +236,10 @@
     <input type="hidden" name="dir" id="directo-dir">
     <input type="hidden" name="ciudad" id="directo-ciudad">
     <input type="hidden" name="metodo" id="directo-metodo">
-    <input type="hidden" name="lat" id="directo-lat">
-    <input type="hidden" name="lng" id="directo-lng">
-    <input type="hidden" name="distancia_km" id="directo-distancia">
   </form>
 
   <script>
   var PROMO = {{ promo | tojson }};
-  var DELIVERY_RADIUS_KM = Number({{ delivery_radius_km | tojson }});
-  var DELIVERY_ORIGIN = {
-    lat: Number({{ delivery_origin_lat | tojson }}),
-    lng: Number({{ delivery_origin_lng | tojson }})
-  };
-  var _coverage = null;
-
-  function _formatKm(value) {
-    return Number(value).toFixed(1).replace('.', ',');
-  }
-
-  function _toRad(value) {
-    return value * Math.PI / 180;
-  }
-
-  function _distanceKm(lat1, lng1, lat2, lng2) {
-    var earthKm = 6371;
-    var dLat = _toRad(lat2 - lat1);
-    var dLng = _toRad(lng2 - lng1);
-    var a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(_toRad(lat1)) * Math.cos(_toRad(lat2)) *
-      Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    return earthKm * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
-  }
-
-  function _setCoverageState(state, message) {
-    var box = document.getElementById('delivery-coverage');
-    var status = document.getElementById('coverage-status');
-    if (box) box.dataset.state = state;
-    if (status) status.textContent = message;
-  }
-
-  function _currentPosition() {
-    return new Promise(function(resolve, reject) {
-      if (!navigator.geolocation) {
-        reject(new Error('Tu navegador no permite validar ubicación.'));
-        return;
-      }
-      navigator.geolocation.getCurrentPosition(resolve, reject, {
-        enableHighAccuracy: true,
-        timeout: 12000,
-        maximumAge: 300000
-      });
-    });
-  }
-
-  async function validarCoberturaEntrega() {
-    _setCoverageState('checking', 'Validando ubicación...');
-    try {
-      var pos = await _currentPosition();
-      var lat = pos.coords.latitude;
-      var lng = pos.coords.longitude;
-      var distancia = _distanceKm(DELIVERY_ORIGIN.lat, DELIVERY_ORIGIN.lng, lat, lng);
-      var ok = distancia <= DELIVERY_RADIUS_KM;
-      _coverage = { ok: ok, lat: lat, lng: lng, distanceKm: distancia };
-      if (!ok) {
-        var msgFuera = 'Estás a ' + _formatKm(distancia) + ' km. Solo recibimos pedidos hasta ' + DELIVERY_RADIUS_KM + ' km.';
-        _setCoverageState('error', msgFuera);
-        throw new Error(msgFuera);
-      }
-      _setCoverageState('ok', 'Dentro de cobertura: ' + _formatKm(distancia) + ' km de la tienda.');
-      return _coverage;
-    } catch (err) {
-      var msg = err && err.message ? err.message : 'No pudimos validar tu ubicación.';
-      if (!_coverage || _coverage.ok) {
-        _setCoverageState('error', msg + ' Activa la ubicación para confirmar el pedido.');
-      }
-      throw err;
-    }
-  }
-
-  async function _ensureCoverage() {
-    if (_coverage && _coverage.ok) return _coverage;
-    return validarCoberturaEntrega();
-  }
 
   function calcDescuento(subtotal) {
     if (!PROMO) return 0;
@@ -387,14 +306,10 @@
       dir: document.getElementById('cliente-direccion').value.trim(),
       ciudad: '',
       nombre: '',
-      lat: _coverage ? _coverage.lat : '',
-      lng: _coverage ? _coverage.lng : '',
-      distanceKm: _coverage ? _coverage.distanceKm : null,
-      coverageOk: !!(_coverage && _coverage.ok),
     };
   }
 
-  async function _validateDelivery() {
+  function _validateDelivery() {
     var d = _getDelivery();
     if (!d.tel) {
       alert('Por favor ingresa tu número de teléfono.');
@@ -406,19 +321,7 @@
       document.getElementById('cliente-direccion').focus();
       return null;
     }
-    try {
-      await _ensureCoverage();
-    } catch (err) {
-      alert(err && err.message ? err.message : 'No pudimos validar tu ubicación.');
-      return null;
-    }
-    return _getDelivery();
-  }
-
-  function _fillCoverageFields(prefix, d) {
-    document.getElementById(prefix + '-lat').value = d.lat || '';
-    document.getElementById(prefix + '-lng').value = d.lng || '';
-    document.getElementById(prefix + '-distancia').value = d.distanceKm !== null ? d.distanceKm.toFixed(3) : '';
+    return d;
   }
 
   // Guardar nota al perder foco o presionar Enter
@@ -537,37 +440,28 @@
     return lineas.join('\n');
   }
 
-  async function confirmarPago() {
+  function confirmarPago() {
     var tipo = _metodoSeleccionado;
+    var d = _validateDelivery();
+    if (!d) return;
+
+    var form = document.getElementById('form-checkout-directo');
+    document.getElementById('directo-nombre').value = d.nombre || '';
+    document.getElementById('directo-tel').value = d.tel;
+    document.getElementById('directo-dir').value = d.dir;
+    document.getElementById('directo-ciudad').value = d.ciudad || '';
+    document.getElementById('directo-metodo').value = '';
 
     if (tipo === 'tarjeta') {
-      var d = await _validateDelivery();
-      if (!d) return;
       var fTarjeta = document.getElementById('form-tarjeta');
       document.getElementById('tarjeta-tel').value = d.tel;
       document.getElementById('tarjeta-dir').value = d.dir;
-      document.getElementById('tarjeta-ciudad').value = d.ciudad;
-      _fillCoverageFields('tarjeta', d);
+      document.getElementById('tarjeta-ciudad').value = d.ciudad || '';
       _adjuntarNotas(fTarjeta);
       fTarjeta.submit();
       return;
     }
 
-    var d = await _validateDelivery();
-    if (!d) return;
-
-    // Para los 4 métodos WhatsApp: construir URL y abrir WhatsApp directamente
-    var mensaje = _buildWAMessage(tipo);
-    var waUrl = 'https://wa.me/' + WA_NUMBER + '?text=' + encodeURIComponent(mensaje);
-
-    // Guardar pedido en la base de datos en paralelo (fire-and-forget)
-    var form = document.getElementById('form-checkout-directo');
-    document.getElementById('directo-nombre').value = d.nombre;
-    document.getElementById('directo-tel').value = d.tel;
-    document.getElementById('directo-dir').value = d.dir;
-    document.getElementById('directo-ciudad').value = d.ciudad;
-    document.getElementById('directo-metodo').value = '';
-    _fillCoverageFields('directo', d);
     if (tipo === 'nequi') {
       form.action = "{{ url_for('cart.checkout_billetera') }}";
       document.getElementById('directo-metodo').value = 'Nequi';
@@ -580,15 +474,7 @@
       form.action = "{{ url_for('cart.checkout_whatsapp') }}";
     }
     _adjuntarNotas(form);
-    fetch(form.action, {
-      method: 'POST',
-      body: new FormData(form),
-      headers: { 'X-Requested-With': 'XMLHttpRequest' },
-      keepalive: true
-    }).catch(function() {});
-
-    // Abrir WhatsApp inmediatamente
-    window.location.href = waUrl;
+    form.submit();
   }
   </script>
 
