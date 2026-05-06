@@ -3,15 +3,62 @@ from urllib.parse import quote
 import uuid, json
 from model import get_product_by_id, get_combo_by_id, Order, Promo
 from database import db
-from config import WHATSAPP_NUMBER, BUSINESS_NAME, WOMPI_PUBLIC_KEY
+from config import WHATSAPP_NUMBER, BUSINESS_NAME, WOMPI_PUBLIC_KEY, DELIVERY_RADIUS_KM
 from rewards import LOYALTY_DISCOUNT_PERCENT, LOYALTY_DAYS_VALID, maybe_generate_loyalty_coupon
 from security import safe_redirect_target
 
 cart_bp = Blueprint("cart", __name__)
 
+ENVIO_COSTO = 2_500
+ENVIO_GRATIS_DESDE = 400_000
+
+
+def _calcular_envio(total_con_descuento):
+    return 0 if total_con_descuento >= ENVIO_GRATIS_DESDE else ENVIO_COSTO
+
 
 def _clean_text(value, limit=120):
     return (value or "").strip()[:limit]
+
+
+def _parse_float(value):
+    try:
+        return float(str(value).replace(",", "."))
+    except (TypeError, ValueError):
+        return None
+
+
+def _format_km(value):
+    return f"{value:.1f}".replace(".", ",")
+
+
+def _delivery_coverage_from_form():
+    distancia_km = _parse_float(request.form.get("distancia_km"))
+    lat = _parse_float(request.form.get("lat"))
+    lng = _parse_float(request.form.get("lng"))
+    if distancia_km is None or lat is None or lng is None:
+        return None, (
+            f"Valida tu ubicacion para confirmar que el domicilio este dentro "
+            f"de {DELIVERY_RADIUS_KM:g} km de cobertura."
+        )
+    if distancia_km > DELIVERY_RADIUS_KM:
+        return distancia_km, (
+            f"Tu ubicacion esta a {_format_km(distancia_km)} km. "
+            f"Por ahora solo recibimos pedidos hasta {DELIVERY_RADIUS_KM:g} km."
+        )
+    return distancia_km, None
+
+
+def _coverage_failure_response(message):
+    if request.headers.get("X-Requested-With") == "XMLHttpRequest":
+        return jsonify({"ok": False, "msg": message}), 400
+    flash(message, "error")
+    return redirect(url_for("cart.carrito"))
+
+
+def _delivery_note(ciudad, distancia_km):
+    coverage = f"Cobertura validada: {_format_km(distancia_km)} km de la tienda"
+    return f"{ciudad} - {coverage}" if ciudad else coverage
 
 
 def _redirect_back(default_endpoint="main.index"):
@@ -170,9 +217,13 @@ def _aplicar_y_limpiar_promo(total):
 def carrito():
     items, total = get_cart_items()
     promo, descuento = _get_promo_info(total)
-    total_final = total - descuento
+    subtotal_con_descuento = total - descuento
+    envio = _calcular_envio(subtotal_con_descuento)
+    total_final = subtotal_con_descuento + envio
     return render_template("cart.html", items=items, total=total,
-                           promo=promo, descuento=descuento, total_final=total_final)
+                           promo=promo, descuento=descuento,
+                           envio=envio, envio_gratis_desde=ENVIO_GRATIS_DESDE,
+                           total_final=total_final)
 
 
 @cart_bp.route("/aplicar-promo", methods=["POST"])
@@ -334,7 +385,9 @@ def checkout_billetera():
     dir_  = _clean_text(request.form.get("dir", ""), 300)
     ciudad = _clean_text(request.form.get("ciudad", ""), 100)
     descuento, promo_cod = _aplicar_y_limpiar_promo(total)
-    total_final = total - descuento
+    subtotal_con_descuento = total - descuento
+    envio = _calcular_envio(subtotal_con_descuento)
+    total_final = subtotal_con_descuento + envio
     lineas = [f"¡Hola {BUSINESS_NAME}! Quiero pagar con *{metodo}*:\n"]
     for item in items:
         lineas.append(f"• {item['nombre']} x{item['cantidad']} x 500 gr — ${item['subtotal']:,}")
@@ -342,9 +395,8 @@ def checkout_billetera():
             lineas.append(f"   ↳ Indicaciones: {item['nota']}")
     if descuento:
         lineas.append(f"\n🏷️ Cupón {promo_cod}: -${descuento:,}")
-        lineas.append(f"*Total: ${total_final:,}*")
-    else:
-        lineas.append(f"\n*Total: ${total:,}*")
+    lineas.append(f"🚚 Envío: {'Gratis' if envio == 0 else f'${envio:,}'}")
+    lineas.append(f"*Total: ${total_final:,}*")
     if tel or dir_:
         lineas.append(f"\n📦 *Datos de entrega:*")
         if tel:    lineas.append(f"Teléfono: {tel}")
@@ -368,7 +420,9 @@ def checkout_efectivo():
     dir_  = _clean_text(request.form.get("dir", ""), 300)
     ciudad = _clean_text(request.form.get("ciudad", ""), 100)
     descuento, promo_cod = _aplicar_y_limpiar_promo(total)
-    total_final = total - descuento
+    subtotal_con_descuento = total - descuento
+    envio = _calcular_envio(subtotal_con_descuento)
+    total_final = subtotal_con_descuento + envio
     lineas = [f"¡Hola {BUSINESS_NAME}! Quiero pagar en *efectivo contra entrega*:\n"]
     for item in items:
         lineas.append(f"• {item['nombre']} x{item['cantidad']} x 500 gr — ${item['subtotal']:,}")
@@ -376,9 +430,8 @@ def checkout_efectivo():
             lineas.append(f"   ↳ Indicaciones: {item['nota']}")
     if descuento:
         lineas.append(f"\n🏷️ Cupón {promo_cod}: -${descuento:,}")
-        lineas.append(f"*Total a pagar: ${total_final:,}*")
-    else:
-        lineas.append(f"\n*Total a pagar: ${total:,}*")
+    lineas.append(f"🚚 Envío: {'Gratis' if envio == 0 else f'${envio:,}'}")
+    lineas.append(f"*Total a pagar: ${total_final:,}*")
     if tel or dir_:
         lineas.append(f"\n📦 *Datos de entrega:*")
         if tel:    lineas.append(f"Teléfono: {tel}")
@@ -403,9 +456,10 @@ def checkout_whatsapp():
     tel = _clean_text(request.form.get("tel", ""), 30)
     dir_ = _clean_text(request.form.get("dir", ""), 300)
     ciudad = _clean_text(request.form.get("ciudad", ""), 100)
-
     descuento, promo_cod = _aplicar_y_limpiar_promo(total)
-    total_final = total - descuento
+    subtotal_con_descuento = total - descuento
+    envio = _calcular_envio(subtotal_con_descuento)
+    total_final = subtotal_con_descuento + envio
     lineas = [f"¡Hola {BUSINESS_NAME}! Quiero hacer el siguiente pedido:\n"]
     for item in items:
         lineas.append(f"• {item['nombre']} x{item['cantidad']} x 500 gr — ${item['subtotal']:,}")
@@ -413,9 +467,8 @@ def checkout_whatsapp():
             lineas.append(f"   ↳ Indicaciones: {item['nota']}")
     if descuento:
         lineas.append(f"\n🏷️ Cupón {promo_cod}: -${descuento:,}")
-        lineas.append(f"*Total estimado: ${total_final:,}*")
-    else:
-        lineas.append(f"\n*Total estimado: ${total:,}*")
+    lineas.append(f"🚚 Envío: {'Gratis' if envio == 0 else f'${envio:,}'}")
+    lineas.append(f"*Total estimado: ${total_final:,}*")
     if nombre or dir_:
         lineas.append(f"\n📦 *Datos de entrega:*")
         if nombre: lineas.append(f"Nombre: {nombre}")
@@ -514,7 +567,9 @@ def checkout_tarjeta():
     dir_ = _clean_text(request.form.get("dir", ""), 300)
     ciudad = _clean_text(request.form.get("ciudad", ""), 100)
     descuento, promo_cod = _aplicar_y_limpiar_promo(total)
-    total_final = total - descuento
+    subtotal_con_descuento = total - descuento
+    envio = _calcular_envio(subtotal_con_descuento)
+    total_final = subtotal_con_descuento + envio
     referencia = f"APASTTO-{uuid.uuid4().hex[:8].upper()}"
     monto_centavos = total_final * 100
     _save_order("Tarjeta", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad, referencia=referencia)
