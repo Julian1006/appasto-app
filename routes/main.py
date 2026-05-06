@@ -5,7 +5,7 @@ from model import get_all_products
 main_bp = Blueprint("main", __name__)
 
 _TIPOS_DEFAULT = ["Res", "Cerdo", "Pollo", "Pescado", "Charcutería", "Lácteos", "Despensa"]
-_CATS_DEFAULT  = ["Premium", "Especiales", "Económicos", "Huesos", "Molidas"]
+_CATS_DEFAULT  = ["Premium", "Especiales", "Económicos", "Huesos"]
 
 DESTACADOS_IDS = [4, 5, 6, 1, 3, 29, 31, 49, 60, 73, 87, 8]  # fallback solo si DB vacía
 

@@ -199,6 +199,11 @@ with app.app_context():
         pass
     _seed_db()
     _seed_categorias()
+    try:
+        db.session.execute(text("UPDATE categorias SET activo=0 WHERE nombre='Molidas'"))
+        db.session.commit()
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":

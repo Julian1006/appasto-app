@@ -266,7 +266,6 @@ SEED_CATEGORIAS = [
     {"nombre": "Especiales",  "nivel": "subcategoria", "emoji": "✨", "color": "#9b59b6"},
     {"nombre": "Económicos",  "nivel": "subcategoria", "emoji": "💰", "color": "#27ae60"},
     {"nombre": "Huesos",      "nivel": "subcategoria", "emoji": "🦴", "color": "#95a5a6"},
-    {"nombre": "Molidas",     "nivel": "subcategoria", "emoji": "🥩", "color": "#7f8c8d"},
 ]
 
 
