@@ -405,9 +405,11 @@ def checkout_billetera():
     lineas.append(f"\nPor favor indicarme el número {metodo} para realizar el pago y confirmar disponibilidad. ¡Gracias!")
     _save_order(metodo, items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
     wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
+    session.pop("cart", None)
+    session.pop("cart_notes", None)
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
-        return jsonify({"ok": True})
-    return redirect(wa_url)
+        return jsonify({"ok": True, "redirect": url_for("cart.pedido_confirmado_page", wa=wa_url, metodo=metodo, total=total_final)})
+    return render_template("pedido_confirmado.html", metodo=metodo, total=total_final, wa_url=wa_url)
 
 
 @cart_bp.route("/checkout-efectivo", methods=["POST"])
@@ -440,9 +442,11 @@ def checkout_efectivo():
     lineas.append("\nPor favor confirmar disponibilidad y coordinar la entrega. ¡Gracias!")
     _save_order("Efectivo", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
     wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
+    session.pop("cart", None)
+    session.pop("cart_notes", None)
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return jsonify({"ok": True})
-    return redirect(wa_url)
+    return render_template("pedido_confirmado.html", metodo="Efectivo", total=total_final, wa_url=wa_url)
 
 
 @cart_bp.route("/checkout-whatsapp", methods=["POST"])
@@ -479,9 +483,11 @@ def checkout_whatsapp():
     _save_order("WhatsApp", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
     mensaje = "\n".join(lineas)
     wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(mensaje)}"
+    session.pop("cart", None)
+    session.pop("cart_notes", None)
     if request.headers.get("X-Requested-With") == "XMLHttpRequest":
         return jsonify({"ok": True})
-    return redirect(wa_url)
+    return render_template("pedido_confirmado.html", metodo="WhatsApp", total=total_final, wa_url=wa_url)
 
 
 @cart_bp.route("/agregar-combo/<int:combo_id>", methods=["POST"])
