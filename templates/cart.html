@@ -39,15 +39,8 @@
             style="font-size:16px" value="{{ current_user.telefono if current_user else '' }}">
         </div>
         <div class="checkout-field">
-          <input type="text" id="cliente-direccion" placeholder="Dirección de entrega *" required
+          <input type="text" id="cliente-direccion" placeholder="Dirección de entrega"
             style="font-size:16px" value="{{ current_user.direccion if current_user else '' }}">
-        </div>
-        <div class="delivery-coverage" id="delivery-coverage" data-state="idle">
-          <div class="coverage-copy">
-            <strong>Cobertura de entrega</strong>
-            <span id="coverage-status">Validamos domicilios hasta {{ delivery_radius_km|int }} km de la tienda.</span>
-          </div>
-          <button type="button" class="coverage-btn" onclick="validarCoberturaEntrega()">Validar ubicación</button>
         </div>
       </section>
 
@@ -314,11 +307,6 @@
     if (!d.tel) {
       alert('Por favor ingresa tu número de teléfono.');
       document.getElementById('cliente-tel').focus();
-      return null;
-    }
-    if (!d.dir) {
-      alert('Por favor ingresa la dirección de entrega.');
-      document.getElementById('cliente-direccion').focus();
       return null;
     }
     return d;
