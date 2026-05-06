@@ -701,7 +701,7 @@
             <td style="padding:.75rem 1rem;text-align:center;font-size:.85rem;color:#555">{{ n_prods }}</td>
             <td style="padding:.75rem .5rem;text-align:right">
               {% if n_prods == 0 %}
-              <form method="POST" action="{{ url_for('admin.eliminar_categoria', cid=cat.id) }}" style="display:inline"
+              <form method="POST" action="/admin/categoria/{{ cat.id }}/eliminar" style="display:inline"
                     onsubmit="return confirm('¿Eliminar tipo «{{ cat.nombre }}»?')">
                 {{ csrf_field() }}
                 <button type="submit" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:.8rem;font-weight:600;padding:.3rem .6rem;border-radius:6px">✕ Eliminar</button>
@@ -717,7 +717,7 @@
       {% endif %}
 
       <!-- Formulario agregar tipo -->
-      <form method="POST" action="{{ url_for('admin.crear_categoria') }}"
+      <form method="POST" action="/admin/categoria/crear"
             style="padding:1rem;border-top:1.5px dashed #e5e5e5;display:flex;flex-wrap:wrap;gap:.5rem;align-items:flex-end">
         {{ csrf_field() }}
         <input type="hidden" name="nivel" value="tipo">
@@ -777,7 +777,7 @@
             <td style="padding:.75rem 1rem;text-align:center;font-size:.85rem;color:#555">{{ n_prods }}</td>
             <td style="padding:.75rem .5rem;text-align:right">
               {% if n_prods == 0 %}
-              <form method="POST" action="{{ url_for('admin.eliminar_categoria', cid=cat.id) }}" style="display:inline"
+              <form method="POST" action="/admin/categoria/{{ cat.id }}/eliminar" style="display:inline"
                     onsubmit="return confirm('¿Eliminar subcategoría «{{ cat.nombre }}»?')">
                 {{ csrf_field() }}
                 <button type="submit" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:.8rem;font-weight:600;padding:.3rem .6rem;border-radius:6px">✕ Eliminar</button>
@@ -793,7 +793,7 @@
       {% endif %}
 
       <!-- Formulario agregar subcategoría -->
-      <form method="POST" action="{{ url_for('admin.crear_categoria') }}"
+      <form method="POST" action="/admin/categoria/crear"
             style="padding:1rem;border-top:1.5px dashed #e5e5e5;display:flex;flex-wrap:wrap;gap:.5rem;align-items:flex-end">
         {{ csrf_field() }}
         <input type="hidden" name="nivel" value="subcategoria">
@@ -1228,7 +1228,7 @@ function switchTab(name) {
     }
   }
 
-  fetch('{{ url_for("admin.api_categorias") }}')
+  fetch('/admin/api/categorias')
     .then(function(r) { return r.json(); })
     .then(poblarSelects)
     .catch(function() {});  // Si falla, los selects quedan vacíos; el usuario puede recargar
