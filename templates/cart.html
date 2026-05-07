@@ -57,16 +57,29 @@
           <span style="font-size:1.1rem">📍</span>
           <span style="font-size:.82rem;color:#7a5800;font-weight:600">Solo realizamos envíos en <strong>Bogotá Norte</strong></span>
         </div>
-        <div style="margin-top:.75rem;border-radius:12px;overflow:hidden;border:1.5px solid #e5e5e5;height:200px" id="mapa-cobertura"></div>
         <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-        <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+        <div id="mapa-cobertura" style="margin-top:.75rem;border-radius:12px;overflow:hidden;border:1.5px solid #e5e5e5;height:200px"></div>
         <script>
           (function() {
-            var lat = 4.7538, lng = -74.0460;
-            var map = L.map('mapa-cobertura', { zoomControl: false, attributionControl: false, dragging: false, scrollWheelZoom: false, doubleClickZoom: false }).setView([lat, lng], 11);
-            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-            L.circle([lat, lng], { radius: 15000, color: '#961519', fillColor: '#961519', fillOpacity: 0.10, weight: 2 }).addTo(map);
-            L.marker([lat, lng]).bindPopup('<strong>Apastto</strong><br>Cl. 170 #20a-64, Usaquén').addTo(map);
+            var s = document.createElement('script');
+            s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
+            s.onload = function() {
+              var lat = 4.7538, lng = -74.0460;
+              var map = L.map('mapa-cobertura', {
+                zoomControl: false, attributionControl: false,
+                dragging: false, scrollWheelZoom: false, doubleClickZoom: false
+              }).setView([lat, lng], 11);
+              L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+              L.circle([lat, lng], {
+                radius: 15000, color: '#961519',
+                fillColor: '#961519', fillOpacity: 0.12, weight: 2
+              }).addTo(map);
+              var icon = L.divIcon({ html: '📍', className: '', iconSize: [24,24], iconAnchor: [12,24] });
+              L.marker([lat, lng], { icon: icon })
+                .bindPopup('<strong>Apastto</strong><br>Cl. 170 #20a-64, Usaquén')
+                .addTo(map);
+            };
+            document.head.appendChild(s);
           })();
         </script>
       </section>
