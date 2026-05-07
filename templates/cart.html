@@ -57,31 +57,11 @@
           <span style="font-size:1.1rem">📍</span>
           <span style="font-size:.82rem;color:#7a5800;font-weight:600">Solo realizamos envíos en <strong>Bogotá Norte</strong></span>
         </div>
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
-        <div id="mapa-cobertura" style="margin-top:.75rem;border-radius:12px;overflow:hidden;border:1.5px solid #e5e5e5;height:200px"></div>
-        <script>
-          (function() {
-            var s = document.createElement('script');
-            s.src = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
-            s.onload = function() {
-              var lat = 4.7538, lng = -74.0460;
-              var map = L.map('mapa-cobertura', {
-                zoomControl: false, attributionControl: false,
-                dragging: false, scrollWheelZoom: false, doubleClickZoom: false
-              }).setView([lat, lng], 11);
-              L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-              L.circle([lat, lng], {
-                radius: 15000, color: '#961519',
-                fillColor: '#961519', fillOpacity: 0.12, weight: 2
-              }).addTo(map);
-              var icon = L.divIcon({ html: '📍', className: '', iconSize: [24,24], iconAnchor: [12,24] });
-              L.marker([lat, lng], { icon: icon })
-                .bindPopup('<strong>Apastto</strong><br>Cl. 170 #20a-64, Usaquén')
-                .addTo(map);
-            };
-            document.head.appendChild(s);
-          })();
-        </script>
+        <iframe
+          src="https://www.openstreetmap.org/export/embed.html?bbox=-74.191%2C4.619%2C-73.901%2C4.889&amp;layer=mapnik&amp;marker=4.7538%2C-74.046"
+          width="100%" height="200" loading="lazy"
+          style="margin-top:.75rem;border-radius:12px;border:1.5px solid #e5e5e5;display:block">
+        </iframe>
       </section>
 
       <section class="checkout-section">
