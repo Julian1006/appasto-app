@@ -500,10 +500,11 @@ def crear_combo():
     if not nombre or not items:
         return redirect(url_for("admin.dashboard") + "#tab-combos")
 
+    imagen = _save_image(request.files.get("imagen"))
     combo = Combo(
         nombre=nombre, descripcion=descripcion, emoji=emoji,
         precio=precio, items_json=json.dumps(items, ensure_ascii=False),
-        fecha_inicio=fecha_inicio, fecha_fin=fecha_fin,
+        imagen=imagen, fecha_inicio=fecha_inicio, fecha_fin=fecha_fin,
     )
     db.session.add(combo)
     db.session.commit()

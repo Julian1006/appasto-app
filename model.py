@@ -145,6 +145,7 @@ class Combo(db.Model):
     precio      = db.Column(db.Integer, nullable=False)
     items_json  = db.Column(db.Text, nullable=False, default="[]")  # [{"id": int, "nombre": str, "cantidad": int}]
     activo      = db.Column(db.Boolean, default=True, nullable=False)
+    imagen      = db.Column(db.String(300), default="")
     fecha_inicio= db.Column(db.Date, nullable=True)
     fecha_fin   = db.Column(db.Date, nullable=True)
 
@@ -180,6 +181,7 @@ class Combo(db.Model):
             "descripcion": self.descripcion,
             "emoji": self.emoji,
             "precio": self.precio,
+            "imagen": self.imagen or "",
             "items": self.items,
             "activo": self.activo,
             "temporal": self.es_temporal(),

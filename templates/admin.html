@@ -1089,7 +1089,7 @@
         style="background:none;border:none;color:#fff;font-size:1.6rem;line-height:1;cursor:pointer">×</button>
     </div>
     <!-- Form -->
-    <form method="POST" action="{{ url_for('admin.crear_combo') }}" style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem">
+    <form method="POST" action="{{ url_for('admin.crear_combo') }}" enctype="multipart/form-data" style="padding:1.5rem;display:flex;flex-direction:column;gap:1rem">
       {{ csrf_field() }}
       <!-- Fila 1: nombre + emoji -->
       <div style="display:grid;grid-template-columns:1fr auto;gap:.75rem;align-items:end">
@@ -1128,6 +1128,12 @@
           <input type="date" name="fecha_fin"
             style="width:100%;padding:.55rem .8rem;border:1.5px solid #ddd;border-radius:8px;font-size:.88rem;outline:none">
         </div>
+      </div>
+      <!-- Imagen opcional -->
+      <div>
+        <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.3rem">Foto del combo <span style="color:#aaa;font-weight:400">(opcional)</span></label>
+        <input type="file" name="imagen" accept="image/*"
+          style="width:100%;padding:.4rem;border:1.5px dashed #ddd;border-radius:8px;font-size:.82rem;cursor:pointer">
       </div>
       <!-- Selector de productos -->
       <div>

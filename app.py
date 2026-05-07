@@ -48,7 +48,9 @@
 from datetime import timedelta
 from flask import Flask, session
 from werkzeug.middleware.proxy_fix import ProxyFix
-from config import SECRET_KEY, DEBUG, IS_PRODUCTION, BUSINESS_NAME, DATABASE_URL, WHATSAPP_NUMBER, WOMPI_PUBLIC_KEY
+from config import (SECRET_KEY, DEBUG, IS_PRODUCTION, BUSINESS_NAME, DATABASE_URL,
+                    WHATSAPP_NUMBER, WOMPI_PUBLIC_KEY, DELIVERY_RADIUS_KM,
+                    DELIVERY_ORIGIN_LAT, DELIVERY_ORIGIN_LNG)
 from database import db
 from routes.main import main_bp
 from routes.cart import cart_bp
@@ -92,7 +94,7 @@ def security_headers(response):
     response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
     response.headers.setdefault("X-Content-Type-Options", "nosniff")
     response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
-    response.headers.setdefault("Permissions-Policy", "geolocation=(), microphone=(), camera=()")
+    response.headers.setdefault("Permissions-Policy", "geolocation=(self), microphone=(), camera=()")
     return response
 
 
@@ -115,6 +117,9 @@ def inject_globals():
         "whatsapp_number": WHATSAPP_NUMBER,
         "wompi_key":       WOMPI_PUBLIC_KEY,
         "current_user":    current_user,
+        "delivery_radius_km": DELIVERY_RADIUS_KM,
+        "delivery_origin_lat": DELIVERY_ORIGIN_LAT,
+        "delivery_origin_lng": DELIVERY_ORIGIN_LNG,
         "csrf_token":      csrf_token,
         "csrf_field":      csrf_field,
     }
@@ -168,6 +173,9 @@ with app.app_context():
             db.session.execute(text("ALTER TABLE products ADD COLUMN badge VARCHAR(20) DEFAULT ''"))
             db.session.commit()
         _combo_cols = [c["name"] for c in _inspect(db.engine).get_columns("combos")]
+        if "imagen" not in _combo_cols:
+            db.session.execute(text("ALTER TABLE combos ADD COLUMN imagen VARCHAR(300) DEFAULT ''"))
+            db.session.commit()
         if "fecha_inicio" not in _combo_cols:
             db.session.execute(text("ALTER TABLE combos ADD COLUMN fecha_inicio DATE"))
             db.session.commit()
