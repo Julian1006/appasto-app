@@ -384,6 +384,7 @@ def checkout_billetera():
     tel   = _clean_text(request.form.get("tel", ""), 30)
     dir_  = _clean_text(request.form.get("dir", ""), 300)
     ciudad = _clean_text(request.form.get("ciudad", ""), 100)
+    franja = _clean_text(request.form.get("franja", ""), 30)
     descuento, promo_cod = _aplicar_y_limpiar_promo(total)
     subtotal_con_descuento = total - descuento
     envio = _calcular_envio(subtotal_con_descuento)
@@ -402,6 +403,7 @@ def checkout_billetera():
         if tel:    lineas.append(f"Teléfono: {tel}")
         if dir_:   lineas.append(f"Dirección: {dir_}")
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
+        if franja: lineas.append(f"🕐 Hora preferida: {franja}")
     lineas.append(f"\nPor favor indicarme el número {metodo} para realizar el pago y confirmar disponibilidad. ¡Gracias!")
     _save_order(metodo, items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
     wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
@@ -421,6 +423,7 @@ def checkout_efectivo():
     tel   = _clean_text(request.form.get("tel", ""), 30)
     dir_  = _clean_text(request.form.get("dir", ""), 300)
     ciudad = _clean_text(request.form.get("ciudad", ""), 100)
+    franja = _clean_text(request.form.get("franja", ""), 30)
     descuento, promo_cod = _aplicar_y_limpiar_promo(total)
     subtotal_con_descuento = total - descuento
     envio = _calcular_envio(subtotal_con_descuento)
@@ -439,6 +442,7 @@ def checkout_efectivo():
         if tel:    lineas.append(f"Teléfono: {tel}")
         if dir_:   lineas.append(f"Dirección: {dir_}")
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
+        if franja: lineas.append(f"🕐 Hora preferida: {franja}")
     lineas.append("\nPor favor confirmar disponibilidad y coordinar la entrega. ¡Gracias!")
     _save_order("Efectivo", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
     wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
@@ -460,6 +464,7 @@ def checkout_whatsapp():
     tel = _clean_text(request.form.get("tel", ""), 30)
     dir_ = _clean_text(request.form.get("dir", ""), 300)
     ciudad = _clean_text(request.form.get("ciudad", ""), 100)
+    franja = _clean_text(request.form.get("franja", ""), 30)
     descuento, promo_cod = _aplicar_y_limpiar_promo(total)
     subtotal_con_descuento = total - descuento
     envio = _calcular_envio(subtotal_con_descuento)
@@ -479,6 +484,7 @@ def checkout_whatsapp():
         if tel: lineas.append(f"Teléfono: {tel}")
         if dir_: lineas.append(f"Dirección: {dir_}")
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
+        if franja: lineas.append(f"🕐 Hora preferida: {franja}")
     lineas.append("\nPor favor confirmar disponibilidad y precio final. ¡Gracias!")
     _save_order("WhatsApp", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
     mensaje = "\n".join(lineas)

@@ -42,6 +42,19 @@
           <input type="text" id="cliente-direccion" placeholder="Dirección de entrega"
             style="font-size:16px" value="{{ current_user.direccion if current_user else '' }}">
         </div>
+        <div class="checkout-field">
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.4rem">🕐 Hora preferida de entrega <span style="color:#aaa;font-weight:400">(opcional)</span></label>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem" id="franjas-horarias">
+            {% for franja in [('9am – 12pm','🌅'),('12pm – 3pm','☀️'),('3pm – 6pm','🌤️'),('6pm – 8pm','🌙')] %}
+            <button type="button" class="franja-btn" data-franja="{{ franja[0] }}"
+              onclick="seleccionarFranja(this)"
+              style="display:flex;align-items:center;gap:.4rem;padding:.55rem .8rem;border:1.5px solid #e0e0e0;border-radius:10px;background:#fff;font-size:.82rem;font-weight:500;color:#444;cursor:pointer;transition:all .15s;text-align:left">
+              <span>{{ franja[1] }}</span><span>{{ franja[0] }}</span>
+            </button>
+            {% endfor %}
+          </div>
+          <input type="hidden" id="franja-seleccionada" value="">
+        </div>
       </section>
 
       <section class="checkout-section">
@@ -254,6 +267,7 @@
     <input type="hidden" name="dir" id="directo-dir">
     <input type="hidden" name="ciudad" id="directo-ciudad">
     <input type="hidden" name="metodo" id="directo-metodo">
+    <input type="hidden" name="franja" id="directo-franja">
   </form>
 
   <script>
@@ -318,12 +332,27 @@
     .catch(function() { form.submit(); });
   });
 
+  function seleccionarFranja(btn) {
+    document.querySelectorAll('.franja-btn').forEach(function(b) {
+      b.style.borderColor = '#e0e0e0';
+      b.style.background = '#fff';
+      b.style.color = '#444';
+      b.style.fontWeight = '500';
+    });
+    btn.style.borderColor = '#961519';
+    btn.style.background = '#fff5f5';
+    btn.style.color = '#961519';
+    btn.style.fontWeight = '700';
+    document.getElementById('franja-seleccionada').value = btn.dataset.franja;
+  }
+
   function _getDelivery() {
     return {
       tel: document.getElementById('cliente-tel').value.trim(),
       dir: document.getElementById('cliente-direccion').value.trim(),
       ciudad: '',
       nombre: '',
+      franja: document.getElementById('franja-seleccionada').value.trim(),
     };
   }
 
@@ -464,6 +493,7 @@
     document.getElementById('directo-dir').value = d.dir;
     document.getElementById('directo-ciudad').value = d.ciudad || '';
     document.getElementById('directo-metodo').value = '';
+    document.getElementById('directo-franja').value = d.franja || '';
 
     if (tipo === 'tarjeta') {
       var fTarjeta = document.getElementById('form-tarjeta');

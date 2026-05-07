@@ -6,6 +6,11 @@ BUSINESS_NAME   = "Apastto"
 WHATSAPP_NUMBER = "573202055525"
 WOMPI_PUBLIC_KEY = os.environ.get("WOMPI_PUBLIC_KEY", "pub_test_XXXXXXXX")
 
+# Cobertura de domicilios: origen en Cl. 170 #20a-64, Usaquen, Bogota.
+DELIVERY_RADIUS_KM = float(os.environ.get("DELIVERY_RADIUS_KM", "15"))
+DELIVERY_ORIGIN_LAT = float(os.environ.get("DELIVERY_ORIGIN_LAT", "4.7538"))
+DELIVERY_ORIGIN_LNG = float(os.environ.get("DELIVERY_ORIGIN_LNG", "-74.0460"))
+
 _db_url = os.environ.get("DATABASE_URL", "sqlite:///apastto.db")
 DATABASE_URL = _db_url.replace("postgres://", "postgresql://", 1) if _db_url.startswith("postgres://") else _db_url
 
