@@ -74,7 +74,7 @@ def apply_security_headers(response, is_production=False):
     response.headers["X-Frame-Options"] = "SAMEORIGIN"
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
-    response.headers["Permissions-Policy"] = "geolocation=(), microphone=(), camera=(), payment=(self)"
+    response.headers["Permissions-Policy"] = "geolocation=(self), microphone=(), camera=(), payment=(self)"
     response.headers["Cross-Origin-Opener-Policy"] = "same-origin-allow-popups"
     response.headers["Cross-Origin-Resource-Policy"] = "same-origin"
     response.headers["Content-Security-Policy"] = _content_security_policy(is_production)
@@ -97,7 +97,7 @@ def _content_security_policy(is_production):
         "font-src 'self' https://fonts.gstatic.com data:",
         "img-src 'self' data: https://wompi.com https://*.wompi.com https://*.wompi.co",
         "connect-src 'self' https://*.wompi.co https://*.wompi.com",
-        "frame-src 'self' https://checkout.wompi.co https://*.wompi.co https://maps.google.com",
+        "frame-src 'self' https://checkout.wompi.co https://*.wompi.co https://maps.google.com https://www.openstreetmap.org",
         "object-src 'none'",
         "base-uri 'self'",
         "form-action 'self' https://checkout.wompi.co https://*.wompi.co",
