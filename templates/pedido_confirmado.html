@@ -80,20 +80,20 @@
   }
   @keyframes dashMove { to { left: 0; } }
   .truck {
-    position: absolute; top: 50%; left: -80px;
-    transform: translateY(-50%);
+    position: absolute; top: 50%; right: -80px;
+    transform: translateY(-50%) scaleX(-1);
     font-size: 2.2rem;
-    animation: truckRide 1.6s .5s cubic-bezier(.4,0,.2,1) forwards;
+    animation: motoRide 1.6s .5s cubic-bezier(.4,0,.2,1) forwards;
     filter: drop-shadow(2px 2px 4px rgba(0,0,0,.15));
   }
-  @keyframes truckRide {
-    0%   { left: -80px; }
-    70%  { left: 42%; }
-    85%  { left: 40%; }
-    100% { left: 42%; }
+  @keyframes motoRide {
+    0%   { right: -80px; }
+    70%  { right: 42%; }
+    85%  { right: 40%; }
+    100% { right: 42%; }
   }
   .house {
-    position: absolute; top: 50%; right: 14px;
+    position: absolute; top: 50%; left: 14px;
     transform: translateY(-52%);
     font-size: 1.8rem;
     animation: houseIn .4s 1.8s cubic-bezier(.34,1.56,.64,1) both;
@@ -156,7 +156,7 @@
     <div class="road-wrap">
       <div class="road-line"></div>
       <div class="road-dashes"></div>
-      <div class="truck">🚚</div>
+      <div class="truck">🏍️</div>
       <div class="house">🏠</div>
     </div>
 
