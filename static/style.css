@@ -932,6 +932,75 @@ ul { list-style: none; }
 }
 .quick-card:hover span:first-child { animation: emojiJump .45s ease; display: inline-block; }
 
+/* ===== Grill animation (hero) ===== */
+.hero-content-split {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 2rem;
+  text-align: left;
+}
+.hero-text { flex: 1; min-width: 0; }
+.hero-text .hero-btns { justify-content: flex-start; }
+.hero-text .hero-trust { justify-content: flex-start; }
+
+.grill-scene {
+  flex-shrink: 0;
+  width: 260px;
+  filter: drop-shadow(0 12px 32px rgba(0,0,0,.45));
+  animation: grillFloat 3.6s ease-in-out infinite;
+}
+.grill-svg { width: 100%; height: auto; }
+
+@keyframes grillFloat {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-10px); }
+}
+
+/* Steak glow pulsing */
+.steak-body {
+  animation: steakGlow 1.8s ease-in-out infinite;
+}
+@keyframes steakGlow {
+  0%,100% { fill: #6b2000; }
+  50%     { fill: #852800; }
+}
+.heat-glow {
+  animation: heatPulse 1.2s ease-in-out infinite;
+}
+@keyframes heatPulse {
+  0%,100% { opacity: .12; rx: 36; }
+  50%     { opacity: .28; rx: 42; }
+}
+
+/* Smoke rising */
+.smoke-group {
+  animation: smokeRise 2.4s ease-in infinite;
+  transform-origin: center bottom;
+}
+.sg1 { animation-delay: 0s; }
+.sg2 { animation-delay: .7s; }
+.sg3 { animation-delay: 1.4s; }
+@keyframes smokeRise {
+  0%   { transform: translateY(0)  scaleX(1);   opacity: 1; }
+  60%  { transform: translateY(-22px) scaleX(1.3); opacity: .6; }
+  100% { transform: translateY(-40px) scaleX(1.6); opacity: 0; }
+}
+
+/* Mobile: stack vertically */
+@media (max-width: 860px) {
+  .hero-content-split {
+    flex-direction: column;
+    text-align: center;
+  }
+  .hero-text .hero-btns { justify-content: center; }
+  .hero-text .hero-trust { justify-content: center; }
+  .grill-scene { width: 200px; }
+}
+@media (max-width: 480px) {
+  .grill-scene { width: 160px; }
+}
+
 /* ===== Nav link underline grow ===== */
 .nav-links > li > a { position: relative; }
 .nav-links > li > a::after {
