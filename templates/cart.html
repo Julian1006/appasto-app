@@ -43,9 +43,10 @@
             style="font-size:16px" value="{{ current_user.direccion if current_user else '' }}">
         </div>
         <div class="checkout-field">
-          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.4rem">🕐 Hora preferida de entrega <span style="color:#aaa;font-weight:400">(opcional)</span></label>
+          <label style="font-size:.78rem;font-weight:600;color:#555;display:block;margin-bottom:.25rem">🕐 Hora preferida de entrega <span style="color:#aaa;font-weight:400">(opcional)</span></label>
+          <p style="font-size:.73rem;color:#888;margin:0 0 .4rem">Atendemos de 9:00 am a 6:00 pm</p>
           <div style="display:grid;grid-template-columns:1fr 1fr;gap:.5rem" id="franjas-horarias">
-            {% for franja in [('9am – 12pm','🌅'),('12pm – 3pm','☀️'),('3pm – 6pm','🌤️'),('6pm – 8pm','🌙')] %}
+            {% for franja in [('9am – 12pm','🌅'),('12pm – 3pm','☀️'),('3pm – 6pm','🌤️')] %}
             <button type="button" class="franja-btn" data-franja="{{ franja[0] }}"
               onclick="seleccionarFranja(this)"
               style="display:flex;align-items:center;gap:.4rem;padding:.55rem .8rem;border:1.5px solid #e0e0e0;border-radius:10px;background:#fff;font-size:.82rem;font-weight:500;color:#444;cursor:pointer;transition:all .15s;text-align:left">
