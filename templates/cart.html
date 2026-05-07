@@ -57,11 +57,27 @@
           <span style="font-size:1.1rem">📍</span>
           <span style="font-size:.82rem;color:#7a5800;font-weight:600">Solo realizamos envíos en <strong>Bogotá Norte</strong></span>
         </div>
-        <iframe
-          src="https://maps.google.com/maps?q=4.7538,-74.0460&z=12&output=embed"
-          width="100%" height="200" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
-          style="margin-top:.75rem;border-radius:12px;border:1.5px solid #e5e5e5;display:block">
-        </iframe>
+        <div style="margin-top:.75rem;border-radius:12px;border:1.5px solid #e0e0e0;overflow:hidden;background:linear-gradient(135deg,#e8f4e8 0%,#f0f7f0 100%);padding:1rem 1.2rem;display:flex;gap:1.2rem;align-items:center">
+          <svg width="70" height="70" viewBox="0 0 70 70" fill="none">
+            <circle cx="35" cy="35" r="33" fill="#e8f5e9" stroke="#c8e6c9" stroke-width="1.5" stroke-dasharray="5 3"/>
+            <circle cx="35" cy="35" r="22" fill="#c8e6c9" stroke="#a5d6a7" stroke-width="1" opacity=".7"/>
+            <circle cx="35" cy="35" r="11" fill="#81c784" stroke="#66bb6a" stroke-width="1"/>
+            <circle cx="35" cy="35" r="4" fill="#961519"/>
+            <circle cx="35" cy="35" r="2" fill="#fff"/>
+            <line x1="35" y1="2" x2="35" y2="12" stroke="#a5d6a7" stroke-width="1"/>
+            <line x1="35" y1="58" x2="35" y2="68" stroke="#a5d6a7" stroke-width="1"/>
+            <line x1="2" y1="35" x2="12" y2="35" stroke="#a5d6a7" stroke-width="1"/>
+            <line x1="58" y1="35" x2="68" y2="35" stroke="#a5d6a7" stroke-width="1"/>
+          </svg>
+          <div style="flex:1">
+            <div style="font-size:.82rem;font-weight:700;color:#2e7d32;margin-bottom:.4rem">📍 Zona de cobertura — Bogotá Norte</div>
+            <div style="display:flex;flex-wrap:wrap;gap:.3rem">
+              {% for barrio in ['Usaquén','Suba','Chapinero','Santa Bárbara','Cedritos','Niza','Chicó','Country','Gratamira','La Calleja'] %}
+              <span style="background:#fff;border:1px solid #c8e6c9;border-radius:20px;padding:.15rem .55rem;font-size:.72rem;color:#388e3c;font-weight:500">{{ barrio }}</span>
+              {% endfor %}
+            </div>
+          </div>
+        </div>
       </section>
 
       <section class="checkout-section">
