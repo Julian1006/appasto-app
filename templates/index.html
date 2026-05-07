@@ -6,73 +6,22 @@
 
 <!-- ══ 1. HERO ══════════════════════════════════════════════════════════════ -->
 <section class="hero hero-sell">
-  <video class="hero-video" autoplay muted loop playsinline webkit-playsinline preload="metadata">
+  <video class="hero-video" autoplay muted loop playsinline webkit-playsinline preload="auto">
     <source src="{{ url_for('static', filename='videos/apastto.mp4') }}" type="video/mp4">
   </video>
   <div class="hero-overlay"></div>
-  <div class="hero-content hero-content-split">
-    <div class="hero-text">
-      <div class="hero-pretag">🚚 Entrega a domicilio en Bogotá</div>
-      <h1>Carne premium<br>lista para pedir<br><em>en 30 segundos</em></h1>
-      <p class="hero-sub">🐄 Pastoreo real &nbsp;·&nbsp; 💪 Nutrición superior &nbsp;·&nbsp; 🔥 Sabor auténtico</p>
-      <div class="hero-btns">
-        <a href="{{ url_for('main.catalogo') }}" class="btn btn-hero">🛒 Ver catálogo</a>
-        <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" class="btn btn-hero-wa">📲 Pedir por WhatsApp</a>
-      </div>
-      <div class="hero-trust">
-        <span>✅ Sin intermediarios</span>
-        <span>✅ Fresco garantizado</span>
-        <span>✅ Brahman a pasto</span>
-      </div>
+  <div class="hero-content">
+    <div class="hero-pretag">🚚 Entrega a domicilio en Bogotá</div>
+    <h1>Carne premium<br>lista para pedir<br><em>en 30 segundos</em></h1>
+    <p class="hero-sub">🐄 Pastoreo real &nbsp;·&nbsp; 💪 Nutrición superior &nbsp;·&nbsp; 🔥 Sabor auténtico</p>
+    <div class="hero-btns">
+      <a href="{{ url_for('main.catalogo') }}" class="btn btn-hero">🛒 Ver catálogo</a>
+      <a href="https://wa.me/{{ whatsapp_number }}" target="_blank" class="btn btn-hero-wa">📲 Pedir por WhatsApp</a>
     </div>
-    <!-- Animación parrilla -->
-    <div class="grill-scene" aria-hidden="true">
-      <svg viewBox="0 0 240 220" xmlns="http://www.w3.org/2000/svg" class="grill-svg">
-        <!-- Humo 1 -->
-        <g class="smoke-group sg1">
-          <circle cx="82" cy="70" r="9" fill="rgba(255,255,255,0.55)"/>
-          <circle cx="76" cy="52" r="7" fill="rgba(255,255,255,0.4)"/>
-          <circle cx="80" cy="36" r="5" fill="rgba(255,255,255,0.25)"/>
-        </g>
-        <!-- Humo 2 -->
-        <g class="smoke-group sg2">
-          <circle cx="120" cy="62" r="11" fill="rgba(255,255,255,0.5)"/>
-          <circle cx="114" cy="42" r="8" fill="rgba(255,255,255,0.35)"/>
-          <circle cx="118" cy="24" r="6" fill="rgba(255,255,255,0.2)"/>
-        </g>
-        <!-- Humo 3 -->
-        <g class="smoke-group sg3">
-          <circle cx="158" cy="68" r="8" fill="rgba(255,255,255,0.5)"/>
-          <circle cx="163" cy="50" r="6" fill="rgba(255,255,255,0.35)"/>
-          <circle cx="160" cy="34" r="4" fill="rgba(255,255,255,0.2)"/>
-        </g>
-        <!-- Parrilla base -->
-        <rect x="28" y="148" width="184" height="36" rx="18" fill="#1a1a1a"/>
-        <!-- Mango -->
-        <rect x="192" y="158" width="50" height="14" rx="7" fill="#111"/>
-        <rect x="232" y="155" width="12" height="20" rx="6" fill="#222"/>
-        <!-- Sombra steak -->
-        <ellipse cx="120" cy="152" rx="72" ry="10" fill="rgba(0,0,0,0.35)"/>
-        <!-- Steak cuerpo -->
-        <path d="M52 138 Q58 110 90 106 Q120 102 152 108 Q174 112 178 130 Q182 148 160 156 Q130 163 95 160 Q62 156 52 138Z" fill="#6b2000" class="steak-body"/>
-        <!-- Grasa / marbling -->
-        <path d="M80 120 Q95 114 112 118 Q126 121 138 116" stroke="#c8956c" stroke-width="3.5" fill="none" stroke-linecap="round" opacity="0.6"/>
-        <path d="M95 132 Q110 128 125 133" stroke="#c8956c" stroke-width="2.5" fill="none" stroke-linecap="round" opacity="0.5"/>
-        <!-- Marcas de parrilla -->
-        <line x1="82" y1="110" x2="74" y2="156" stroke="#3a0d00" stroke-width="5" stroke-linecap="round" opacity="0.7"/>
-        <line x1="102" y1="107" x2="94" y2="158" stroke="#3a0d00" stroke-width="5" stroke-linecap="round" opacity="0.7"/>
-        <line x1="122" y1="106" x2="118" y2="159" stroke="#3a0d00" stroke-width="5" stroke-linecap="round" opacity="0.7"/>
-        <line x1="142" y1="108" x2="142" y2="158" stroke="#3a0d00" stroke-width="5" stroke-linecap="round" opacity="0.7"/>
-        <!-- Brillo calor -->
-        <ellipse cx="108" cy="126" rx="36" ry="14" fill="rgba(255,140,0,0.12)" class="heat-glow"/>
-        <!-- Rejillas parrilla encima -->
-        <rect x="34" y="143" width="172" height="6" rx="3" fill="#2a2a2a"/>
-        <rect x="34" y="153" width="172" height="6" rx="3" fill="#2a2a2a"/>
-        <rect x="34" y="163" width="172" height="6" rx="3" fill="#2a2a2a"/>
-        <!-- Patas parrilla -->
-        <rect x="50" y="178" width="10" height="28" rx="5" fill="#111"/>
-        <rect x="180" y="178" width="10" height="28" rx="5" fill="#111"/>
-      </svg>
+    <div class="hero-trust">
+      <span>✅ Sin intermediarios</span>
+      <span>✅ Fresco garantizado</span>
+      <span>✅ Brahman a pasto</span>
     </div>
   </div>
 </section>
