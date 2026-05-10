@@ -1,10 +1,25 @@
 {% extends "base.html" %}
 
-{% block title %}Catálogo — Apastto{% endblock %}
+{% block title %}{% if filtro_activo and filtro_activo != 'Todos' %}Carne de {{ filtro_activo }} a Pasto en Bogotá | Apastto{% else %}Catálogo de Carnes a Pasto en Bogotá | Apastto{% endif %}{% endblock %}
+{% block description %}{% if filtro_activo and filtro_activo != 'Todos' %}Compra carne de {{ filtro_activo }} a pasto con domicilio en Bogotá. Cortes frescos, sin concentrados, directo del ganadero. Apastto — calidad Brahman garantizada.{% else %}Catálogo completo de carnes a pasto con domicilio en Bogotá. Res, cerdo, pollo, pescado, charcutería y más. Sin concentrados, directo del ganadero.{% endif %}{% endblock %}
+{% block schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Inicio", "item": "{{ request.host_url }}"},
+    {"@type": "ListItem", "position": 2, "name": "Catálogo{% if filtro_activo and filtro_activo != 'Todos' %} — {{ filtro_activo }}{% endif %}", "item": "{{ request.host_url }}catalogo{% if filtro_activo and filtro_activo != 'Todos' %}?filtro={{ filtro_activo }}{% endif %}"}
+  ]
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="container catalog-container">
-  <h1 class="page-title">Catálogo de Carnes</h1>
+  <h1 class="page-title">
+    {% if filtro_activo and filtro_activo != 'Todos' %}Carne de {{ filtro_activo }} a Pasto — Bogotá{% else %}Catálogo de Carnes a Pasto en Bogotá{% endif %}
+  </h1>
 
   <div class="search-bar">
     <span class="search-icon">🔍</span>
@@ -85,7 +100,15 @@
         </div>
         <p class="product-desc">{{ producto.descripcion }}</p>
         <div class="product-footer">
-          <span class="product-price">${{ "{:,}".format(producto.precio) }}/500 gr</span>
+          {% if producto.precio_modificado %}
+            {% set pct_off = ((producto.precio_orig - producto.precio) / producto.precio_orig * 100) | round(0) | int %}
+            <span class="product-price" style="display:flex;flex-direction:column;gap:.1rem">
+              <span style="text-decoration:line-through;color:#aaa;font-size:.75rem;font-weight:400">${{ "{:,}".format(producto.precio_orig) }}/500 gr</span>
+              <span style="color:#c0392b;font-weight:800">${{ "{:,}".format(producto.precio) }}/500 gr <span style="background:#c0392b;color:#fff;font-size:.65rem;border-radius:4px;padding:.05rem .3rem;vertical-align:middle">-{{ pct_off }}%</span></span>
+            </span>
+          {% else %}
+            <span class="product-price">${{ "{:,}".format(producto.precio) }}/500 gr</span>
+          {% endif %}
           <form action="{{ url_for('cart.agregar', product_id=producto.id) }}" method="POST" class="add-form" onclick="event.stopPropagation()">
             {{ csrf_field() }}
             <input type="hidden" name="next" value="{{ url_for('main.catalogo', filtro=filtro_activo) }}">

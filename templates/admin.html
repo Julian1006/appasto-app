@@ -232,18 +232,28 @@
             </div>
           </td>
 
-          <!-- Precio -->
+          <!-- Precio / Promo -->
           <td>
-            <div class="{{ 'price-override' if p.precio_modificado else '' }}" style="font-weight:700;font-size:.88rem;margin-bottom:.3rem">${{ "{:,}".format(p.precio) }}</div>
-            <form class="inline-form" method="POST" action="{{ url_for('admin.update_precio', pid=p.id) }}">
-              {{ csrf_field() }}
-              <input type="number" name="precio" class="num-input" value="{{ p.precio }}" min="1" max="999999" step="100" style="width:80px">
-              <button type="submit" class="btn-save">✓</button>
+            {% if p.precio_modificado %}
+              {% set pct_off = ((p.precio_orig - p.precio) / p.precio_orig * 100) | round(0) | int %}
+              <div style="display:flex;align-items:center;gap:.35rem;margin-bottom:.25rem">
+                <span style="text-decoration:line-through;color:#aaa;font-size:.78rem">${{ "{:,}".format(p.precio_orig) }}</span>
+                <span style="background:#c0392b;color:#fff;font-size:.7rem;font-weight:700;border-radius:5px;padding:.05rem .35rem">-{{ pct_off }}%</span>
+              </div>
+              <div style="font-weight:800;font-size:.95rem;color:#c0392b;margin-bottom:.3rem">${{ "{:,}".format(p.precio) }}</div>
               <form method="POST" action="{{ url_for('admin.reset_precio', pid=p.id) }}" style="display:inline">
                 {{ csrf_field() }}
-                <button type="submit" class="btn-reset" title="Restablecer">↺</button>
+                <button type="submit" class="btn-reset" title="Quitar promo" style="font-size:.75rem;padding:.2rem .5rem">✕ Quitar promo</button>
               </form>
-            </form>
+            {% else %}
+              <div style="font-weight:700;font-size:.88rem;margin-bottom:.35rem">${{ "{:,}".format(p.precio) }}</div>
+              <form class="inline-form" method="POST" action="{{ url_for('admin.set_promo', pid=p.id) }}" style="display:flex;align-items:center;gap:.25rem">
+                {{ csrf_field() }}
+                <input type="number" name="pct" class="num-input" placeholder="%" min="1" max="99" step="1" style="width:52px" title="% de descuento">
+                <span style="font-size:.75rem;color:#888">%</span>
+                <button type="submit" class="btn-save" title="Aplicar promo" style="background:#c0392b;color:#fff;border-color:#c0392b">🏷</button>
+              </form>
+            {% endif %}
           </td>
 
           <!-- Stock -->

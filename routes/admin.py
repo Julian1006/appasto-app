@@ -310,8 +310,29 @@ def toggle_producto(pid):
 def reset_precio(pid):
     p = Product.query.get_or_404(pid)
     p.precio = p.precio_orig
+    if p.badge == "Oferta":
+        p.badge = ""
     db.session.commit()
     return redirect(url_for("admin.dashboard"))
+
+
+@admin_bp.route("/producto/<int:pid>/promo", methods=["POST"])
+@admin_required
+def set_promo(pid):
+    p = Product.query.get_or_404(pid)
+    try:
+        pct = float(request.form.get("pct", 0))
+        if not (1 <= pct <= 99):
+            raise ValueError
+    except (ValueError, TypeError):
+        return redirect(url_for("admin.dashboard"))
+    nuevo = round(p.precio_orig * (1 - pct / 100) / 100) * 100
+    if nuevo <= 0:
+        nuevo = 100
+    p.precio = nuevo
+    p.badge = "Oferta"
+    db.session.commit()
+    return redirect(url_for("admin.dashboard") + "#tab-productos")
 
 
 MAX_DESTACADOS = 12
