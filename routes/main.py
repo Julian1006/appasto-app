@@ -1,5 +1,6 @@
-from flask import Blueprint, render_template, request, jsonify
+from flask import Blueprint, render_template, request, jsonify, Response
 import random
+from datetime import date
 from model import get_all_products
 
 main_bp = Blueprint("main", __name__)
@@ -81,6 +82,52 @@ def catalogo():
 
     return render_template("catalog.html", productos=productos,
                            tabs=tabs, filtro_activo=filtro, low_stock=LOW_STOCK)
+
+
+@main_bp.route("/robots.txt")
+def robots_txt():
+    base = request.url_root.rstrip("/")
+    content = (
+        "User-agent: *\n"
+        "Allow: /\n"
+        "Disallow: /admin\n"
+        "Disallow: /api/\n"
+        "Disallow: /carrito\n"
+        "Disallow: /checkout-tarjeta\n"
+        "Disallow: /checkout-billetera\n"
+        "Disallow: /checkout-efectivo\n"
+        "Disallow: /checkout-whatsapp\n"
+        "Disallow: /pedido-confirmado\n"
+        "Disallow: /agregar/\n"
+        "Disallow: /aplicar-promo\n"
+        "\n"
+        f"Sitemap: {base}/sitemap.xml\n"
+    )
+    return Response(content, mimetype="text/plain")
+
+
+@main_bp.route("/sitemap.xml")
+def sitemap_xml():
+    base = request.url_root.rstrip("/")
+    today = date.today().isoformat()
+    pages = [
+        ("/",          "1.0", "weekly"),
+        ("/catalogo",  "0.9", "weekly"),
+        ("/nosotros",  "0.7", "monthly"),
+    ]
+    xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
+    xml += '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n'
+    for path, priority, freq in pages:
+        xml += (
+            "  <url>\n"
+            f"    <loc>{base}{path}</loc>\n"
+            f"    <lastmod>{today}</lastmod>\n"
+            f"    <changefreq>{freq}</changefreq>\n"
+            f"    <priority>{priority}</priority>\n"
+            "  </url>\n"
+        )
+    xml += "</urlset>"
+    return Response(xml, mimetype="application/xml")
 
 
 @main_bp.route("/api/related/<tipo>/<int:product_id>")

@@ -97,7 +97,7 @@ def _content_security_policy(is_production):
         "font-src 'self' https://fonts.gstatic.com data:",
         "img-src 'self' data: https://wompi.com https://*.wompi.com https://*.wompi.co",
         "connect-src 'self' https://*.wompi.co https://*.wompi.com",
-        "frame-src 'self' https://checkout.wompi.co https://*.wompi.co https://maps.google.com https://www.openstreetmap.org",
+        "frame-src 'self' https://checkout.wompi.co https://*.wompi.co https://*.google.com https://www.openstreetmap.org",
         "object-src 'none'",
         "base-uri 'self'",
         "form-action 'self' https://checkout.wompi.co https://*.wompi.co",

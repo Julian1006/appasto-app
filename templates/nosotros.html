@@ -1,12 +1,25 @@
 {% extends "base.html" %}
 
-{% block title %}Nosotros — Apastto{% endblock %}
+{% block title %}Quiénes Somos | Carne de Pastoreo Natural en Bogotá | Apastto{% endblock %}
+{% block description %}Apastto es un emprendimiento colombiano que lleva carne de res Brahman a pasto, sin concentrados, desde Boyacá y el Llano hasta tu mesa en Bogotá. Conoce nuestra historia y valores.{% endblock %}
+{% block schema %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {"@type": "ListItem", "position": 1, "name": "Inicio", "item": "{{ request.host_url }}"},
+    {"@type": "ListItem", "position": 2, "name": "Nosotros", "item": "{{ request.host_url }}nosotros"}
+  ]
+}
+</script>
+{% endblock %}
 
 {% block content %}
 <div class="container nosotros-container">
 
   <section class="nosotros-hero">
-    <h1>Sobre Apastto</h1>
+    <h1>Apastto: Carne a Pasto en Bogotá</h1>
     <p class="nosotros-intro">
       Apastto es un emprendimiento familiar que nació en 2021 con un propósito claro:
       ofrecer carne de res saludable, natural y a precios accesibles.
@@ -113,7 +126,7 @@
     <p class="map-address">📍 Cl. 170 #20a-64, Usaquén, Bogotá · <a href="https://wa.me/{{ whatsapp_number }}" target="_blank">Pedidos a domicilio por WhatsApp</a></p>
     <div class="map-wrapper">
       <iframe
-        src="https://maps.google.com/maps?q=Calle+170+%2320a-64,+Usaquen,+Bogota,+Colombia&hl=es&z=16&output=embed"
+        src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d248.50687805549475!2d-74.04376443117532!3d4.750910430850744!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x8e3f859b62f5c859%3A0xa465df4ca2bff48d!2sCl.%20170%20%23%2020a%2064%2C%20Usaqu%C3%A9n%2C%20Bogot%C3%A1%2C%20Cundinamarca!5e0!3m2!1ses-419!2sco!4v1778267534174!5m2!1ses-419!2sco"
         width="100%" height="340" style="border:0" loading="lazy"
         allowfullscreen referrerpolicy="no-referrer-when-downgrade" title="Ubicación Apastto">
       </iframe>

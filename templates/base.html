@@ -3,8 +3,20 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="Apastto — Carnes frescas a pasto, sin concentrados. Los mejores cortes de res, cerdo, pollo y pescado a domicilio.">
-  <title>{% block title %}Apastto{% endblock %}</title>
+  <meta name="description" content="{% block description %}Apastto — Carnes frescas a pasto, sin concentrados. Cortes de res, cerdo, pollo y pescado a domicilio en Bogotá. Brahman natural, sin granos.{% endblock %}">
+  <title>{% block title %}Apastto — Carnes a Pasto en Bogotá{% endblock %}</title>
+  <link rel="canonical" href="{{ request.url_root.rstrip('/') }}{{ request.path }}">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Apastto">
+  <meta property="og:locale" content="es_CO">
+  <meta property="og:title" content="{{ self.title() }}">
+  <meta property="og:description" content="{{ self.description() }}">
+  <meta property="og:url" content="{{ request.url_root.rstrip('/') }}{{ request.path }}">
+  <meta property="og:image" content="{{ request.host_url }}static/images/appasto%20imagen.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ self.title() }}">
+  <meta name="twitter:description" content="{{ self.description() }}">
+  <meta name="twitter:image" content="{{ request.host_url }}static/images/appasto%20imagen.png">
   <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/appasto imagen.png') }}">
   <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#961519">
@@ -12,6 +24,41 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Apastto">
   <link rel="apple-touch-icon" href="/static/images/appasto%20imagen.png">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FoodEstablishment",
+    "name": "Apastto",
+    "description": "Carnes frescas a pasto, sin concentrados. Cortes de res, cerdo, pollo y pescado a domicilio en Bogotá.",
+    "url": "{{ request.host_url }}",
+    "telephone": "+573202055525",
+    "image": "{{ request.host_url }}static/images/appasto%20imagen.png",
+    "priceRange": "$$",
+    "servesCuisine": "Carnes a pasto",
+    "address": {
+      "@type": "PostalAddress",
+      "streetAddress": "Calle 170 #20a-64",
+      "addressLocality": "Usaquén",
+      "addressRegion": "Bogotá",
+      "addressCountry": "CO"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": 4.7538,
+      "longitude": -74.0460
+    },
+    "openingHoursSpecification": {
+      "@type": "OpeningHoursSpecification",
+      "dayOfWeek": ["Monday","Tuesday","Wednesday","Thursday","Friday","Saturday","Sunday"],
+      "opens": "09:00",
+      "closes": "18:00"
+    },
+    "sameAs": [
+      "https://www.instagram.com/apastto.carnes/"
+    ]
+  }
+  </script>
+  {% block schema %}{% endblock %}
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
