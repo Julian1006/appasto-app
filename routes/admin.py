@@ -286,14 +286,25 @@ def update_estado(oid):
 def update_precio(pid):
     p = Product.query.get_or_404(pid)
     try:
-        nuevo = int(request.form.get("precio", 0))
-        if nuevo <= 0:
-            raise ValueError
+        pct_raw = request.form.get("pct", "").strip()
+        if pct_raw:
+            pct = float(pct_raw)
+            if not (1 <= pct <= 99):
+                raise ValueError
+            nuevo = round(p.precio_orig * (1 - pct / 100) / 100) * 100
+            if nuevo <= 0:
+                nuevo = 100
+        else:
+            nuevo = int(request.form.get("precio", 0))
+            if nuevo <= 0:
+                raise ValueError
     except (ValueError, TypeError):
         return redirect(url_for("admin.dashboard"))
     p.precio = nuevo
+    if nuevo < p.precio_orig:
+        p.badge = "Oferta"
     db.session.commit()
-    return redirect(url_for("admin.dashboard"))
+    return redirect(url_for("admin.dashboard") + "#tab-productos")
 
 
 @admin_bp.route("/producto/<int:pid>/toggle", methods=["POST"])
