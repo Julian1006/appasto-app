@@ -1197,7 +1197,11 @@ function aplicarPromo(pid, precioOrig, nombre) {
   var nuevo = Math.round(precioOrig * (1 - pct / 100) / 100) * 100;
   var fmt = function(n) { return '$' + n.toLocaleString('es-CO'); };
   if (confirm('¿Aplicar promo a "' + nombre + '"?\n\nAntes: ' + fmt(precioOrig) + '\nDescuento: ' + pct + '%\nNuevo precio: ' + fmt(nuevo) + '\n\nEsto se verá en el catálogo.')) {
-    document.getElementById('promo-form-' + pid).submit();
+    var form = document.getElementById('promo-form-' + pid);
+    var h = document.createElement('input');
+    h.type = 'hidden'; h.name = 'precio'; h.value = nuevo;
+    form.appendChild(h);
+    form.submit();
   }
 }
 
