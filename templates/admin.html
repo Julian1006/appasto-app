@@ -253,7 +253,7 @@
                 <span style="font-size:.75rem;color:#888">%</span>
                 <button type="button" title="Aplicar promo"
                   style="background:#c0392b;color:#fff;border:none;border-radius:7px;padding:.28rem .7rem;font-size:.78rem;font-weight:700;cursor:pointer;white-space:nowrap"
-                  onclick="aplicarPromo({{ p.id }}, {{ p.precio_orig | tojson }}, {{ p.nombre | tojson }})">Guardar</button>
+                  onclick="aplicarPromo({{ p.id }}, {{ p.precio_orig }}, {{ p.nombre | tojson | e }})">Guardar</button>
               </form>
             {% endif %}
           </td>
