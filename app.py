@@ -151,67 +151,81 @@ def _seed_categorias():
         db.session.commit()
 
 
-with app.app_context():
-    db.create_all()  # Crea todas las tablas definidas en model.py si no existen
+def _safe_exec(sql):
+    # Ejecuta una sentencia suelta y hace rollback si falla.
+    # El rollback es imprescindible en PostgreSQL: ahí un error deja la
+    # transacción abortada y TODA consulta posterior falla hasta revertirla
+    # (en SQLite no pasa, por eso el bug solo aparecía en producción).
+    # Además, con varios workers arrancando a la vez, es normal que un
+    # ALTER TABLE falle porque otro worker ya lo aplicó.
+    from sqlalchemy import text
     try:
-        # Migraciones manuales para columnas agregadas después del deploy inicial
-        # db.create_all() no altera tablas existentes, por eso usamos ALTER TABLE
-        from sqlalchemy import text, inspect as _inspect
-        _cols = [c["name"] for c in _inspect(db.engine).get_columns("products")]
-        if "stock" not in _cols:
-            db.session.execute(text("ALTER TABLE products ADD COLUMN stock INTEGER"))
-            db.session.commit()
-        if "destacado" not in _cols:
-            db.session.execute(text("ALTER TABLE products ADD COLUMN destacado INTEGER NOT NULL DEFAULT 0"))
-            _ids = ",".join(str(i) for i in [4, 5, 6, 1, 3, 29, 31, 49, 60, 73, 87, 8])
-            db.session.execute(text(f"UPDATE products SET destacado=1 WHERE id IN ({_ids})"))
-            db.session.commit()
-        if "orden_destacado" not in _cols:
-            db.session.execute(text("ALTER TABLE products ADD COLUMN orden_destacado INTEGER DEFAULT 0"))
-            db.session.commit()
-        if "badge" not in _cols:
-            db.session.execute(text("ALTER TABLE products ADD COLUMN badge VARCHAR(20) DEFAULT ''"))
-            db.session.commit()
-        _combo_cols = [c["name"] for c in _inspect(db.engine).get_columns("combos")]
-        if "imagen" not in _combo_cols:
-            db.session.execute(text("ALTER TABLE combos ADD COLUMN imagen VARCHAR(300) DEFAULT ''"))
-            db.session.commit()
-        if "fecha_inicio" not in _combo_cols:
-            db.session.execute(text("ALTER TABLE combos ADD COLUMN fecha_inicio DATE"))
-            db.session.commit()
-        if "fecha_fin" not in _combo_cols:
-            db.session.execute(text("ALTER TABLE combos ADD COLUMN fecha_fin DATE"))
-            db.session.commit()
-        _order_cols = [c["name"] for c in _inspect(db.engine).get_columns("orders")]
-        if "user_id" not in _order_cols:
-            db.session.execute(text("ALTER TABLE orders ADD COLUMN user_id INTEGER"))
-            db.session.commit()
-        if "reward_code" not in _order_cols:
-            db.session.execute(text("ALTER TABLE orders ADD COLUMN reward_code VARCHAR(50)"))
-            db.session.commit()
-        _promo_cols = [c["name"] for c in _inspect(db.engine).get_columns("promos")]
-        if "visible_cliente" not in _promo_cols:
-            db.session.execute(text("ALTER TABLE promos ADD COLUMN visible_cliente INTEGER NOT NULL DEFAULT 0"))
-            db.session.commit()
-        _user_cols = [c["name"] for c in _inspect(db.engine).get_columns("users")]
-        if "reward_200k_issued" not in _user_cols:
-            db.session.execute(text("ALTER TABLE users ADD COLUMN reward_200k_issued INTEGER NOT NULL DEFAULT 0"))
-            db.session.commit()
-        if "reward_200k_code" not in _user_cols:
-            db.session.execute(text("ALTER TABLE users ADD COLUMN reward_200k_code VARCHAR(50)"))
-            db.session.commit()
-        if "ultimo_reward_at" not in _user_cols:
-            db.session.execute(text("ALTER TABLE users ADD COLUMN ultimo_reward_at DATETIME"))
-            db.session.commit()
-    except Exception:
-        pass
-    _seed_db()
-    _seed_categorias()
-    try:
-        db.session.execute(text("UPDATE categorias SET activo=0 WHERE nombre='Molidas'"))
+        db.session.execute(text(sql))
         db.session.commit()
     except Exception:
-        pass
+        db.session.rollback()
+
+
+def _columnas(tabla):
+    from sqlalchemy import inspect as _inspect
+    try:
+        return [c["name"] for c in _inspect(db.engine).get_columns(tabla)]
+    except Exception:
+        db.session.rollback()
+        return []
+
+
+with app.app_context():
+    db.create_all()  # Crea todas las tablas definidas en model.py si no existen
+
+    # Migraciones manuales para columnas agregadas después del deploy inicial
+    # db.create_all() no altera tablas existentes, por eso usamos ALTER TABLE
+    _cols = _columnas("products")
+    if "stock" not in _cols:
+        _safe_exec("ALTER TABLE products ADD COLUMN stock INTEGER")
+    if "destacado" not in _cols:
+        _safe_exec("ALTER TABLE products ADD COLUMN destacado INTEGER NOT NULL DEFAULT 0")
+        _ids = ",".join(str(i) for i in sorted(_DESTACADOS_DEFAULT))
+        _safe_exec(f"UPDATE products SET destacado=1 WHERE id IN ({_ids})")
+    if "orden_destacado" not in _cols:
+        _safe_exec("ALTER TABLE products ADD COLUMN orden_destacado INTEGER DEFAULT 0")
+    if "badge" not in _cols:
+        _safe_exec("ALTER TABLE products ADD COLUMN badge VARCHAR(20) DEFAULT ''")
+
+    _combo_cols = _columnas("combos")
+    if "imagen" not in _combo_cols:
+        _safe_exec("ALTER TABLE combos ADD COLUMN imagen VARCHAR(300) DEFAULT ''")
+    if "fecha_inicio" not in _combo_cols:
+        _safe_exec("ALTER TABLE combos ADD COLUMN fecha_inicio DATE")
+    if "fecha_fin" not in _combo_cols:
+        _safe_exec("ALTER TABLE combos ADD COLUMN fecha_fin DATE")
+
+    _order_cols = _columnas("orders")
+    if "user_id" not in _order_cols:
+        _safe_exec("ALTER TABLE orders ADD COLUMN user_id INTEGER")
+    if "reward_code" not in _order_cols:
+        _safe_exec("ALTER TABLE orders ADD COLUMN reward_code VARCHAR(50)")
+
+    _promo_cols = _columnas("promos")
+    if "visible_cliente" not in _promo_cols:
+        _safe_exec("ALTER TABLE promos ADD COLUMN visible_cliente INTEGER NOT NULL DEFAULT 0")
+
+    _user_cols = _columnas("users")
+    if "reward_200k_issued" not in _user_cols:
+        _safe_exec("ALTER TABLE users ADD COLUMN reward_200k_issued INTEGER NOT NULL DEFAULT 0")
+    if "reward_200k_code" not in _user_cols:
+        _safe_exec("ALTER TABLE users ADD COLUMN reward_200k_code VARCHAR(50)")
+    if "ultimo_reward_at" not in _user_cols:
+        _safe_exec("ALTER TABLE users ADD COLUMN ultimo_reward_at TIMESTAMP")
+
+    # El seed no debe tumbar el arranque: si falla, el sitio sigue en pie
+    try:
+        _seed_db()
+        _seed_categorias()
+    except Exception:
+        db.session.rollback()
+
+    _safe_exec("UPDATE categorias SET activo=0 WHERE nombre='Molidas'")
 
 
 if __name__ == "__main__":
