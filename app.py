@@ -79,6 +79,26 @@ app.config.update(
     SESSION_REFRESH_EACH_REQUEST = True,
 )
 
+# Postgres cierra las conexiones inactivas (mantenimiento de Render, reinicio por
+# cambio de plan) y SQLAlchemy se queda con sockets muertos en el pool: la siguiente
+# peticion que los reutiliza revienta con "SSL connection has been closed unexpectedly".
+# pre_ping prueba la conexion antes de entregarla y abre otra si esta muerta.
+# Solo aplica a Postgres; en SQLite local estas opciones no tienen sentido.
+if DATABASE_URL.startswith("postgresql"):
+    app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+        "pool_pre_ping": True,
+        "pool_recycle": 300,     # recicla conexiones antes de que la red las corte
+        "pool_size": 5,
+        "max_overflow": 5,       # 2 workers x 10 = 20 conexiones maximo, limite del plan es 100
+        "connect_args": {
+            "connect_timeout": 10,
+            "keepalives": 1,
+            "keepalives_idle": 30,
+            "keepalives_interval": 10,
+            "keepalives_count": 3,
+        },
+    }
+
 db.init_app(app)
 register_security(app)
 
