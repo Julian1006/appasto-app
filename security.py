@@ -4,7 +4,7 @@ from hmac import compare_digest
 from time import time
 from urllib.parse import urljoin, urlparse
 
-from flask import abort, request, session, url_for
+from flask import abort, flash, redirect, request, session, url_for
 from markupsafe import Markup, escape
 
 
@@ -33,22 +33,36 @@ def csrf_field():
     )
 
 
-def validate_csrf():
+def csrf_is_valid():
     expected = session.get(CSRF_SESSION_KEY)
     supplied = (
         request.form.get(CSRF_FIELD_NAME)
         or request.headers.get("X-CSRFToken")
         or request.headers.get("X-CSRF-Token")
     )
-    if not expected or not supplied or not compare_digest(str(expected), str(supplied)):
+    return bool(expected and supplied and compare_digest(str(expected), str(supplied)))
+
+
+def validate_csrf():
+    if not csrf_is_valid():
         abort(400, description="Solicitud rechazada por seguridad. Recarga la pagina e intentalo de nuevo.")
+
+
+# Formularios de acceso: al entrar se rota el token de sesion, asi que una pestaña
+# abierta desde antes se queda con el token viejo. Devolver un 400 sin salida hace
+# parecer que la contraseña esta mal; mejor mandar de vuelta al formulario limpio.
+LOGIN_PATHS = ("/admin/login", "/admin/activar", "/login", "/registro")
 
 
 def register_security(app):
     @app.before_request
     def _csrf_before_request():
-        if request.method in CSRF_METHODS:
-            validate_csrf()
+        if request.method not in CSRF_METHODS:
+            return
+        if request.path in LOGIN_PATHS and not csrf_is_valid():
+            flash("El formulario expiro por seguridad. Vuelve a intentarlo.", "error")
+            return redirect(request.path)
+        validate_csrf()
 
 
 def is_safe_url(target):

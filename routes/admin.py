@@ -134,6 +134,10 @@ def activar():
 
 @admin_bp.route("/login", methods=["GET", "POST"])
 def login():
+    # Si ya hay sesion de admin (por ejemplo, se entro desde otra pestaña),
+    # no tiene sentido mostrar el formulario otra vez.
+    if session.get("admin"):
+        return redirect(url_for("admin.dashboard"))
     ip = _ip()
     error = None
     locked = _is_locked(ip)

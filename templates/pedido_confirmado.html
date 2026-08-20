@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}¡Pedido en camino! — Apastto{% endblock %}
+{% block title %}¡Pedido en preparación! — Apastto{% endblock %}
 {% block content %}
 <style>
   .confirm-wrap {
@@ -147,7 +147,7 @@
       </svg>
     </div>
 
-    <h1 class="confirm-title">¡Tu pedido está en camino!</h1>
+    <h1 class="confirm-title">¡Tu pedido se está preparando!</h1>
     <p class="confirm-sub">Pedido con <strong>{{ metodo }}</strong> registrado correctamente.</p>
 
     <div class="confirm-total">Total: ${{ "{:,}".format(total) }}</div>
