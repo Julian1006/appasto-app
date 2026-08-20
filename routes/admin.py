@@ -6,7 +6,7 @@ from functools import wraps
 from hmac import compare_digest
 from flask import Blueprint, render_template, request, redirect, url_for, session, abort, flash, jsonify
 from werkzeug.security import check_password_hash
-from config import ADMIN_PASSWORD, ADMIN_PASSWORD_HASH
+from config import ADMIN_PASSWORD, ADMIN_PASSWORD_HASH, BOGOTA_TZ
 from database import db
 from model import Product, Order, Combo, Promo, Categoria
 from rewards import (LOYALTY_DISCOUNT_PERCENT, LOYALTY_DAYS_VALID, LOYALTY_THRESHOLD,
@@ -181,7 +181,7 @@ def dashboard():
     promos    = Promo.query.order_by(Promo.id.desc()).all()
     n_dest    = Product.query.filter_by(destacado=True).count()
     prod_map  = {p.id: p for p in productos}
-    today     = date.today()
+    today     = datetime.now(BOGOTA_TZ).date()   # el servidor corre en UTC
     combos_vigentes = sum(1 for c in combos if c.activo and c.esta_vigente(today))
     combos_programados = sum(1 for c in combos if c.estado_vigencia(today) == "programado")
     combos_vencidos = sum(1 for c in combos if c.estado_vigencia(today) == "vencido")

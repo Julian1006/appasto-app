@@ -1,6 +1,11 @@
 import os
 import secrets as _secrets
 import hashlib
+from datetime import timedelta as _timedelta, timezone as _timezone
+
+# Colombia usa UTC-5 todo el año: no tiene horario de verano desde 1993.
+# Los pedidos se guardan en UTC (correcto) y se convierten solo al mostrarlos.
+BOGOTA_TZ = _timezone(_timedelta(hours=-5))
 
 BUSINESS_NAME   = "Apastto"
 WHATSAPP_NUMBER = "573158902557"

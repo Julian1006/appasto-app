@@ -45,10 +45,10 @@
 #   - Al mostrar en template: url_for('static', filename=producto.imagen)
 # =============================================================================
 
-from datetime import timedelta
+from datetime import timedelta, timezone
 from flask import Flask, request, session
 from werkzeug.middleware.proxy_fix import ProxyFix
-from config import (SECRET_KEY, DEBUG, IS_PRODUCTION, BUSINESS_NAME, DATABASE_URL,
+from config import (SECRET_KEY, DEBUG, IS_PRODUCTION, BUSINESS_NAME, DATABASE_URL, BOGOTA_TZ,
                     WHATSAPP_NUMBER, WOMPI_PUBLIC_KEY, DELIVERY_RADIUS_KM,
                     DELIVERY_ORIGIN_LAT, DELIVERY_ORIGIN_LNG)
 from database import db
@@ -106,6 +106,17 @@ app.register_blueprint(main_bp)
 app.register_blueprint(cart_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(auth_bp)
+
+
+@app.template_filter("bogota")
+def _a_hora_bogota(dt):
+    # Las fechas se guardan en UTC. Sin esta conversion el panel mostraba
+    # los pedidos 5 horas adelantados respecto a la hora real de Bogota.
+    if dt is None:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(BOGOTA_TZ)
 
 
 @app.after_request

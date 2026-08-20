@@ -49,7 +49,7 @@
           <article class="account-order">
             <div>
               <strong>#{{ pedido.id }} - {{ pedido.metodo }}</strong>
-              <span>{{ pedido.fecha.strftime('%d/%m/%Y %I:%M %p') }}</span>
+              <span>{{ (pedido.fecha|bogota).strftime('%d/%m/%Y %I:%M %p') }}</span>
             </div>
             <div>
               <strong>${{ "{:,}".format(pedido.total) }}</strong>
