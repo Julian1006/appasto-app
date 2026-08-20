@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="{% block description %}Apastto — Carnes frescas a pasto, sin concentrados. Cortes de res, cerdo, pollo y pescado a domicilio en Bogotá. Brahman natural, sin granos.{% endblock %}">
+  <meta name="description" content="{% block description %}Apastto — Carnes a pasto, sin concentrados. Res, cerdo, pollo y pescado a domicilio en Bogotá. Brahman natural.{% endblock %}">
   <title>{% block title %}Apastto — Carnes a Pasto en Bogotá{% endblock %}</title>
   <link rel="canonical" href="{{ request.url_root.rstrip('/') }}{{ request.path }}">
   <meta property="og:type" content="website">
@@ -27,14 +27,17 @@
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
-    "@type": "FoodEstablishment",
+    "@type": "GroceryStore",
     "name": "Apastto",
     "description": "Carnes frescas a pasto, sin concentrados. Cortes de res, cerdo, pollo y pescado a domicilio en Bogotá.",
     "url": "{{ request.host_url }}",
-    "telephone": "+573202055525",
+    "telephone": "+{{ whatsapp_number }}",
     "image": "{{ request.host_url }}static/images/appasto%20imagen.png",
     "priceRange": "$$",
-    "servesCuisine": "Carnes a pasto",
+    "areaServed": {
+      "@type": "City",
+      "name": "Bogotá"
+    },
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "Calle 170 #20a-64",
@@ -54,7 +57,9 @@
       "closes": "18:00"
     },
     "sameAs": [
-      "https://www.instagram.com/apastto.carnes/"
+      "https://www.instagram.com/apastto.carnes/",
+      "https://www.facebook.com/p/Carnes-Apastto-100057465366039/",
+      "https://www.rappi.com.co/tiendas/900352650-pastoreosas-mt-nc/catalogo"
     ]
   }
   </script>

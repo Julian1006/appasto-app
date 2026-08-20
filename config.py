@@ -3,7 +3,7 @@ import secrets as _secrets
 import hashlib
 
 BUSINESS_NAME   = "Apastto"
-WHATSAPP_NUMBER = "573202055525"
+WHATSAPP_NUMBER = "573158902557"
 WOMPI_PUBLIC_KEY = os.environ.get("WOMPI_PUBLIC_KEY", "pub_test_XXXXXXXX")
 
 # Cobertura de domicilios: origen en Cl. 170 #20a-64, Usaquen, Bogota.

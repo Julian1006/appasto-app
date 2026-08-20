@@ -46,7 +46,7 @@
 # =============================================================================
 
 from datetime import timedelta
-from flask import Flask, session
+from flask import Flask, request, session
 from werkzeug.middleware.proxy_fix import ProxyFix
 from config import (SECRET_KEY, DEBUG, IS_PRODUCTION, BUSINESS_NAME, DATABASE_URL,
                     WHATSAPP_NUMBER, WOMPI_PUBLIC_KEY, DELIVERY_RADIUS_KM,
@@ -106,6 +106,20 @@ app.register_blueprint(main_bp)
 app.register_blueprint(cart_bp)
 app.register_blueprint(admin_bp)
 app.register_blueprint(auth_bp)
+
+
+@app.after_request
+def static_cache_headers(response):
+    # Flask sirve /static con "Cache-Control: no-cache": el navegador revalida cada
+    # archivo en cada visita y Cloudflare no lo guarda en el borde (cf-cache-status
+    # DYNAMIC), asi que todo viaja desde Oregon en cada carga. Con cache real el
+    # video y las imagenes solo se descargan una vez.
+    if request.path.startswith("/static/") and response.status_code == 200:
+        if request.path.startswith(("/static/images/", "/static/videos/")):
+            response.headers["Cache-Control"] = "public, max-age=2592000"   # 30 dias
+        else:
+            response.headers["Cache-Control"] = "public, max-age=3600"      # 1 hora: css/js
+    return response
 
 
 @app.after_request
