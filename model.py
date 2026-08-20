@@ -68,6 +68,9 @@ class User(db.Model):
     ciudad        = db.Column(db.String(100), default="")
     reward_200k_issued = db.Column(db.Boolean, default=False, nullable=False, server_default="0")
     reward_200k_code   = db.Column(db.String(50), nullable=True)
+    # La columna ya existe en la base (migracion en app.py), pero faltaba declararla
+    # aqui: sin esto rewards.py revienta con AttributeError al confirmar un pedido.
+    ultimo_reward_at   = db.Column(db.DateTime, nullable=True)
     fecha_creado  = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
     pedidos = db.relationship("Order", backref="user", lazy=True)
