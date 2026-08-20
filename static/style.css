@@ -1887,7 +1887,6 @@ body.checkout-body main {
   justify-content: center;
   position: relative;
   font-size: 1.75rem;
-  overflow: hidden;
   flex-shrink: 0;
 }
 .summary-thumb-img {
@@ -2096,6 +2095,14 @@ body.checkout-body main {
   }
   .summary-item {
     grid-template-columns: 54px minmax(0, 1fr);
+  }
+  .summary-thumb {
+    width: 54px;
+    height: 54px;
+    font-size: 1.4rem;
+  }
+  .summary-thumb-emoji {
+    font-size: 1.4rem;
   }
   .summary-price {
     grid-column: 2;
