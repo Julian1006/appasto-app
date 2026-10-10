@@ -12,6 +12,10 @@
         <a href="{{ url_for('main.catalogo') }}">Seguir comprando</a>
       </div>
 
+      {# Wompi deshabilitado temporalmente: cambiar a true para reactivar tarjeta/PSE #}
+      {% set wompi_activo = false %}
+
+      {% if wompi_activo %}
       <div class="checkout-express">
         <p>Compra asistida Apastto</p>
         <div class="checkout-express-grid">
@@ -21,6 +25,7 @@
         </div>
         <div class="checkout-divider"><span>O</span></div>
       </div>
+      {% endif %}
 
       <section class="checkout-section">
         <div class="checkout-heading-row">
@@ -100,11 +105,32 @@
             </span>
           </button>
 
+          <button type="button" class="payment-row" data-metodo="datafono" onclick="seleccionarPago(this)">
+            <span class="payment-radio"></span>
+            <span class="payment-copy">
+              <strong>Datáfono</strong>
+              <small>Pagas con tarjeta débito o crédito al recibir</small>
+            </span>
+          </button>
+
+          <button type="button" class="payment-row" data-metodo="transferencia" onclick="seleccionarPago(this)">
+            <span class="payment-radio"></span>
+            <span class="payment-copy">
+              <strong>Transferencia</strong>
+              <small>Te enviamos los datos para pagar al confirmar el pedido</small>
+            </span>
+            <span class="payment-tags"><b>Bancaria</b><b>Bre-B</b><b>QR</b></span>
+          </button>
+
+          {% if wompi_activo %}
           <button type="button" class="payment-row" data-metodo="tarjeta" onclick="seleccionarPago(this)">
+          {% else %}
+          <button type="button" class="payment-row payment-row-disabled" data-metodo="tarjeta" disabled aria-disabled="true">
+          {% endif %}
             <span class="payment-radio"></span>
             <span class="payment-copy">
               <strong>Tarjeta / PSE con Wompi</strong>
-              <small>Pago protegido para pedidos Apastto</small>
+              <small>{% if wompi_activo %}Pago protegido para pedidos Apastto{% else %}No disponible temporalmente{% endif %}</small>
             </span>
             <span class="payment-tags"><b>VISA</b><b>MC</b><b>PSE</b></span>
           </button>
@@ -477,6 +503,9 @@
     } else if (tipo === 'daviplata') {
       form.action = "{{ url_for('cart.checkout_billetera') }}";
       document.getElementById('directo-metodo').value = 'Daviplata';
+    } else if (tipo === 'datafono' || tipo === 'transferencia') {
+      form.action = "{{ url_for('cart.checkout_billetera') }}";
+      document.getElementById('directo-metodo').value = tipo;
     } else if (tipo === 'efectivo') {
       form.action = "{{ url_for('cart.checkout_efectivo') }}";
     } else {

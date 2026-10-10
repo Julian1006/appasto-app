@@ -27,7 +27,7 @@ class Order(db.Model):
     id        = db.Column(db.Integer, primary_key=True)
     user_id   = db.Column(db.Integer, db.ForeignKey("users.id"), nullable=True)
     fecha     = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
-    metodo    = db.Column(db.String(30), nullable=False)   # WhatsApp, Nequi, Daviplata, Efectivo, Tarjeta
+    metodo    = db.Column(db.String(30), nullable=False)   # WhatsApp, Nequi, Daviplata, Efectivo, Datafono, Transferencia, Tarjeta
     total     = db.Column(db.Integer, nullable=False)       # Total en COP ya con descuento aplicado
     items_json= db.Column(db.Text, nullable=False)          # JSON con items (incluye id para restaurar stock)
     tel       = db.Column(db.String(30), default="")

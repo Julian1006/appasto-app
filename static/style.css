@@ -1756,6 +1756,12 @@ body.checkout-body main {
 .payment-row:hover {
   background: #fbf1e8;
 }
+.payment-row-disabled,
+.payment-row-disabled:hover {
+  background: #f4efea;
+  cursor: not-allowed;
+  opacity: .55;
+}
 .payment-row-selected {
   background: linear-gradient(135deg, #fff8ef, #f3ded0);
   box-shadow: inset 4px 0 0 var(--red);

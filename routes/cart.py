@@ -380,7 +380,11 @@ def checkout_billetera():
     if not items:
         return redirect(url_for("cart.carrito"))
     metodo_raw = _clean_text(request.form.get("metodo", "Nequi"), 20).lower()
-    metodo = "Daviplata" if metodo_raw == "daviplata" else "Nequi"
+    metodo = {
+        "daviplata": "Daviplata",
+        "datafono": "Datafono",
+        "transferencia": "Transferencia",
+    }.get(metodo_raw, "Nequi")
     tel   = _clean_text(request.form.get("tel", ""), 30)
     dir_  = _clean_text(request.form.get("dir", ""), 300)
     ciudad = _clean_text(request.form.get("ciudad", ""), 100)
@@ -404,7 +408,12 @@ def checkout_billetera():
         if dir_:   lineas.append(f"Dirección: {dir_}")
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
         if franja: lineas.append(f"🕐 Hora preferida: {franja}")
-    lineas.append(f"\nPor favor indicarme el número {metodo} para realizar el pago y confirmar disponibilidad. ¡Gracias!")
+    if metodo == "Datafono":
+        lineas.append("\nPor favor llevar datáfono en la entrega y confirmar disponibilidad. ¡Gracias!")
+    elif metodo == "Transferencia":
+        lineas.append("\nPor favor enviarme los datos bancarios, llave Bre-B o código QR para realizar el pago y confirmar disponibilidad. ¡Gracias!")
+    else:
+        lineas.append(f"\nPor favor indicarme el número {metodo} para realizar el pago y confirmar disponibilidad. ¡Gracias!")
     _save_order(metodo, items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
     wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
     session.pop("cart", None)
