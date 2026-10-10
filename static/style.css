@@ -1523,7 +1523,7 @@ body.checkout-body main {
 }
 .checkout-express-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1fr;
   gap: .75rem;
 }
 .express-btn {

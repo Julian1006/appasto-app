@@ -15,9 +15,6 @@
       <div class="checkout-express">
         <p>Compra asistida Apastto</p>
         <div class="checkout-express-grid">
-          <button type="button" class="express-btn express-wa" onclick="seleccionarPagoRapido('whatsapp')">
-            Pedir por WhatsApp
-          </button>
           <button type="button" class="express-btn express-card" onclick="seleccionarPagoRapido('tarjeta')">
             Pagar seguro
           </button>
@@ -95,31 +92,7 @@
         <p class="checkout-muted">Elige como quieres cerrar tu pedido. Todos los metodos mantienen stock, cupones y resumen.</p>
 
         <div class="payment-stack">
-          <button type="button" class="payment-row payment-row-selected" data-metodo="whatsapp" onclick="seleccionarPago(this)">
-            <span class="payment-radio"></span>
-            <span class="payment-copy">
-              <strong>WhatsApp</strong>
-              <small>Te confirmamos cortes, disponibilidad y entrega</small>
-            </span>
-          </button>
-
-          <button type="button" class="payment-row" data-metodo="nequi" onclick="seleccionarPago(this)">
-            <span class="payment-radio"></span>
-            <span class="payment-copy">
-              <strong>Nequi</strong>
-              <small>Transferencia rapida despues de confirmar el pedido</small>
-            </span>
-          </button>
-
-          <button type="button" class="payment-row" data-metodo="daviplata" onclick="seleccionarPago(this)">
-            <span class="payment-radio"></span>
-            <span class="payment-copy">
-              <strong>Daviplata</strong>
-              <small>Billetera digital para pago coordinado</small>
-            </span>
-          </button>
-
-          <button type="button" class="payment-row" data-metodo="efectivo" onclick="seleccionarPago(this)">
+          <button type="button" class="payment-row payment-row-selected" data-metodo="efectivo" onclick="seleccionarPago(this)">
             <span class="payment-radio"></span>
             <span class="payment-copy">
               <strong>Efectivo contra entrega</strong>
@@ -377,7 +350,7 @@
     });
   });
 
-  var _metodoSeleccionado = 'whatsapp';
+  var _metodoSeleccionado = 'efectivo';
 
   function seleccionarPagoRapido(metodo) {
     var btn = document.querySelector('[data-metodo="'+metodo+'"]');
