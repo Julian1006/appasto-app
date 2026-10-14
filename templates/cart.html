@@ -33,7 +33,11 @@
           <span>Pedido seguro</span>
         </div>
         <div class="checkout-field">
-          <input type="email" id="cliente-email" placeholder="Correo electrónico"
+          <input type="text" id="cliente-nombre" placeholder="Nombre completo *" required autocomplete="name"
+            style="font-size:16px" value="{{ current_user.nombre if current_user else '' }}">
+        </div>
+        <div class="checkout-field">
+          <input type="email" id="cliente-email" placeholder="Correo electrónico (opcional)" autocomplete="email"
             style="font-size:16px" value="{{ current_user.email if current_user else '' }}">
         </div>
         <div class="checkout-field">
@@ -248,6 +252,8 @@
 
   <form id="form-tarjeta" action="{{ url_for('cart.checkout_tarjeta') }}" method="POST" style="display:none">
     {{ csrf_field() }}
+    <input type="hidden" name="nombre" id="tarjeta-nombre">
+    <input type="hidden" name="email" id="tarjeta-email">
     <input type="hidden" name="tel" id="tarjeta-tel">
     <input type="hidden" name="dir" id="tarjeta-dir">
     <input type="hidden" name="ciudad" id="tarjeta-ciudad">
@@ -255,6 +261,7 @@
   <form id="form-checkout-directo" method="POST" style="display:none">
     {{ csrf_field() }}
     <input type="hidden" name="nombre" id="directo-nombre">
+    <input type="hidden" name="email" id="directo-email">
     <input type="hidden" name="tel" id="directo-tel">
     <input type="hidden" name="dir" id="directo-dir">
     <input type="hidden" name="ciudad" id="directo-ciudad">
@@ -343,13 +350,19 @@
       tel: document.getElementById('cliente-tel').value.trim(),
       dir: document.getElementById('cliente-direccion').value.trim(),
       ciudad: '',
-      nombre: '',
+      nombre: document.getElementById('cliente-nombre').value.trim(),
+      email: document.getElementById('cliente-email').value.trim(),
       franja: document.getElementById('franja-seleccionada').value.trim(),
     };
   }
 
   function _validateDelivery() {
     var d = _getDelivery();
+    if (!d.nombre) {
+      alert('Por favor ingresa tu nombre.');
+      document.getElementById('cliente-nombre').focus();
+      return null;
+    }
     if (!d.tel) {
       alert('Por favor ingresa tu número de teléfono.');
       document.getElementById('cliente-tel').focus();
@@ -456,8 +469,9 @@
       lineas.push('\n*Total: ' + totalTexto + '*');
     }
 
-    if (d.tel || d.dir) {
+    if (d.nombre || d.tel || d.dir) {
       lineas.push('\n📦 *Datos de entrega:*');
+      if (d.nombre) lineas.push('Nombre: ' + d.nombre);
       if (d.tel) lineas.push('Teléfono: ' + d.tel);
       if (d.dir) lineas.push('Dirección: ' + d.dir);
       if (d.distanceKm !== null) lineas.push('Cobertura: ' + _formatKm(d.distanceKm) + ' km de la tienda');
@@ -481,6 +495,7 @@
 
     var form = document.getElementById('form-checkout-directo');
     document.getElementById('directo-nombre').value = d.nombre || '';
+    document.getElementById('directo-email').value = d.email || '';
     document.getElementById('directo-tel').value = d.tel;
     document.getElementById('directo-dir').value = d.dir;
     document.getElementById('directo-ciudad').value = d.ciudad || '';
@@ -489,6 +504,8 @@
 
     if (tipo === 'tarjeta') {
       var fTarjeta = document.getElementById('form-tarjeta');
+      document.getElementById('tarjeta-nombre').value = d.nombre || '';
+      document.getElementById('tarjeta-email').value = d.email || '';
       document.getElementById('tarjeta-tel').value = d.tel;
       document.getElementById('tarjeta-dir').value = d.dir;
       document.getElementById('tarjeta-ciudad').value = d.ciudad || '';

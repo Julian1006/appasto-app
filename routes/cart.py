@@ -65,7 +65,8 @@ def _redirect_back(default_endpoint="main.index"):
     target = request.form.get("next") or request.referrer
     return redirect(safe_redirect_target(target, default_endpoint))
 
-def _save_order(metodo, items, total, tel="", dir_="", ciudad="", referencia="", issue_reward=False):
+def _save_order(metodo, items, total, tel="", dir_="", ciudad="", referencia="", issue_reward=False,
+                nombre="", email=""):
     try:
         from model import Product as _Product
         reward_code = None
@@ -84,6 +85,7 @@ def _save_order(metodo, items, total, tel="", dir_="", ciudad="", referencia="",
             user_id=session.get("user_id"),
             metodo=metodo, total=total,
             items_json=json.dumps(items_data, ensure_ascii=False),
+            nombre=nombre, email=email,
             tel=tel, direccion=dir_, ciudad=ciudad, referencia=referencia,
         )
         db.session.add(order)
@@ -385,6 +387,8 @@ def checkout_billetera():
         "datafono": "Datafono",
         "transferencia": "Transferencia",
     }.get(metodo_raw, "Nequi")
+    nombre = _clean_text(request.form.get("nombre", ""), 120)
+    email = _clean_text(request.form.get("email", ""), 180)
     tel   = _clean_text(request.form.get("tel", ""), 30)
     dir_  = _clean_text(request.form.get("dir", ""), 300)
     ciudad = _clean_text(request.form.get("ciudad", ""), 100)
@@ -402,8 +406,9 @@ def checkout_billetera():
         lineas.append(f"\n🏷️ Cupón {promo_cod}: -${descuento:,}")
     lineas.append(f"🚚 Envío: {'Gratis' if envio == 0 else f'${envio:,}'}")
     lineas.append(f"*Total: ${total_final:,}*")
-    if tel or dir_:
+    if nombre or tel or dir_:
         lineas.append(f"\n📦 *Datos de entrega:*")
+        if nombre: lineas.append(f"Nombre: {nombre}")
         if tel:    lineas.append(f"Teléfono: {tel}")
         if dir_:   lineas.append(f"Dirección: {dir_}")
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
@@ -414,7 +419,7 @@ def checkout_billetera():
         lineas.append("\nPor favor enviarme los datos bancarios, llave Bre-B o código QR para realizar el pago y confirmar disponibilidad. ¡Gracias!")
     else:
         lineas.append(f"\nPor favor indicarme el número {metodo} para realizar el pago y confirmar disponibilidad. ¡Gracias!")
-    _save_order(metodo, items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
+    _save_order(metodo, items, total_final, nombre=nombre, email=email, tel=tel, dir_=dir_, ciudad=ciudad)
     wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
     session.pop("cart", None)
     session.pop("cart_notes", None)
@@ -429,6 +434,8 @@ def checkout_efectivo():
     items, total = get_cart_items()
     if not items:
         return redirect(url_for("cart.carrito"))
+    nombre = _clean_text(request.form.get("nombre", ""), 120)
+    email = _clean_text(request.form.get("email", ""), 180)
     tel   = _clean_text(request.form.get("tel", ""), 30)
     dir_  = _clean_text(request.form.get("dir", ""), 300)
     ciudad = _clean_text(request.form.get("ciudad", ""), 100)
@@ -446,14 +453,15 @@ def checkout_efectivo():
         lineas.append(f"\n🏷️ Cupón {promo_cod}: -${descuento:,}")
     lineas.append(f"🚚 Envío: {'Gratis' if envio == 0 else f'${envio:,}'}")
     lineas.append(f"*Total a pagar: ${total_final:,}*")
-    if tel or dir_:
+    if nombre or tel or dir_:
         lineas.append(f"\n📦 *Datos de entrega:*")
+        if nombre: lineas.append(f"Nombre: {nombre}")
         if tel:    lineas.append(f"Teléfono: {tel}")
         if dir_:   lineas.append(f"Dirección: {dir_}")
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
         if franja: lineas.append(f"🕐 Hora preferida: {franja}")
     lineas.append("\nPor favor confirmar disponibilidad y coordinar la entrega. ¡Gracias!")
-    _save_order("Efectivo", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
+    _save_order("Efectivo", items, total_final, nombre=nombre, email=email, tel=tel, dir_=dir_, ciudad=ciudad)
     wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(chr(10).join(lineas))}"
     session.pop("cart", None)
     session.pop("cart_notes", None)
@@ -470,6 +478,7 @@ def checkout_whatsapp():
         return redirect(url_for("cart.carrito"))
 
     nombre = _clean_text(request.form.get("nombre", ""), 120)
+    email = _clean_text(request.form.get("email", ""), 180)
     tel = _clean_text(request.form.get("tel", ""), 30)
     dir_ = _clean_text(request.form.get("dir", ""), 300)
     ciudad = _clean_text(request.form.get("ciudad", ""), 100)
@@ -487,7 +496,7 @@ def checkout_whatsapp():
         lineas.append(f"\n🏷️ Cupón {promo_cod}: -${descuento:,}")
     lineas.append(f"🚚 Envío: {'Gratis' if envio == 0 else f'${envio:,}'}")
     lineas.append(f"*Total estimado: ${total_final:,}*")
-    if nombre or dir_:
+    if nombre or tel or dir_:
         lineas.append(f"\n📦 *Datos de entrega:*")
         if nombre: lineas.append(f"Nombre: {nombre}")
         if tel: lineas.append(f"Teléfono: {tel}")
@@ -495,7 +504,7 @@ def checkout_whatsapp():
         if ciudad: lineas.append(f"Ciudad/Barrio: {ciudad}")
         if franja: lineas.append(f"🕐 Hora preferida: {franja}")
     lineas.append("\nPor favor confirmar disponibilidad y precio final. ¡Gracias!")
-    _save_order("WhatsApp", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad)
+    _save_order("WhatsApp", items, total_final, nombre=nombre, email=email, tel=tel, dir_=dir_, ciudad=ciudad)
     mensaje = "\n".join(lineas)
     wa_url = f"https://wa.me/{WHATSAPP_NUMBER}?text={quote(mensaje)}"
     session.pop("cart", None)
@@ -584,6 +593,8 @@ def checkout_tarjeta():
     items, total = get_cart_items()
     if not items:
         return redirect(url_for("cart.carrito"))
+    nombre = _clean_text(request.form.get("nombre", ""), 120)
+    email = _clean_text(request.form.get("email", ""), 180)
     tel = _clean_text(request.form.get("tel", ""), 30)
     dir_ = _clean_text(request.form.get("dir", ""), 300)
     ciudad = _clean_text(request.form.get("ciudad", ""), 100)
@@ -593,7 +604,7 @@ def checkout_tarjeta():
     total_final = subtotal_con_descuento + envio
     referencia = f"APASTTO-{uuid.uuid4().hex[:8].upper()}"
     monto_centavos = total_final * 100
-    _save_order("Tarjeta", items, total_final, tel=tel, dir_=dir_, ciudad=ciudad, referencia=referencia)
+    _save_order("Tarjeta", items, total_final, nombre=nombre, email=email, tel=tel, dir_=dir_, ciudad=ciudad, referencia=referencia)
     session.pop("cart", None)
     return render_template("checkout_tarjeta.html",
                            items=items, total=total_final,

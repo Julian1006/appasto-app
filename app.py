@@ -250,6 +250,10 @@ with app.app_context():
         _safe_exec("ALTER TABLE orders ADD COLUMN user_id INTEGER")
     if "reward_code" not in _order_cols:
         _safe_exec("ALTER TABLE orders ADD COLUMN reward_code VARCHAR(50)")
+    if "nombre" not in _order_cols:
+        _safe_exec("ALTER TABLE orders ADD COLUMN nombre VARCHAR(120) DEFAULT ''")
+    if "email" not in _order_cols:
+        _safe_exec("ALTER TABLE orders ADD COLUMN email VARCHAR(180) DEFAULT ''")
 
     _promo_cols = _columnas("promos")
     if "visible_cliente" not in _promo_cols:

@@ -31,6 +31,8 @@ class Order(db.Model):
     metodo    = db.Column(db.String(30), nullable=False)   # WhatsApp, Nequi, Daviplata, Efectivo, Datafono, Transferencia, Tarjeta
     total     = db.Column(db.Integer, nullable=False)       # Total en COP ya con descuento aplicado
     items_json= db.Column(db.Text, nullable=False)          # JSON con items (incluye id para restaurar stock)
+    nombre    = db.Column(db.String(120), default="")
+    email     = db.Column(db.String(180), default="")       # Opcional
     tel       = db.Column(db.String(30), default="")
     direccion = db.Column(db.String(300), default="")
     ciudad    = db.Column(db.String(100), default="")
@@ -49,6 +51,8 @@ class Order(db.Model):
             "metodo": self.metodo,
             "total": self.total,
             "items": self.items,
+            "nombre": self.nombre,
+            "email": self.email,
             "tel": self.tel,
             "direccion": self.direccion,
             "ciudad": self.ciudad,

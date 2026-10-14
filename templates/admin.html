@@ -429,7 +429,9 @@
           </td>
           <td style="font-weight:800;color:#c0392b;font-size:.95rem">${{ "{:,}".format(o.total) }}</td>
           <td style="font-size:.82rem;line-height:1.7">
+            {% if o.nombre %}<div>👤 <strong>{{ o.nombre }}</strong></div>{% endif %}
             {% if o.tel %}<div>📞 <strong>{{ o.tel }}</strong></div>{% endif %}
+            {% if o.email %}<div>✉️ {{ o.email }}</div>{% endif %}
             {% if o.direccion %}<div>📍 {{ o.direccion }}</div>{% endif %}
             {% if o.ciudad %}<div>🏙 {{ o.ciudad }}</div>{% endif %}
             {% if o.referencia %}<div style="color:#aaa;font-size:.7rem">Ref: {{ o.referencia }}</div>{% endif %}
