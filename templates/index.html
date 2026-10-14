@@ -6,12 +6,32 @@
 {% block content %}
 
 <!-- ══ 1. HERO ══════════════════════════════════════════════════════════════ -->
-<section class="hero hero-sell">
+<section class="hero hero-sell" id="hero">
+  {% if hero_slides %}
+  <!-- Fotos subidas desde el admin (pestaña Portada) -->
+  <div class="hero-slides">
+    {% for s in hero_slides %}
+    <img class="hero-slide{% if loop.first %} active{% endif %}"
+         src="{{ url_for('main.portada_imagen', sid=s.id, v=s.fecha.strftime('%Y%m%d%H%M%S')) }}"
+         alt="" {% if not loop.first %}loading="lazy"{% else %}fetchpriority="high"{% endif %}>
+    {% endfor %}
+  </div>
+  {% else %}
   <video class="hero-video" autoplay muted loop playsinline webkit-playsinline
          preload="none" poster="{{ url_for('static', filename='images/carne/Osobuco.webp') }}">
     <source src="{{ url_for('static', filename='videos/apastto.mp4') }}" type="video/mp4">
   </video>
+  {% endif %}
   <div class="hero-overlay"></div>
+  {% if hero_slides|length > 1 %}
+  <button class="hero-arrow hero-prev" type="button" aria-label="Imagen anterior">&#8249;</button>
+  <button class="hero-arrow hero-next" type="button" aria-label="Imagen siguiente">&#8250;</button>
+  <div class="hero-dots">
+    {% for s in hero_slides %}
+    <button type="button" class="hero-dot{% if loop.first %} active{% endif %}" aria-label="Ver imagen {{ loop.index }}"></button>
+    {% endfor %}
+  </div>
+  {% endif %}
   <div class="hero-content">
     <div class="hero-pretag">🚚 Entrega a domicilio en Bogotá</div>
     <h1>Carne premium<br>lista para pedir<br><em>en 30 segundos</em></h1>
@@ -236,5 +256,43 @@ document.querySelectorAll('.add-form').forEach(form => {
     }, 1800);
   });
 });
+
+// Carrusel de la portada: pasa solo cada 6 s y se puede mover con flechas,
+// puntos o deslizando el dedo
+(function() {
+  var hero = document.getElementById('hero');
+  var slides = hero ? hero.querySelectorAll('.hero-slide') : [];
+  if (slides.length < 2) return;
+  var dots = hero.querySelectorAll('.hero-dot');
+  var actual = 0, timer = null;
+  var quieto = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function ir(n) {
+    slides[actual].classList.remove('active');
+    dots[actual].classList.remove('active');
+    actual = (n + slides.length) % slides.length;
+    slides[actual].classList.add('active');
+    dots[actual].classList.add('active');
+  }
+  function reiniciar() {
+    clearInterval(timer);
+    if (!quieto) timer = setInterval(function() { ir(actual + 1); }, 6000);
+  }
+
+  hero.querySelector('.hero-prev').addEventListener('click', function() { ir(actual - 1); reiniciar(); });
+  hero.querySelector('.hero-next').addEventListener('click', function() { ir(actual + 1); reiniciar(); });
+  dots.forEach(function(d, i) { d.addEventListener('click', function() { ir(i); reiniciar(); }); });
+
+  var x0 = null;
+  hero.addEventListener('touchstart', function(e) { x0 = e.touches[0].clientX; }, { passive: true });
+  hero.addEventListener('touchend', function(e) {
+    if (x0 === null) return;
+    var dx = e.changedTouches[0].clientX - x0;
+    if (Math.abs(dx) > 50) { ir(actual + (dx < 0 ? 1 : -1)); reiniciar(); }
+    x0 = null;
+  });
+
+  reiniciar();
+})();
 </script>
 {% endblock %}

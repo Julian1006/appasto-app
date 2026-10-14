@@ -196,7 +196,10 @@ def dashboard():
                 break
 
     categorias = Categoria.query.order_by(Categoria.nivel, Categoria.id).all()
+    from model import HeroSlide
+    hero_slides = HeroSlide.query.order_by(HeroSlide.orden, HeroSlide.id).all()
     return render_template("admin.html", productos=productos, pedidos=pedidos,
+                           hero_slides=hero_slides, hero_max=_HERO_MAX_SLIDES,
                            combos=combos, combos_sin_stock=combos_sin_stock,
                            promos=promos, n_dest=n_dest, max_dest=MAX_DESTACADOS,
                            combos_vigentes=combos_vigentes,
@@ -716,3 +719,77 @@ def eliminar_categoria(cid):
         db.session.delete(cat)
         db.session.commit()
     return redirect(url_for("admin.dashboard") + "#tab-categorias")
+
+
+# ── Portada (carrusel del home) ──────────────────────────────────────────────
+_HERO_MAX_SLIDES = 8
+_HERO_MAX_WIDTH  = 1920
+
+
+def _hero_bytes(file):
+    # Valida la imagen y la reduce a WebP de máx. 1920px para que la portada
+    # cargue rápido aunque la foto venga directo del celular (4-6 MB).
+    # Devuelve (bytes, mime) o None si el archivo no es una imagen válida.
+    if not file or not file.filename:
+        return None
+    ext = file.filename.rsplit(".", 1)[-1].lower()
+    if ext not in _ALLOWED_EXT or not _image_magic_is_valid(file, ext):
+        return None
+    raw = file.read()
+    try:
+        from io import BytesIO
+        from PIL import Image, ImageOps
+        img = ImageOps.exif_transpose(Image.open(BytesIO(raw))).convert("RGB")
+        if img.width > _HERO_MAX_WIDTH:
+            img = img.resize((_HERO_MAX_WIDTH, round(img.height * _HERO_MAX_WIDTH / img.width)), Image.LANCZOS)
+        out = BytesIO()
+        img.save(out, "WEBP", quality=80, method=6)
+        return out.getvalue(), "image/webp"
+    except Exception:
+        mime = "image/jpeg" if ext in ("jpg", "jpeg") else f"image/{ext}"
+        return raw, mime
+
+
+@admin_bp.route("/portada/subir", methods=["POST"])
+@admin_required
+def subir_portada():
+    from model import HeroSlide
+    total = HeroSlide.query.count()
+    siguiente = (db.session.query(db.func.max(HeroSlide.orden)).scalar() or 0) + 1
+    for file in request.files.getlist("imagenes"):
+        if total >= _HERO_MAX_SLIDES:
+            break
+        res = _hero_bytes(file)
+        if not res:
+            continue
+        db.session.add(HeroSlide(data=res[0], mime=res[1], orden=siguiente))
+        siguiente += 1
+        total += 1
+    db.session.commit()
+    return redirect(url_for("admin.dashboard") + "#tab-portada")
+
+
+@admin_bp.route("/portada/<int:sid>/mover", methods=["POST"])
+@admin_required
+def mover_portada(sid):
+    from model import HeroSlide
+    slides = HeroSlide.query.order_by(HeroSlide.orden, HeroSlide.id).all()
+    idx = next((i for i, s in enumerate(slides) if s.id == sid), None)
+    if idx is None:
+        abort(404)
+    destino = idx - 1 if request.form.get("dir") == "arriba" else idx + 1
+    if 0 <= destino < len(slides):
+        slides[idx], slides[destino] = slides[destino], slides[idx]
+        for i, s in enumerate(slides, start=1):
+            s.orden = i
+        db.session.commit()
+    return redirect(url_for("admin.dashboard") + "#tab-portada")
+
+
+@admin_bp.route("/portada/<int:sid>/eliminar", methods=["POST"])
+@admin_required
+def eliminar_portada(sid):
+    from model import HeroSlide
+    db.session.delete(HeroSlide.query.get_or_404(sid))
+    db.session.commit()
+    return redirect(url_for("admin.dashboard") + "#tab-portada")

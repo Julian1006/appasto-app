@@ -176,6 +176,10 @@
     🗂️ Categorías
     <span style="color:#aaa;font-weight:400">({{ categorias|length }})</span>
   </button>
+  <button class="tab-btn" id="btn-tab-portada" onclick="switchTab('portada')">
+    🖼️ Portada
+    <span style="color:#aaa;font-weight:400">({{ hero_slides|length }})</span>
+  </button>
 </div>
 
 {% if request.args.get('reward') %}
@@ -839,6 +843,77 @@
   </div>
 </div>
 
+<!-- ══════════════════ TAB: PORTADA ══════════════════ -->
+<div class="tab-content" id="tab-portada">
+  <div class="stats-bar">
+    <div class="stat-pill">Fotos en la portada: <strong>{{ hero_slides|length }}/{{ hero_max }}</strong></div>
+  </div>
+
+  <div style="padding:1.5rem 2rem;max-width:900px">
+    <div style="background:#fff;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.06);overflow:hidden">
+      <div style="background:#1a1a1a;color:#fff;padding:.9rem 1.2rem;display:flex;align-items:center;justify-content:space-between;gap:1rem;flex-wrap:wrap">
+        <strong style="font-size:.9rem">🖼️ Fotos de la portada</strong>
+        <span style="font-size:.75rem;color:#aaa">Rotan cada 6 s en el inicio. Sin fotos se muestra el video.</span>
+      </div>
+
+      {% if hero_slides %}
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;padding:1.2rem">
+        {% for s in hero_slides %}
+        <div style="border:1.5px solid #eee;border-radius:10px;overflow:hidden">
+          <img src="{{ url_for('main.portada_imagen', sid=s.id, v=s.fecha.strftime('%Y%m%d%H%M%S')) }}" alt="Foto {{ loop.index }}"
+               style="display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#f4f4f5">
+          <div style="display:flex;align-items:center;gap:.3rem;padding:.5rem .6rem">
+            <span style="font-size:.8rem;font-weight:700;color:#555;margin-right:auto">#{{ loop.index }}</span>
+            {% if not loop.first %}
+            <form method="POST" action="/admin/portada/{{ s.id }}/mover" style="display:inline">
+              {{ csrf_field() }}<input type="hidden" name="dir" value="arriba">
+              <button type="submit" title="Mover antes" style="background:#f4f4f5;border:none;border-radius:6px;padding:.3rem .55rem;cursor:pointer;font-size:.8rem">◀</button>
+            </form>
+            {% endif %}
+            {% if not loop.last %}
+            <form method="POST" action="/admin/portada/{{ s.id }}/mover" style="display:inline">
+              {{ csrf_field() }}<input type="hidden" name="dir" value="abajo">
+              <button type="submit" title="Mover después" style="background:#f4f4f5;border:none;border-radius:6px;padding:.3rem .55rem;cursor:pointer;font-size:.8rem">▶</button>
+            </form>
+            {% endif %}
+            <form method="POST" action="/admin/portada/{{ s.id }}/eliminar" style="display:inline"
+                  onsubmit="return confirm('¿Quitar esta foto de la portada?')">
+              {{ csrf_field() }}
+              <button type="submit" style="background:none;border:none;color:#c0392b;cursor:pointer;font-size:.8rem;font-weight:600;padding:.3rem .5rem;border-radius:6px">✕ Quitar</button>
+            </form>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <p style="padding:1.5rem 1.2rem;color:#777;font-size:.88rem;margin:0">
+        Aún no hay fotos. Mientras tanto, la portada muestra el video de siempre.
+      </p>
+      {% endif %}
+
+      {% if hero_slides|length < hero_max %}
+      <form method="POST" action="/admin/portada/subir" enctype="multipart/form-data"
+            style="padding:1rem 1.2rem;border-top:1.5px dashed #e5e5e5;display:flex;flex-wrap:wrap;gap:.75rem;align-items:center">
+        {{ csrf_field() }}
+        <input type="file" name="imagenes" accept="image/png,image/jpeg,image/webp" multiple required
+               style="flex:1;min-width:220px;font-size:.85rem">
+        <button type="submit"
+          style="background:#1a1a1a;color:#fff;border:none;padding:.55rem 1.2rem;border-radius:8px;font-size:.88rem;font-weight:700;cursor:pointer">
+          + Subir fotos
+        </button>
+        <span style="width:100%;font-size:.75rem;color:#888">
+          JPG, PNG o WebP (máx. 8 MB por subida). Mejor fotos horizontales (ej. 1920×1080); el texto de la portada va encima, centrado.
+        </span>
+      </form>
+      {% else %}
+      <p style="padding:1rem 1.2rem;border-top:1.5px dashed #e5e5e5;color:#777;font-size:.82rem;margin:0">
+        Llegaste al máximo de {{ hero_max }} fotos. Quita una para subir otra.
+      </p>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
 <!-- ══════════════════ MODAL CREAR PROMO ══════════════════ -->
 <div id="modal-promo" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:300;align-items:center;justify-content:center;padding:2rem 1rem">
   <div style="background:#fff;width:100%;max-width:480px;border-radius:16px;overflow:hidden">
@@ -1283,6 +1358,7 @@ function switchTab(name) {
   else if (saved === 'combos') switchTab('combos');
   else if (saved === 'promos') switchTab('promos');
   else if (saved === 'categorias') switchTab('categorias');
+  else if (saved === 'portada') switchTab('portada');
 })();
 
 // Filtrar tabla productos

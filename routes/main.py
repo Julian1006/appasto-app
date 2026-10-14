@@ -55,9 +55,24 @@ def index():
             for item in c.items
         )
     ]
+    from database import db
+    from model import HeroSlide
+    # Solo id y fecha: los bytes de cada foto se sirven aparte en /portada/<id>.
+    # La fecha va en la URL (?v=) porque SQLite puede reutilizar un id borrado.
+    hero_slides = db.session.query(HeroSlide.id, HeroSlide.fecha).order_by(HeroSlide.orden, HeroSlide.id).all()
     return render_template("index.html", productos=destacados,
                            low_stock=LOW_STOCK, combos=combos,
-                           productos_count=len(todos))
+                           productos_count=len(todos), hero_slides=hero_slides)
+
+
+@main_bp.route("/portada/<int:sid>")
+def portada_imagen(sid):
+    from model import HeroSlide
+    slide = HeroSlide.query.get_or_404(sid)
+    resp = Response(slide.data, mimetype=slide.mime)
+    # La URL lleva ?v=<fecha de subida>, así que su contenido nunca cambia
+    resp.headers["Cache-Control"] = "public, max-age=31536000, immutable"
+    return resp
 
 
 @main_bp.route("/nosotros")

@@ -6,6 +6,7 @@
 #   Product → productos del catálogo (con stock, imagen, precio)
 #   Combo   → combo de productos (precio fijo, descuenta stock de cada ingrediente)
 #   Promo   → cupones de descuento (porcentaje o monto fijo COP)
+#   HeroSlide → fotos del carrusel de la portada (bytes guardados en la DB)
 #
 # NOTAS IMPORTANTES:
 #   - Product.stock = None significa stock ILIMITADO (no se controla)
@@ -257,6 +258,18 @@ class Categoria(db.Model):
             "id": self.id, "nombre": self.nombre, "nivel": self.nivel,
             "emoji": self.emoji or "", "color": self.color or "", "activo": self.activo,
         }
+
+
+class HeroSlide(db.Model):
+    # Fotos de la portada (carrusel del home). Se guardan en la base de datos y
+    # no en static/: el disco de Render es efímero y se vacía en cada deploy.
+    __tablename__ = "hero_slides"
+
+    id     = db.Column(db.Integer, primary_key=True)
+    data   = db.deferred(db.Column(db.LargeBinary, nullable=False))  # bytes de la imagen; solo se carga al servirla
+    mime   = db.Column(db.String(30), nullable=False, default="image/webp")
+    orden  = db.Column(db.Integer, nullable=False, default=0)
+    fecha  = db.Column(db.DateTime, default=datetime.utcnow, nullable=False)
 
 
 SEED_CATEGORIAS = [
