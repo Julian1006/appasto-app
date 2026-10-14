@@ -72,9 +72,8 @@
 <body class="{% block body_class %}{% endblock %}">
 
   <nav class="navbar">
-    <a href="{{ url_for('main.index') }}" class="nav-logo">
-      <img src="{{ url_for('static', filename='images/appasto imagen.png') }}" alt="Apastto" class="nav-logo-img">
-      Apastto
+    <a href="{{ url_for('main.index') }}" class="nav-logo" aria-label="Apastto - Inicio">
+      <img src="{{ url_for('static', filename='images/apastto-logo.png') }}" alt="Apastto - Carnes saludables" class="nav-logo-img">
     </a>
     <!-- Carrito siempre visible -->
     <a href="{{ url_for('cart.carrito') }}" class="cart-link navbar-cart-fixed" aria-label="Ver carrito de compras">
